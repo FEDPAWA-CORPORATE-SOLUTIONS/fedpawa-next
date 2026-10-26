@@ -106,7 +106,7 @@ type TabId =
 export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
   const routes = routesFor(locale);
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
-
+  void routes;
   return (
     <DashboardUIProvider>
       <div className="db-layout">
