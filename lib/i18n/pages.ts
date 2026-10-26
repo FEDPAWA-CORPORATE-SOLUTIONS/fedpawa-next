@@ -7,15 +7,21 @@
 import type { PageSlugs } from "./types";
 import { indexFr, indexEn } from "./pages/index";
 import { aboutFr, aboutEn } from "./pages/qui-sommes-nous";
+import { fiscaliteFr, fiscaliteEn } from "./pages/fiscalite";
+import { domiciliationFr, domiciliationEn } from "./pages/domiciliation";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
   index: indexFr,
   "qui-sommes-nous": aboutFr,
+  fiscalite: fiscaliteFr,
+  domiciliation: domiciliationFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
 export const enPageDicts: PageSlugs = {
   index: indexEn,
   "qui-sommes-nous": aboutEn,
+  fiscalite: fiscaliteEn,
+  domiciliation: domiciliationEn,
 };
