@@ -1,5 +1,41 @@
-// Placeholder vague A — assemblé en vagues B/C/D (components/qui-sommes-nous/ + extraction/pages/).
+// Qui sommes-nous FR — conversion de qui-sommes-nous.php (vague B).
 
-export default function Page() {
-  return null;
+import type { Metadata } from "next";
+import About from "@/components/qui-sommes-nous/About";
+import { getDictionary } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/routes";
+
+const { meta } = getDictionary("fr").shared;
+
+const title = "FEDPAWA CORPORATE SOLUTIONS | Qui sommes-nous ?";
+const description =
+  "Découvrez FEDPAWA Corporate Solutions, cabinet expert en création d'entreprises OHADA, dépôt de marques OAPI et conseil fiscal au Cameroun.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical: "/qui-sommes-nous",
+    languages: {
+      fr: SITE_URL + "/qui-sommes-nous",
+      en: SITE_URL + "/en/qui-sommes-nous",
+      "x-default": SITE_URL + "/qui-sommes-nous",
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: meta.siteName,
+    title,
+    description,
+    url: SITE_URL + "/qui-sommes-nous",
+    locale: "fr_FR",
+    alternateLocale: "en_US",
+    images: [
+      { url: "/assets/images/og-cover.jpg", width: 1200, height: 630, alt: meta.siteName },
+    ],
+  },
+};
+
+export default function AboutPage() {
+  return <About locale="fr" />;
 }

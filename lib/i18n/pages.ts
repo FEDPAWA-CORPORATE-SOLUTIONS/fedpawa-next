@@ -6,13 +6,16 @@
 
 import type { PageSlugs } from "./types";
 import { indexFr, indexEn } from "./pages/index";
+import { aboutFr, aboutEn } from "./pages/qui-sommes-nous";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
   index: indexFr,
+  "qui-sommes-nous": aboutFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
 export const enPageDicts: PageSlugs = {
   index: indexEn,
+  "qui-sommes-nous": aboutEn,
 };
