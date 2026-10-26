@@ -39,6 +39,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images: ["/assets/images/og-cover.jpg"],
+  },
 };
 
 export default function EnHomePage() {

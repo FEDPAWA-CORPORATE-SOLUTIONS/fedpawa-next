@@ -36,6 +36,12 @@ export const metadata: Metadata = {
       },
     ],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: meta.defaultTitle,
+    description: meta.defaultDescription,
+    images: ["/assets/images/og-cover.jpg"],
+  },
 };
 
 // JSON-LD LocalBusiness/ProfessionalService — repris tel quel du <main> source (L016).
@@ -49,7 +55,7 @@ const localBusinessJsonLd = {
   url: SITE_URL + "/",
   image: SITE_URL + "/assets/images/og-cover.jpg",
   logo: SITE_URL + "/assets/images/logo.jpg",
-  telephone: "+2376961704802",
+  telephone: "+237691704802",
   email: "contact@fedpawa.com",
   priceRange: "FCFA 25,000 - FCFA 70,000",
   currenciesAccepted: "XAF",

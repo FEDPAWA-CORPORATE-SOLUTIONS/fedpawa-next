@@ -2,6 +2,10 @@
 // FEDPAWA — accueil (index) : Hero + Services (tabs) + Profile
 // + Specialties + Stats + Testimonials. Conversion de index.php.
 // Interactivité : tabs expertise → "use client".
+// SSR INTÉGRAL des 5 panneaux services (data-service 01–05) :
+// le HTML servi contient les 5 contenus (SEO + no-JS), le CSS
+// masque les inactifs (.expertise-content sans .active),
+// l'état React ne pilote que les classes.
 // Sections absentes du source EN rendues conditionnellement.
 // ==========================================================
 
@@ -139,7 +143,6 @@ export default function Home({ locale = "fr" }: HomeProps) {
   const routes = routesFor(locale);
   const [activeService, setActiveService] = useState<ServiceTab>("01");
 
-  const active = SERVICES.find((s) => s.id === activeService) ?? SERVICES[0];
   const hasSpecialties = Boolean(t.specialty1);
   const hasStats = Boolean(t.statYear);
   const hasTestimonials = Boolean(t.testimonialsKicker);
@@ -220,7 +223,7 @@ export default function Home({ locale = "fr" }: HomeProps) {
         </div>
       </section>
 
-      {/* ============== SERVICES (onglets expertise) ============== */}
+      {/* ============== SERVICES (onglets expertise — 5 panneaux SSR) ============== */}
       <section className="expertise-section" id="services">
         <div className="container">
           <div className="section-header reveal">
@@ -229,34 +232,54 @@ export default function Home({ locale = "fr" }: HomeProps) {
             {locale === "fr" && <p>{t.servicesIntro}</p>}
           </div>
           <div className="expertise-card reveal">
-            <div className="expertise-media">
-              <picture>
-                <source type="image/webp" srcSet={`${active.img}.webp`} />
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`${active.img}.jpg`} alt={active.imgAlt} />
-              </picture>
-            </div>
-            <div className="expertise-body expertise-content active">
-              <span className="expertise-kicker">
-                {t[active.keys.kicker]}
-              </span>
-              <div className="expertise-title-group">
-                <span className="expertise-number-inline">{active.id}</span>
-                <h3 className="expertise-title">{t[active.keys.title]}</h3>
-              </div>
-              <p className="expertise-text">{t[active.keys.text]}</p>
-              <ul className="expertise-features">
-                {active.keys.features.map((k) => (
-                  <li key={k}>{t[k]}</li>
-                ))}
-              </ul>
-              <Link
-                className="text-link"
-                href={routes[active.routeKey]}
+            {/* Les 5 médias sont rendus côté serveur ; seul l'actif est
+                affiché (les autres gardent display:none du CSS source,
+                piloté par le style inline comme index.php). */}
+            {SERVICES.map((s) => (
+              <div
+                key={s.id}
+                className="expertise-media"
+                data-service={s.id}
+                style={
+                  activeService === s.id ? undefined : { display: "none" }
+                }
               >
-                {t[active.keys.link]} <span aria-hidden="true">→</span>
-              </Link>
-            </div>
+                <picture>
+                  <source type="image/webp" srcSet={`${s.img}.webp`} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={`${s.img}.jpg`} alt={s.imgAlt} />
+                </picture>
+              </div>
+            ))}
+            {/* Les 5 panneaux contenu sont dans le HTML servi (SEO/no-JS) ;
+                .expertise-content sans .active est masqué par le CSS. */}
+            {SERVICES.map((s) => (
+              <div
+                key={s.id}
+                className={`expertise-body expertise-content${
+                  activeService === s.id ? " active" : ""
+                }`}
+                data-service={s.id}
+                id={`service-panel-${s.id}`}
+                role="tabpanel"
+                aria-hidden={activeService !== s.id}
+              >
+                <span className="expertise-kicker">{t[s.keys.kicker]}</span>
+                <div className="expertise-title-group">
+                  <span className="expertise-number-inline">{s.id}</span>
+                  <h3 className="expertise-title">{t[s.keys.title]}</h3>
+                </div>
+                <p className="expertise-text">{t[s.keys.text]}</p>
+                <ul className="expertise-features">
+                  {s.keys.features.map((k) => (
+                    <li key={k}>{t[k]}</li>
+                  ))}
+                </ul>
+                <Link className="text-link" href={routes[s.routeKey]}>
+                  {t[s.keys.link]} <span aria-hidden="true">→</span>
+                </Link>
+              </div>
+            ))}
             <div
               className="expertise-nav-vertical"
               role="tablist"
@@ -270,7 +293,9 @@ export default function Home({ locale = "fr" }: HomeProps) {
                   }`}
                   type="button"
                   role="tab"
+                  data-target={s.id}
                   aria-selected={activeService === s.id}
+                  aria-controls={`service-panel-${s.id}`}
                   onClick={() => setActiveService(s.id)}
                 >
                   {s.id}
