@@ -9,6 +9,8 @@ import { indexFr, indexEn } from "./pages/index";
 import { aboutFr, aboutEn } from "./pages/qui-sommes-nous";
 import { fiscaliteFr, fiscaliteEn } from "./pages/fiscalite";
 import { domiciliationFr, domiciliationEn } from "./pages/domiciliation";
+import { creationFr, creationEn } from "./pages/creation_entreprise";
+import { cguFr, cguEn, privacyFr, privacyEn } from "./pages/legal";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -16,6 +18,9 @@ export const frPageDicts: PageSlugs = {
   "qui-sommes-nous": aboutFr,
   fiscalite: fiscaliteFr,
   domiciliation: domiciliationFr,
+  creation_entreprise: creationFr,
+  cgu: cguFr,
+  "politique-confidentialite": privacyFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
@@ -24,4 +29,7 @@ export const enPageDicts: PageSlugs = {
   "qui-sommes-nous": aboutEn,
   fiscalite: fiscaliteEn,
   domiciliation: domiciliationEn,
+  creation_entreprise: creationEn,
+  cgu: cguEn,
+  "politique-confidentialite": privacyEn,
 };
