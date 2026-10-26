@@ -1,7 +1,7 @@
 // Souscription domiciliation en — conversion de souscription_domiciliation.php (vague C).
 
 import type { Metadata } from "next";
-import Souscription from "@/components/souscription-domiciliation/Souscription";
+import SouscriptionGuarded from "@/components/souscription-domiciliation/Guarded";
 import { getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/routes";
 
@@ -25,5 +25,6 @@ export const metadata: Metadata = {
 };
 
 export default function EnSouscriptionPage() {
-  return <Souscription locale="en" />;
+  // Audit #2 : garde data-auth="user" (client-side, parité source).
+  return <SouscriptionGuarded locale="en" />;
 }

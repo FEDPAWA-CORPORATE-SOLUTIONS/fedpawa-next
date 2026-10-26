@@ -3,7 +3,7 @@
 // la page reste statique, le panier s'initialise à l'hydratation.
 
 import type { Metadata } from "next";
-import Tunnel from "@/components/tunnel-souscription/Tunnel";
+import TunnelGuarded from "@/components/tunnel-souscription/Guarded";
 import { getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/routes";
 
@@ -27,5 +27,6 @@ export const metadata: Metadata = {
 };
 
 export default function TunnelPage() {
-  return <Tunnel locale="fr" />;
+  // Audit #2 : garde data-auth="user" (client-side, parité source).
+  return <TunnelGuarded locale="fr" />;
 }

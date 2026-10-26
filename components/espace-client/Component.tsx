@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   apiAuthGet,
+  apiAuthGetBlob,
   apiAuthPost,
   apiAuthPostForm,
 } from "@/lib/auth";
@@ -493,6 +494,67 @@ function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
 // Onglet Factures
 // ==========================================================
 
+// ==========================================================
+// Bouton de téléchargement sécurisé (audit #2 : liens documents)
+// Pattern admin-document : JAMAIS de <a href> relatif vers
+// /api/v1/document (401 sans Bearer, et le JSON d'erreur serait
+// « téléchargé » comme fichier). On passe par apiAuthGetBlob
+// (Bearer automatique) puis download via object URL.
+// ==========================================================
+function DownloadDocButton({
+  path,
+  label,
+}: {
+  path: string;
+  label: string;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  const handleDownload = async () => {
+    if (busy) return;
+    setBusy(true);
+    setFailed(false);
+    try {
+      const blob = await apiAuthGetBlob(path);
+      const a = document.createElement("a");
+      const objectUrl = URL.createObjectURL(blob);
+      a.href = objectUrl;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch {
+      setFailed(true);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <span>
+      <button
+        type="button"
+        className="action-link"
+        style={{ background: "none", border: "none", padding: 0, cursor: "pointer", font: "inherit" }}
+        onClick={handleDownload}
+        disabled={busy}
+      >
+        {busy ? "Téléchargement…" : label}
+      </button>
+      {failed && (
+        <>
+          {" "}
+          <span className="action-link" style={{ opacity: 0.6, fontSize: "0.8rem" }}>
+            (indisponible — session expirée ?)
+          </span>
+        </>
+      )}
+    </span>
+  );
+}
+
 function TabFactures() {
   const { data, loading, error } = useDashboardData(0);
   const factures: ApiFacture[] = data?.factures ?? [];
@@ -517,7 +579,12 @@ function TabFactures() {
                       <td>{fmtDate(f.date)}</td>
                       <td>{Number(f.montant ?? 0).toLocaleString("fr-FR")} FCFA</td>
                       <td><span className="badge badge-success">Payée</span></td>
-                      <td><a href={`/api/v1/document?type=facture&id=${f.id}`} className="action-link" target="_blank" rel="noopener">Télécharger (PDF)</a></td>
+                      <td>
+                        <DownloadDocButton
+                          path={`/api/v1/document?type=facture&id=${f.id}`}
+                          label="Télécharger (PDF)"
+                        />
+                      </td>
                     </tr>
                   ))
                 )}
@@ -557,7 +624,12 @@ function TabContrats() {
                       <td>{c.type ?? "—"}</td>
                       <td>{fmtDate(c.date_signature)}</td>
                       <td>Signature électronique (Doc@uthANTIC)</td>
-                      <td><a href={`/api/v1/document?type=contrat&id=${c.id}`} className="action-link" target="_blank" rel="noopener">Télécharger (PDF)</a></td>
+                      <td>
+                        <DownloadDocButton
+                          path={`/api/v1/document?type=contrat&id=${c.id}`}
+                          label="Télécharger (PDF)"
+                        />
+                      </td>
                     </tr>
                   ))
                 )}
@@ -737,7 +809,10 @@ function TabCourriers() {
                       </td>
                       <td>
                         {co.scan ? (
-                          <a href={`/api/v1/document?type=courrier&id=${co.id}`} target="_blank" rel="noopener" className="action-link">Consulter le scan</a>
+                          <DownloadDocButton
+                            path={`/api/v1/document?type=courrier&id=${co.id}`}
+                            label="Consulter le scan"
+                          />
                         ) : (
                           <span className="action-link" style={{ opacity: 0.5 }}>Aucun scan</span>
                         )}

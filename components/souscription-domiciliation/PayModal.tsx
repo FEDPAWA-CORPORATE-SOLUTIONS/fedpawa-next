@@ -9,7 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { apiPost, ApiError } from "@/lib/api";
-import { apiAuthPost, setToken } from "@/lib/auth";
+import { apiAuthGetBlob, apiAuthPost, setToken } from "@/lib/auth";
 
 export interface PayModalConfig {
   label: string;
@@ -154,6 +154,30 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
       }
     } catch {
       setErr(L.payVerifKo);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ---- Aperçu du contrat (audit #3) : GET /api/v1/contract/preview ----
+  // L'ancien window.open('/api/contract/preview') tapait le serveur Next
+  // (ni /v1 ni origine API) → 404. On passe par apiAuthGetBlob (Bearer +
+  // API_BASE_URL), puis object URL ouverte dans un nouvel onglet.
+  async function handlePreviewContract() {
+    const sid = sub.subscription_id ?? sub.id;
+    if (!sid) return;
+    setLoading(true);
+    setErr("");
+    try {
+      const blob = await apiAuthGetBlob(
+        `/api/v1/contract/preview?subscription_id=${encodeURIComponent(String(sid))}`,
+      );
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, "_blank", "noopener");
+      // Laisser au navigateur le temps d'ouvrir l'onglet avant la libération.
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 60000);
+    } catch {
+      setErr(L.payPreviewKo || "Aperçu indisponible (session expirée ou document absent).");
     } finally {
       setLoading(false);
     }
@@ -426,12 +450,10 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
               type="button"
               className="btn btn-primary btn-block"
               style={{ marginBottom: 10 }}
-              onClick={() => {
-                const sid = sub.subscription_id ?? sub.id;
-                if (sid) window.open(`/api/contract/preview?subscription_id=${encodeURIComponent(String(sid))}`, "_blank", "noopener");
-              }}
+              onClick={handlePreviewContract}
+              disabled={loading}
             >
-              {L.payViewContract}
+              {loading ? L.payProcessing : L.payViewContract}
             </button>
             <div className="pay-momo-note" style={noteStyle}>{L.paySignNote}</div>
             <form onSubmit={handleSign}>
