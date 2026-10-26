@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
+import { apiAuthPost } from "@/lib/auth";
 import { routesFor } from "@/lib/routes";
 import PayModal from "./PayModal";
 import {
@@ -127,10 +128,10 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
       const g: Gamme = urlPack.startsWith("national-") ? "nationale" : "internationale";
       setForm((f) => ({ ...f, gamme: g, pack: urlPack }));
     }
-    // SKIP KYC si déjà fait dans l'espace client (GET /api/v1/me → kyc_status).
+    // SKIP KYC si déjà fait dans l'espace client (GET /api/v1/auth/me → kyc_status).
     (async () => {
       try {
-        const me = await apiPost<{ authenticated?: boolean; kyc_status?: string }>("/api/v1/me", {});
+        const me = await apiPost<{ authenticated?: boolean; kyc_status?: string }>("/api/v1/auth/me", {});
         if (me && me.authenticated && me.kyc_status) setKycDone(me.kyc_status);
       } catch {
         /* dégradation : étape KYC normale */
@@ -268,7 +269,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   // ---------- Paiement (PayModal onSubmit → POST /api/v1/souscription) ----------
   async function submitSouscription(pay: { phone: string; operator: string }) {
     try {
-      const out = await apiPost<{
+      const out = await apiAuthPost<{
         message?: string;
         error?: string;
         status?: string;

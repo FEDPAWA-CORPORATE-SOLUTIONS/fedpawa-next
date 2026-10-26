@@ -18,6 +18,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
+import { apiAuthPost } from "@/lib/auth";
 import { routesFor } from "@/lib/routes";
 import PayModal from "@/components/souscription-domiciliation/PayModal";
 import { PLANS, SERVICE_NAME_KEYS, OPTION_CARDS, type ServiceId } from "./plans";
@@ -135,10 +136,10 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
       window.location.replace(routes.home + "#services");
       return;
     }
-    // SKIP KYC si déjà fourni (/api/v1/me → kyc_status).
+    // SKIP KYC si déjà fourni (/api/v1/auth/me → kyc_status).
     (async () => {
       try {
-        const me = await apiPost<{ authenticated?: boolean; kyc_status?: string }>("/api/v1/me", {});
+        const me = await apiPost<{ authenticated?: boolean; kyc_status?: string }>("/api/v1/auth/me", {});
         if (me && me.authenticated && me.kyc_status) setKycDone(me.kyc_status);
       } catch {
         /* dégradation : étape KYC normale */
@@ -276,7 +277,7 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
   }> {
     if (!cart.service) return { ok: false, message: t.noService };
     try {
-      const data = await apiPost<Record<string, unknown>>("/api/v1/souscription", {
+      const data = await apiAuthPost<Record<string, unknown>>("/api/v1/souscription", {
         service: cart.service,
         plan: cart.planId,
         pack: cart.planId,

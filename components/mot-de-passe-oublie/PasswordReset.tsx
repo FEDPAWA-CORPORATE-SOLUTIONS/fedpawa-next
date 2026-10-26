@@ -3,10 +3,12 @@
 // ==========================================================
 // FEDPAWA — Mot de passe oublié : machine à 4 états
 // (password-reset.js répliqué en React) :
-// 1. Demande   → POST /api/v1/password/request { email }
-// 2. OTP       → POST /api/v1/password/verify { otp }
+// 1. Demande   → POST /api/v1/auth/password/forgot { email }
+// 2. OTP       → POST /api/v1/auth/otp/verify { email, otp }
 //    (timer 3 min + renvoi, auto-focus des 6 cases)
-// 3. Nouveau   → POST /api/v1/password/reset { mot_de_passe }
+// 3. Nouveau   → POST /api/v1/auth/password/reset
+//    { email, otp, mot_de_passe } (stateless BE: e-mail+otp
+//    requis à chaque étape, pas de session de reset)
 //    (jauge de force + checklist live)
 // 4. Succès    → lien vers l'authentification
 // Modale "mode pré-production" si mail_service=not_configured.
@@ -113,7 +115,7 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
     setLoading(true);
     try {
       const data = await apiPost<{ mail_service?: string; error?: string }>(
-        "/api/v1/password/request",
+        "/api/v1/auth/password/forgot",
         { email },
       );
       if (data.mail_service === "not_configured") {
@@ -139,7 +141,7 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
     setCanResend(false);
     try {
       const data = await apiPost<{ mail_service?: string; error?: string }>(
-        "/api/v1/password/request",
+        "/api/v1/auth/password/forgot",
         { email },
       );
       if (data.mail_service === "not_configured") {
@@ -163,13 +165,17 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
     if (digit && i < 5) otpRefs.current[i + 1]?.focus();
   }
 
-  // ---- Étape 2 : vérification OTP ----
+  // ---- Étape 2 : vérification OTP (stateless : email + otp requis) ----
   async function handleOtp(e: React.FormEvent) {
     e.preventDefault();
     const code = otp.join("");
+    if (code.length < 6) {
+      showToast(t.toastInvalidCode, "error");
+      return;
+    }
     setLoading(true);
     try {
-      await apiPost("/api/v1/password/verify", { otp: code });
+      await apiPost("/api/v1/auth/otp/verify", { email, otp: code });
       setStage("newPwd");
     } catch (err) {
       catchErr(err, t.toastInvalidCode);
@@ -188,7 +194,7 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
   const strength = Number(rules.length) + Number(rules.upperLower) + Number(rules.number) + Number(rules.special);
   const strengthLabel = t["strength" + Math.max(strength, 1)] ?? t.strength1;
 
-  // ---- Étape 3 : nouveau mot de passe ----
+  // ---- Étape 3 : nouveau mot de passe (stateless : email + otp + mot_de_passe) ----
   async function handleNewPwd(e: React.FormEvent) {
     e.preventDefault();
     if (newPwd !== confirmPwd) {
@@ -197,7 +203,11 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
     }
     setLoading(true);
     try {
-      await apiPost("/api/v1/password/reset", { mot_de_passe: newPwd });
+      await apiPost("/api/v1/auth/password/reset", {
+        email,
+        otp: otp.join(""),
+        mot_de_passe: newPwd,
+      });
       setStage("success");
     } catch (err) {
       catchErr(err, t.toastResetKo);

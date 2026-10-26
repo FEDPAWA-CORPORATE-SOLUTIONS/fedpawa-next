@@ -8,6 +8,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
+import { getToken, logout } from "@/lib/auth";
 
 export interface HeaderProps {
   locale?: Locale;
@@ -28,6 +29,10 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   const { shared } = getDictionary(locale);
   const routes = routesFor(locale);
   const [mobileOpen, setMobileOpen] = useState(false);
+  // Mode sombre/clair : data-mode sur <html> + localStorage "fedpawa-mode"
+  // (parité main.js source : défaut dark, lecture au montage client).
+  const [darkMode, setDarkMode] = useState(true);
+  const [connected, setConnected] = useState(false);
 
   const servicesActive = [
     "services",
@@ -37,6 +42,16 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
     "oapi",
     "contrats",
   ].includes(active);
+
+  // Mode sauvegardé + état de connexion (client-only, après montage
+  // pour éviter tout mismatch d'hydratation).
+  useEffect(() => {
+    const saved = window.localStorage.getItem("fedpawa-mode");
+    const mode = saved === "light" ? "light" : "dark";
+    setDarkMode(mode === "dark");
+    document.documentElement.setAttribute("data-mode", mode);
+    setConnected(Boolean(getToken()));
+  }, []);
 
   // Fermeture du menu mobile au resize >= desktop (comportement fedpawa-ui.js).
   useEffect(() => {
@@ -48,11 +63,50 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
     return () => window.removeEventListener("resize", onResize);
   }, [mobileOpen]);
 
-  // body.classList "no-scroll" quand menu ouvert (comportement source).
+  // FIX: classes CSS réelles attendues par globals.css — .open sur
+  // .mobile-nav (l.110) et body.nav-open (l.116), pas is-open/no-scroll.
+  // Clic-extérieur (parité main.js l.57) + Escape (A11Y) ferment le menu.
   useEffect(() => {
-    document.body.classList.toggle("no-scroll", mobileOpen);
-    return () => document.body.classList.remove("no-scroll");
+    document.body.classList.toggle("nav-open", mobileOpen);
+    if (!mobileOpen) return;
+    const onKeydown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    const onClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        !target.closest(".mobile-nav") &&
+        !target.closest(".menu-toggle")
+      ) {
+        setMobileOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeydown);
+    // Délai micro-task : exclure le clic d'ouverture lui-même.
+    const timer = setTimeout(() => {
+      document.addEventListener("click", onClickOutside);
+    }, 0);
+    return () => {
+      document.removeEventListener("keydown", onKeydown);
+      document.removeEventListener("click", onClickOutside);
+      document.body.classList.remove("nav-open");
+      clearTimeout(timer);
+    };
   }, [mobileOpen]);
+
+  // FIX: toggle sombre/clair branché (parité main.js setMode) —
+  // data-mode sur <html> + persistance localStorage "fedpawa-mode".
+  function toggleMode() {
+    const next = darkMode ? "light" : "dark";
+    setDarkMode(!darkMode);
+    document.documentElement.setAttribute("data-mode", next);
+    window.localStorage.setItem("fedpawa-mode", next);
+  }
+
+  const handleLogout = () => {
+    setMobileOpen(false);
+    void logout(routes.auth);
+  };
 
   const langHref = locale === "en" ? "/" : "/en";
 
@@ -185,7 +239,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             </ul>
           </nav>
           <button
-            className="menu-toggle"
+            className={`menu-toggle${mobileOpen ? " open" : ""}`}
             id="menuToggle"
             aria-label={shared.footer.openMenu}
             aria-expanded={mobileOpen}
@@ -195,16 +249,21 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             <span></span>
             <span></span>
           </button>
-          {/* nav-actions : état de connexion géré en vague C (auth) */}
-          <div className="nav-actions" id="navActions"></div>
+          {/* nav-actions : état de connexion — token Sanctum (localStorage) */}
+          <div className="nav-actions" id="navActions">
+            {!connected && (
+              <Link className="nav-login" href={routes.auth}>
+                {locale === "en" ? "Sign in" : "Se Connecter"}
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
       {/* ============== MOBILE NAVIGATION ============== */}
       <div
-        className={`mobile-nav${mobileOpen ? " is-open" : ""}`}
+        className={`mobile-nav${mobileOpen ? " open" : ""}`}
         id="mobileNav"
-        data-open={mobileOpen ? "true" : undefined}
       >
         <nav>
           <Link href={routes.home} onClick={() => setMobileOpen(false)}>
@@ -235,21 +294,41 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             {shared.nav.contact}
           </Link>
 
-          {/* CTA mobile : état de connexion géré en vague C (auth) */}
-          <Link
-            className="mobile-cta"
-            href={routes.auth}
-            onClick={() => setMobileOpen(false)}
-          >
-            {locale === "en" ? "Sign in" : "Se Connecter"}
-          </Link>
+          {/* CTA mobile : login si déconnecté, déconnexion sinon (F4 source) */}
+          {connected ? (
+            <button
+              type="button"
+              className="mobile-cta"
+              style={{
+                background: "none",
+                border: "none",
+                color: "#ffd98a",
+                cursor: "pointer",
+                font: "inherit",
+                textAlign: "left",
+              }}
+              onClick={handleLogout}
+            >
+              🚪 {locale === "en" ? "Log out" : "Se déconnecter"}
+            </button>
+          ) : (
+            <Link
+              className="mobile-cta"
+              href={routes.auth}
+              onClick={() => setMobileOpen(false)}
+            >
+              {locale === "en" ? "Sign in" : "Se Connecter"}
+            </Link>
+          )}
 
           <div className="mobile-nav-toggles">
             <button
               className="mode-toggle mobile-mode-toggle"
               id="mobileModeToggle"
               aria-label="Basculer en mode sombre/clair"
+              aria-pressed={darkMode}
               title="Light / dark mode"
+              onClick={toggleMode}
             >
               <svg
                 className="sun-icon"

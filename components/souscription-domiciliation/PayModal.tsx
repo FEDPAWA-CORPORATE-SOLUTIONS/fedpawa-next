@@ -9,6 +9,7 @@
 
 import { useEffect, useState } from "react";
 import { apiPost, ApiError } from "@/lib/api";
+import { apiAuthPost, setToken } from "@/lib/auth";
 
 export interface PayModalConfig {
   label: string;
@@ -51,13 +52,13 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
   const [otp, setOtp] = useState("");
   const [prevScreen, setPrevScreen] = useState<Screen | null>(null);
 
-  // Garde de connexion : /api/v1/me → sinon loginModal puis momoScreen.
+  // Garde de connexion : /api/v1/auth/me → sinon loginModal puis momoScreen.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const session = await apiPost<Session>("/api/v1/me", {});
-        if (!cancelled) setScreen({ kind: "momo" });
+        const session = await apiPost<Session>("/api/v1/auth/me", {});
+        if (!cancelled) setScreen(session.authenticated ? { kind: "momo" } : { kind: "login" });
       } catch {
         // La source : /api/me renvoie { authenticated:false } (200) → login.
         // En erreur réseau/401 on affiche aussi le login.
@@ -69,16 +70,20 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
     };
   }, []);
 
-  // ---- Login inline (loginModal) ----
+  // ---- Login inline (loginModal) — token Sanctum stocké (lib/auth.ts) ----
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setErr("");
     try {
-      await apiPost("/api/v1/login", {
-        email: login.email.trim(),
-        mot_de_passe: login.pwd,
-      });
+      const data = await apiPost<{ token?: string; error?: string }>(
+        "/api/v1/auth/login",
+        {
+          email: login.email.trim(),
+          mot_de_passe: login.pwd,
+        },
+      );
+      if (data.token) setToken(data.token);
       setScreen({ kind: "momo" });
     } catch (error) {
       const b =
@@ -128,7 +133,7 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
     setLoading(true);
     setErr("");
     try {
-      const data = await apiPost<{ status?: string; error?: string; message?: string }>(
+      const data = await apiAuthPost<{ status?: string; error?: string; message?: string }>(
         "/api/v1/paiement/verifier",
         { sub_id: sub.subscription_id },
       );
@@ -162,7 +167,7 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
     setLoading(true);
     setErr("");
     try {
-      const data = await apiPost<{ error?: string; contrat_url?: string }>(
+      const data = await apiAuthPost<{ error?: string; contrat_url?: string }>(
         "/api/v1/signature",
         { sub_id: sub.subscription_id, client_id: sub.client_id, otp: otp.trim() },
       );

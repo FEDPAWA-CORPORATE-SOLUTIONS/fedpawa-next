@@ -3,9 +3,11 @@
 // ==========================================================
 // FEDPAWA — Authentification : panneau visuel + onglets
 // Connexion/Inscription (auth.js répliqué en React) :
-// - POST /api/v1/login { email, mot_de_passe, remember }
-//   → redirect ?next= ou data.redirect ou /espace-client
-// - POST /api/v1/register { nom, entreprise, email, telephone,
+// - POST /api/v1/auth/login { email, mot_de_passe, remember }
+//   → 200 {message, token, role} — token Sanctum stocké via
+//   lib/auth.ts setToken (localStorage "fedpawa_token"), puis
+//   redirect ?next= ou data.redirect ou /espace-client
+// - POST /api/v1/auth/register { nom, entreprise, email, telephone,
 //   mot_de_passe } → bascule sur Connexion après succès
 // - validation regex mdp (8+, 1 maj, 1 chiffre), CGU requise
 // - toggles visibilité mdp, toasts, global loader
@@ -15,6 +17,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
+import { setToken } from "@/lib/auth";
 import { routesFor } from "@/lib/routes";
 
 export interface AuthProps {
@@ -89,17 +92,31 @@ export default function Auth({ locale = "fr" }: AuthProps) {
     }
     setLoading(true);
     try {
-      const data = await apiPost<{ redirect?: string; error?: string }>(
-        "/api/v1/login",
-        { email, mot_de_passe, remember: login.remember },
-      );
+      const data = await apiPost<{
+        message?: string;
+        token?: string;
+        role?: string;
+        redirect?: string;
+        error?: string;
+      }>("/api/v1/auth/login", {
+        email,
+        mot_de_passe,
+        remember: login.remember,
+      });
+      // FIX: le token Sanctum n'était jamais stocké — posé AVANT la
+      // redirection pour que /auth/me (garde) reconnaisse la session.
+      if (data.token) setToken(data.token);
       showToast(t.toastLoginOk, "success");
       const next =
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("next")
           : null;
       setTimeout(() => {
-        const base = data.redirect || routes.espaceClient;
+        // Admin: redirect backend explicite. Client: ?next= puis espace client.
+        const base =
+          data.redirect === "admin_dashboard.html"
+            ? routes.adminDashboard
+            : data.redirect || routes.espaceClient;
         window.location.href = next ? next : base;
       }, 800);
     } catch (err) {
@@ -130,7 +147,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
     }
     setLoading(true);
     try {
-      await apiPost("/api/v1/register", {
+      await apiPost("/api/v1/auth/register", {
         nom: signup.nom.trim(),
         entreprise: signup.entreprise.trim(),
         email: signup.email.trim(),

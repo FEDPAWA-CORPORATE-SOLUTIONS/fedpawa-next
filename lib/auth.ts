@@ -130,3 +130,24 @@ export function fetchMe(): Promise<MeResponse> {
     credentials: "include",
   });
 }
+
+/**
+ * Déconnexion (parité main.js source : POST /api/logout en
+ * best-effort, puis redirection) : POST /api/v1/auth/logout
+ * (auth:sanctum, Bearer automatique) puis suppression du token
+ * local AVANT la redirection vers la page d'authentification.
+ * Erreurs réseau ignorées — le token local est toujours purgé.
+ */
+export async function logout(authPath: string): Promise<void> {
+  try {
+    await request<unknown>("/api/v1/auth/logout", {
+      method: "POST",
+      headers: authHeaders(),
+      credentials: "include",
+    });
+  } catch {
+    // Dégradation gracieuse (parité source) : on purge quand même.
+  }
+  setToken(null);
+  window.location.href = authPath;
+}
