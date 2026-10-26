@@ -1,6 +1,46 @@
-// Placeholder vague A — la page d'accueil EN sera assemblée en vague B
-// (miroir de app/(site)/page.tsx, textes EN extraits de /en/index.php).
+// Accueil EN — miroir de app/(site)/page.tsx (textes EN de /en/index.php source).
+
+import type { Metadata } from "next";
+import Home from "@/components/index/Home";
+import { getDictionary } from "@/lib/i18n";
+import { SITE_URL } from "@/lib/routes";
+
+const { meta } = getDictionary("en").shared;
+
+const title = "FEDPAWA CORPORATE SOLUTIONS | Business Infrastructure in Douala, Logpom";
+const description =
+  "FEDPAWA CORPORATE SOLUTIONS — Business infrastructure and operational hub in Douala, Logpom: domiciliation, company formation, tax advisory, OAPI, contracts and a 100% online client area.";
+
+export const metadata: Metadata = {
+  title,
+  description,
+  alternates: {
+    canonical: "/en",
+    languages: {
+      fr: SITE_URL + "/",
+      en: SITE_URL + "/en",
+      "x-default": SITE_URL + "/",
+    },
+  },
+  openGraph: {
+    type: "website",
+    siteName: meta.siteName,
+    title,
+    description,
+    url: SITE_URL + "/en",
+    locale: "en_US",
+    alternateLocale: "fr_FR",
+    images: [
+      {
+        url: "/assets/images/og-cover.jpg",
+        width: 1200,
+        height: 630,
+        alt: meta.siteName,
+      },
+    ],
+  },
+};
 
 export default function EnHomePage() {
-  return null;
+  return <Home locale="en" />;
 }

@@ -129,32 +129,9 @@ const sharedEn: SharedDict = {
   },
 };
 
-// ---------- Dictionnaires par page (structurés, vides en vague A) ----------
-export type PageSlug =
-  | "index"
-  | "qui-sommes-nous"
-  | "fiscalite"
-  | "domiciliation"
-  | "creation_entreprise"
-  | "politique-confidentialite"
-  | "cgu"
-  | "contact"
-  | "authentification"
-  | "mot_de_passe_oublie"
-  | "souscription_domiciliation"
-  | "tunnel_souscription"
-  | "espace_client"
-  | "admin_dashboard"
-  | "admin_document"
-  | "oapi"
-  | "contrats";
-
-/** Contenu propre à une page. Vague A : structure vide ; vagues B/C/D remplissent. */
-export type PageDict = Record<string, string>;
-
-export interface PageSlugs {
-  [slug: string]: PageDict;
-}
+// ---------- Dictionnaires par page (types dans lib/i18n/types.ts) ----------
+export type { PageSlug, PageDict, PageSlugs } from "./i18n/types";
+import type { PageSlug, PageDict, PageSlugs } from "./i18n/types";
 
 /** Dictionnaires FR par page — vides en vague A (remplis par vagues B/C/D). */
 export const frPages: PageSlugs = {
@@ -187,9 +164,13 @@ export interface Dictionaries {
   en: { shared: SharedDict; pages: PageSlugs };
 }
 
+// Dictionnaires par page : remplis par les vagues B/C/D via lib/i18n/pages.ts
+// (import dynamique de bas niveau pour éviter un cycle i18n → pages → i18n).
+import { frPageDicts, enPageDicts } from "./i18n/pages";
+
 export const dictionaries: Dictionaries = {
-  fr: { shared: sharedFr, pages: frPages },
-  en: { shared: sharedEn, pages: enPages },
+  fr: { shared: sharedFr, pages: { ...frPages, ...frPageDicts } },
+  en: { shared: sharedEn, pages: { ...enPages, ...enPageDicts } },
 };
 
 /** Récupère le dictionnaire complet d'une locale (fallback FR). */
