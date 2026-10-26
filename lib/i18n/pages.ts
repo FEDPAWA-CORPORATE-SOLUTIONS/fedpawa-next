@@ -15,6 +15,7 @@ import { contactFr, contactEn } from "./pages/contact";
 import { authFr, authEn } from "./pages/authentification";
 import { resetFr, resetEn } from "./pages/mot-de-passe-oublie";
 import { souscriptionFr, souscriptionEn } from "./pages/souscription-domiciliation";
+import { tunnelFr, tunnelEn } from "./pages/tunnel-souscription";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -29,6 +30,7 @@ export const frPageDicts: PageSlugs = {
   authentification: authFr,
   mot_de_passe_oublie: resetFr,
   souscription_domiciliation: souscriptionFr,
+  tunnel_souscription: tunnelFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
@@ -44,4 +46,5 @@ export const enPageDicts: PageSlugs = {
   authentification: authEn,
   mot_de_passe_oublie: resetEn,
   souscription_domiciliation: souscriptionEn,
+  tunnel_souscription: tunnelEn,
 };

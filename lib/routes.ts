@@ -21,6 +21,8 @@ export interface RouteMap {
   souscription: string;
   tunnel: string;
   espaceClient: string;
+  adminDashboard: string;
+  adminDocument: string;
 }
 
 /** Routes FR (racine). */
@@ -40,6 +42,8 @@ export const frRoutes: RouteMap = {
   souscription: "/souscription-domiciliation",
   tunnel: "/tunnel-souscription",
   espaceClient: "/espace-client",
+  adminDashboard: "/admin-dashboard",
+  adminDocument: "/admin-document",
 };
 
 /** Routes EN (miroir sous /en). */
@@ -60,6 +64,8 @@ export const enRoutes: RouteMap = {
   souscription: "/en/souscription-domiciliation",
   tunnel: "/en/tunnel-souscription",
   espaceClient: "/en/espace-client",
+  adminDashboard: "/en/admin-dashboard",
+  adminDocument: "/en/admin-document",
 };
 
 /** Routes pour une locale. */
