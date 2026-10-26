@@ -45,7 +45,7 @@ export default function Footer({ locale = "fr" }: FooterProps) {
               <p>
                 <a href="mailto:contact@fedpawa.com">contact@fedpawa.com</a>
                 <br />
-                <a href="tel:+237****4802">
+                <a href="tel:+237691704802">
                   {f.phone} : +237 691 70 48 02
                 </a>
                 <br />
