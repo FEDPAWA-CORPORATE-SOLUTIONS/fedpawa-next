@@ -5,6 +5,7 @@
 "use client";
 
 import Link from "next/link";
+import NavLinks from "./NavLinks";
 import { useEffect, useState } from "react";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
@@ -160,84 +161,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               <small>Corporate Solutions</small>
             </span>
           </Link>
-          <nav className="main-nav">
-            <ul className="nav-list">
-              <li>
-                <Link
-                  className={`nav-link${active === "index" ? " is-active" : ""}`}
-                  href={routes.home}
-                >
-                  {shared.nav.home}
-                </Link>
-              </li>
-              <li className="nav-dropdown">
-                <a
-                  className={`nav-link${servicesActive ? " is-active" : ""}`}
-                  href="#"
-                >
-                  {shared.nav.services}
-                </a>
-                <ul className="dropdown-menu">
-                  <li>
-                    <Link
-                      className={active === "domiciliation" ? "is-active" : ""}
-                      href={routes.domiciliation}
-                    >
-                      {shared.nav.domiciliation}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className={active === "creation" ? "is-active" : ""}
-                      href={routes.creationEntreprise}
-                    >
-                      {shared.nav.companyFormation}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className={active === "fiscalite" ? "is-active" : ""}
-                      href={routes.fiscalite}
-                    >
-                      {shared.nav.taxLegalAdvisory}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className={active === "oapi" ? "is-active" : ""}
-                      href={routes.oapi}
-                    >
-                      {shared.nav.oapiProtection}
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      className={active === "contrats" ? "is-active" : ""}
-                      href={routes.contrats}
-                    >
-                      {shared.nav.contracts}
-                    </Link>
-                  </li>
-                </ul>
-              </li>
-              <li>
-                <Link
-                  className={`nav-link${active === "about" ? " is-active" : ""}`}
-                  href={routes.aboutUs}
-                >
-                  {shared.nav.aboutUs}
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className={`nav-link${active === "contact" ? " is-active" : ""}`}
-                  href={routes.contact}
-                >
-                  {shared.nav.contact}
-                </Link>
-              </li>
-            </ul>
-          </nav>
+          <NavLinks />
           <button
             className={`menu-toggle${mobileOpen ? " open" : ""}`}
             id="menuToggle"
