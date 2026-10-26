@@ -13,6 +13,7 @@ import { creationFr, creationEn } from "./pages/creation_entreprise";
 import { cguFr, cguEn, privacyFr, privacyEn } from "./pages/legal";
 import { contactFr, contactEn } from "./pages/contact";
 import { authFr, authEn } from "./pages/authentification";
+import { resetFr, resetEn } from "./pages/mot-de-passe-oublie";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -25,6 +26,7 @@ export const frPageDicts: PageSlugs = {
   "politique-confidentialite": privacyFr,
   contact: contactFr,
   authentification: authFr,
+  mot_de_passe_oublie: resetFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
@@ -38,4 +40,5 @@ export const enPageDicts: PageSlugs = {
   "politique-confidentialite": privacyEn,
   contact: contactEn,
   authentification: authEn,
+  mot_de_passe_oublie: resetEn,
 };
