@@ -1,4 +1,6 @@
 // Tunnel souscription fr — conversion de tunnel_souscription.php (vague C).
+// Routing ?service=&pack= côté client (comportement tunnel.js source) :
+// la page reste statique, le panier s'initialise à l'hydratation.
 
 import type { Metadata } from "next";
 import Tunnel from "@/components/tunnel-souscription/Tunnel";

@@ -25,6 +25,10 @@ import { COUNTRIES } from "@/components/souscription-domiciliation/plans";
 
 export interface TunnelProps {
   locale?: Locale;
+  /** ?service= transmis par la page (SSR) — préselection du panier. */
+  service?: string;
+  /** ?pack= transmis par la page (SSR). */
+  pack?: string;
 }
 
 const TOTAL_STEPS = 4;
@@ -82,7 +86,6 @@ const INITIAL_COMMON: Common = {
 export default function Tunnel({ locale = "fr" }: TunnelProps) {
   const t = getPageDictionary(locale, "tunnel_souscription");
   const routes = routesFor(locale);
-  const [ready, setReady] = useState(false);
   const [step, setStep] = useState(1);
   const [cart, setCart] = useState<Cart>(EMPTY_CART);
   const [common, setCommon] = useState<Common>(INITIAL_COMMON);
@@ -114,10 +117,10 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
 
   const setCom = (k: keyof Common, v: string) => setCommon((c) => ({ ...c, [k]: v }));
 
-  // ---------- Initialisation : routing ?service=&pack= (selectService) ----------
+  // ---------- Routing ?service=&pack= + SKIP KYC (client, cf. tunnel.js) ----------
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    const urlService = params.get("service") as ServiceId | null;
+    const urlService = params.get("service");
     const urlPack = params.get("pack");
     if (urlService === "domiciliation") {
       // Source : la domiciliation a son tunnel dédié.
@@ -125,9 +128,8 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
         routes.souscription + (urlPack ? `?pack=${encodeURIComponent(urlPack)}` : "");
       return;
     }
-    if (urlService && PLANS[urlService]) {
-      selectService(urlService, urlPack);
-      setStep(1);
+    if (urlService && urlService in PLANS) {
+      selectService(urlService as ServiceId, urlPack);
     } else {
       // Aucun service ciblé → accueil #services (comportement source).
       window.location.replace(routes.home + "#services");
@@ -142,7 +144,6 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
         /* dégradation : étape KYC normale */
       }
     })();
-    setReady(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -422,8 +423,6 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
   );
 
   const stepLabels = [t.step1, t.step2, t.step3, t.step4];
-
-  if (!ready) return null;
 
   return (
     <>
