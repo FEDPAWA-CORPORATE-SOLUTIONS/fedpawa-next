@@ -127,6 +127,7 @@ export function apiAuthPostForm<T>(path: string, form: FormData): Promise<T> {
 export function fetchMe(): Promise<MeResponse> {
   return request<MeResponse>("/api/v1/auth/me", {
     method: "GET",
+    headers: authHeaders(),
     credentials: "include",
   });
 }
