@@ -12,7 +12,9 @@ const description =
   "Rédaction de contrats sociaux, commerciaux, de travail, NDAs et conventionnels par des juristes FEDPAWA. Souscription en ligne dès 100 000 FCFA HT.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/contrats",

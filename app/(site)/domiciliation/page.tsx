@@ -11,7 +11,9 @@ const title = "FEDPAWA CORPORATE SOLUTIONS | Domiciliation d'Entreprises à Doua
 const description = "Domiciliation d'entreprises à Douala Logpom : adresse commerciale prestigieuse, gestion du courrier, salles de réunion. Dès 35 000 FCFA/mois HT.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/domiciliation",

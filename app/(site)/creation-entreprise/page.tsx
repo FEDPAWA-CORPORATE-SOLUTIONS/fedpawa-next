@@ -11,7 +11,9 @@ const title = "FEDPAWA CORPORATE SOLUTIONS | Création, Restructuration et Léga
 const description = "Constitution, transformation et immatriculation d'entreprises au Cameroun : statuts OHADA sur-mesure, circuit notarial, Greffe et CFCE, livraison du Kit Corporate complet.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/creation-entreprise",

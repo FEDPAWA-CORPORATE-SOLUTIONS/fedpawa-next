@@ -12,7 +12,9 @@ const description =
   "Découvrez FEDPAWA Corporate Solutions, cabinet expert en création d'entreprises OHADA, dépôt de marques OAPI et conseil fiscal au Cameroun.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/qui-sommes-nous",

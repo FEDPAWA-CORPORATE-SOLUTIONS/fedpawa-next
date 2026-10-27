@@ -7,11 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'FEDPAWA CORPORATE SOLUTIONS | Company Formation, Restructuring & Legalization in Cameroon';
-const description = 'Company formation, conversion and registration in Cameroon: tailor-made OHADA articles, notarial circuit, Registry and CFCE, complete Corporate Kit delivery.';
+const title = "FEDPAWA CORPORATE SOLUTIONS | Company Formation in Cameroon";
+const description =
+  "Company formation, transformation, restructuring and legalization in Cameroon with OHADA compliance by experienced legal experts.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/creation-entreprise",

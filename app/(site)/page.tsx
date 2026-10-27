@@ -9,7 +9,11 @@ import { SITE_URL } from "@/lib/routes";
 const { meta } = getDictionary("fr").shared;
 
 export const metadata: Metadata = {
-  title: meta.defaultTitle,
+  // Title réel du source (dist/index.html) : suffixe marque inclus —
+  // absolute évite la duplication « FEDPAWA CORPORATE SOLUTIONS | … ».
+  title: {
+    absolute: "FEDPAWA CORPORATE SOLUTIONS | Infrastructure d'affaires à Douala, Logpom",
+  },
   description: meta.defaultDescription,
   alternates: {
     canonical: "/",

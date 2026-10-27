@@ -1,4 +1,6 @@
 // Souscription domiciliation en — conversion de souscription_domiciliation.php (vague C).
+// PAS de source EN pour ce flux (règle : JAMAIS INVENTER) :
+// contenu + méta servis en FR (copie exacte de la page FR).
 
 import type { Metadata } from "next";
 import SouscriptionGuarded from "@/components/souscription-domiciliation/Guarded";
@@ -7,11 +9,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'Domiciliation Subscription | FEDPAWA CORPORATE SOLUTIONS';
-const description = 'Subscribe to FEDPAWA business domiciliation: 6 steps (company, representative, contact, plan, KYC documents, invoicing), national and international plans, Mobile Money payment.';
+const title = "Souscription Domiciliation | FEDPAWA CORPORATE SOLUTIONS";
+const description =
+  "Souscrivez à la domiciliation d'entreprise FEDPAWA : 6 étapes (entreprise, représentant, contact, formule, documents KYC, facturation), packs nationaux et internationaux, paiement Mobile Money.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

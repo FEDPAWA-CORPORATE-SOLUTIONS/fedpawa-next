@@ -11,7 +11,9 @@ const title = "FEDPAWA CORPORATE SOLUTIONS | Conditions Générales d'Utilisatio
 const description = 'CGU/CGV FEDPAWA : comptes clients, souscriptions, paiements Mobile Money, engagements réciproques, résiliation et responsabilité.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/cgu",

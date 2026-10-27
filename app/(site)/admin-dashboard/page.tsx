@@ -11,7 +11,9 @@ const description =
   "Tableau de bord administrateur FEDPAWA : synthèse d'activité, gestion clients, abonnements, paiements, courriers, validation KYC, tickets et messagerie interne.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: false },
   alternates: {

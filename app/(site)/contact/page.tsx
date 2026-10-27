@@ -11,7 +11,9 @@ const title = 'FEDPAWA CORPORATE SOLUTIONS | Contact — Douala, Cameroun';
 const description = 'Contactez FEDPAWA : adresse, horaires, téléphone, WhatsApp, email et formulaire en ligne. Réponse sous 24h.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/contact",

@@ -13,7 +13,9 @@ const title = 'Tunnel de Souscription | FEDPAWA CORPORATE SOLUTIONS';
 const description = "Souscrivez à vos services FEDPAWA : création d'entreprise, fiscalité, OAPI, contrats, recouvrement. 4 étapes : projet, options, pièces KYC, paiement Mobile Money.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

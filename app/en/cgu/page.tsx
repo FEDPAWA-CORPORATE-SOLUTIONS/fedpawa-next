@@ -7,11 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'FEDPAWA CORPORATE SOLUTIONS | Terms of Service and Sale';
-const description = 'FEDPAWA Terms of Service and Sale: client accounts, subscriptions, Mobile Money payments, mutual commitments, termination and liability.';
+const title = "FEDPAWA CORPORATE SOLUTIONS | Terms of Service and Sale";
+const description =
+  "FEDPAWA CORPORATE SOLUTIONS SARL Terms of Service and Sale: client accounts, subscriptions, Mobile Money payments, mutual commitments, termination, liability, OHADA and Cameroonian law, Douala courts.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/cgu",

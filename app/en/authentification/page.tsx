@@ -11,7 +11,9 @@ const title = 'Client Portal | FEDPAWA CORPORATE SOLUTIONS';
 const description = 'Log in to your FEDPAWA client portal: procedure tracking, KYC documents, scanned mail, invoices and tax certificates.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

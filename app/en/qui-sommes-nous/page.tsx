@@ -7,13 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title =
-  "FEDPAWA CORPORATE SOLUTIONS | The Strategic Partner for Your Business";
+const title = "FEDPAWA CORPORATE SOLUTIONS | About Us";
 const description =
-  "Discover FEDPAWA Corporate Solutions, an expert firm in OHADA company formation, OAPI trademark filings and tax advisory in Cameroon.";
+  "About FEDPAWA CORPORATE SOLUTIONS - The strategic partner for your business in Cameroon: domiciliation, company formation, tax advisory, OAPI, contracts.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/qui-sommes-nous",

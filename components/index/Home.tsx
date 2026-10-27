@@ -171,55 +171,63 @@ export default function Home({ locale = "fr" }: HomeProps) {
                 {t.heroCtaSecondary}
               </Link>
             </div>
-            <div className="hero-proof">
-              <span>
-                <strong>{t.heroProofOnline}</strong>
-                {t.heroProofOnlineLabel}
-              </span>
-              <span>
-                <strong>{t.heroProofStars}</strong>
-                {t.heroProofStarsLabel}
-              </span>
-              <span>
-                <strong>{t.heroProof247}</strong>
-                {t.heroProof247Label}
-              </span>
-            </div>
-          </div>
-          <div className="hero-media">
-            <div className="hero-frame-border"></div>
-            <div className="hero-image-frame">
-              <picture>
-                <source
-                  type="image/webp"
-                  srcSet="/assets/images/home_hero.webp"
-                />
-                {/* eslint-disable-next-line @next/next/no-img-element -- <Image> interdit: dimensions source inconnues */}
-                <img
-                  src="/assets/images/home_hero.jpg"
-                  alt="Professionnels camerounais au bureau à Douala"
-                />
-              </picture>
-            </div>
-            <div className="hero-float-card">
-              <div className="float-icon">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                >
-                  <path d="M3 21h18" />
-                  <path d="M5 21V8l7-5 7 5v13" />
-                  <path d="M9 21v-6h6v6" />
-                </svg>
+            {/* Bandeau preuves : FR uniquement — absent du source EN
+                (règle JAMAIS INVENTER : pas de traduction inventée). */}
+            {locale === "fr" && (
+              <div className="hero-proof">
+                <span>
+                  <strong>{t.heroProofOnline}</strong>
+                  {t.heroProofOnlineLabel}
+                </span>
+                <span>
+                  <strong>{t.heroProofStars}</strong>
+                  {t.heroProofStarsLabel}
+                </span>
+                <span>
+                  <strong>{t.heroProof247}</strong>
+                  {t.heroProof247Label}
+                </span>
               </div>
-              <div>
-                <strong>{t.heroFloatTitle}</strong>
-                <span>{t.heroFloatText}</span>
+            )}
+          </div>
+          {/* Visuel hero + carte flottante : FR uniquement — le hero EN
+              du source n'a pas de hero-media (parité index.php EN). */}
+          {locale === "fr" && (
+            <div className="hero-media">
+              <div className="hero-frame-border"></div>
+              <div className="hero-image-frame">
+                <picture>
+                  <source
+                    type="image/webp"
+                    srcSet="/assets/images/home_hero.webp"
+                  />
+                  {/* eslint-disable-next-line @next/next/no-img-element -- <Image> interdit: dimensions source inconnues */}
+                  <img
+                    src="/assets/images/home_hero.jpg"
+                    alt="Professionnels camerounais au bureau à Douala"
+                  />
+                </picture>
+              </div>
+              <div className="hero-float-card">
+                <div className="float-icon">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                  >
+                    <path d="M3 21h18" />
+                    <path d="M5 21V8l7-5 7 5v13" />
+                    <path d="M9 21v-6h6v6" />
+                  </svg>
+                </div>
+                <div>
+                  <strong>{t.heroFloatTitle}</strong>
+                  <span>{t.heroFloatText}</span>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 

@@ -7,11 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'FEDPAWA CORPORATE SOLUTIONS | Contact — Douala, Cameroon';
-const description = 'Get in touch with FEDPAWA: address, opening hours, phone, WhatsApp, email and online form. Reply within 24 hours.';
+const title = "FEDPAWA CORPORATE SOLUTIONS | Contact & Appointments in Douala";
+const description =
+  "Contact FEDPAWA CORPORATE SOLUTIONS SARL - Logpom, Douala. Domiciliation, company formation, tax advisory, OAPI, contracts.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/contact",

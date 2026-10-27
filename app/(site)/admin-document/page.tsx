@@ -13,7 +13,9 @@ const description =
   "Consultation et téléchargement sécurisés de documents (espace administration FEDPAWA).";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: false },
   alternates: {

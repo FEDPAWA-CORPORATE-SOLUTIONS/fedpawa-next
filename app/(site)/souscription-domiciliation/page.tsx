@@ -11,7 +11,9 @@ const title = 'Souscription Domiciliation | FEDPAWA CORPORATE SOLUTIONS';
 const description = "Souscrivez à la domiciliation d'entreprise FEDPAWA : 6 étapes (entreprise, représentant, contact, formule, documents KYC, facturation), packs nationaux et internationaux, paiement Mobile Money.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

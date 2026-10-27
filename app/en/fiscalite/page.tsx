@@ -7,11 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'FEDPAWA CORPORATE SOLUTIONS | Legal and Tax Advisory for Companies';
-const description = 'Legal and tax advisory and monitoring for companies in Cameroon: DGI e-filings, tax returns, optimisation and representation.';
+const title = "FEDPAWA CORPORATE SOLUTIONS | Legal & Tax Advisory";
+const description =
+  "Legal and tax advisory and monitoring for companies in Cameroon. DGI e-filings, annual tax return (DSF), Tax Compliance Certificate (ACF) and administrative representation before the DGI.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/fiscalite",

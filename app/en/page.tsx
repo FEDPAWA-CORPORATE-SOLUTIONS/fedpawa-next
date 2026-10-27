@@ -12,7 +12,9 @@ const description =
   "FEDPAWA CORPORATE SOLUTIONS — Business infrastructure and operational hub in Douala, Logpom: domiciliation, company formation, tax advisory, OAPI, contracts and a 100% online client area.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en",

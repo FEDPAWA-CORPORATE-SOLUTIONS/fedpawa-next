@@ -7,11 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'FEDPAWA CORPORATE SOLUTIONS | Privacy Policy';
-const description = 'How FEDPAWA collects, uses and protects your personal data: KYC, Mobile Money payments, scanned mail, cookies and your rights.';
+const title = "FEDPAWA CORPORATE SOLUTIONS | Privacy Policy";
+const description =
+  "FEDPAWA CORPORATE SOLUTIONS SARL Privacy Policy: data collected, purposes, retention periods, your access, rectification and erasure rights, cookies and how to contact us.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/politique-confidentialite",

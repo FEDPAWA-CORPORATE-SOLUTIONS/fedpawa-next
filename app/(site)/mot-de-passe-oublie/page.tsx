@@ -11,7 +11,9 @@ const title = 'Mot de passe oublié | FEDPAWA CORPORATE SOLUTIONS';
 const description = 'Réinitialisez votre mot de passe Espace Client FEDPAWA : code de vérification par e-mail, nouveau mot de passe sécurisé.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

@@ -10,7 +10,9 @@ const description =
   "Votre espace client FEDPAWA : abonnement, factures, contrats, courriers scannés, dossier KYC, messagerie et support.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: false },
   alternates: {

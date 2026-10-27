@@ -12,7 +12,9 @@ const description =
   "Corporate, commercial, employment, service and confidentiality (NDA) contract drafting by FEDPAWA legal experts. From 100,000 FCFA.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/contrats",

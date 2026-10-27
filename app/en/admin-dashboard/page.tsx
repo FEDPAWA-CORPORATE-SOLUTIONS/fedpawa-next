@@ -11,7 +11,9 @@ const description =
   "FEDPAWA admin dashboard: activity overview, clients, subscriptions, payments, mail handling, KYC validation, tickets and internal messaging.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: false },
   alternates: {

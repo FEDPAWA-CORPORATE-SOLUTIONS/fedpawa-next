@@ -152,14 +152,16 @@ export const indexEn: PageDict = {
     "Whether you are a local entrepreneur, a growing SME or a multinational opening a subsidiary in Central Africa, we provide a registered office, mail management, a telephone secretariat and high-end offices — without the costs of a traditional commercial lease.",
   heroCtaPrimary: "Discover our services",
   heroCtaSecondary: "Contact us",
-  heroProofOnline: "100 %",
-  heroProofOnlineLabel: "en ligne",
-  heroProofStars: "4,9★",
-  heroProofStarsLabel: "avis clients",
-  heroProof247: "24/7",
-  heroProof247Label: "espace client",
-  heroFloatTitle: "Un hub pensé pour vous",
-  heroFloatText: "Adresse, démarches et suivi au même endroit.",
+  // Bandeau preuves + carte flottante : FR uniquement (absent du source
+  // EN — jamais inventés) ; clés réservées, non rendues sur /en.
+  heroProofOnline: "",
+  heroProofOnlineLabel: "",
+  heroProofStars: "",
+  heroProofStarsLabel: "",
+  heroProof247: "",
+  heroProof247Label: "",
+  heroFloatTitle: "",
+  heroFloatText: "",
 
   // SERVICES (expertise tabs 01–05, source EN)
   servicesKicker: "Our expertise",

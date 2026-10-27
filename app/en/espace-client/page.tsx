@@ -11,7 +11,9 @@ const description =
   "Your FEDPAWA client area: subscription, invoices, contracts, scanned mail, KYC documents, messaging and support.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: false },
   alternates: {

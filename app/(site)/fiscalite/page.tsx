@@ -11,7 +11,9 @@ const title = 'FEDPAWA CORPORATE SOLUTIONS | Conseil Juridique & Fiscal';
 const description = 'Conseil et suivi juridique et fiscal des entreprises au Cameroun : télé-déclarations DGI, liasse fiscale, optimisation et représentation.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/fiscalite",

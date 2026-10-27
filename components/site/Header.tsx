@@ -161,7 +161,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               <small>Corporate Solutions</small>
             </span>
           </Link>
-          <NavLinks />
+          <NavLinks locale={locale} />
           <button
             className={`menu-toggle${mobileOpen ? " open" : ""}`}
             id="menuToggle"

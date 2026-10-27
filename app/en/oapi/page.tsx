@@ -12,7 +12,9 @@ const description =
   "Trademark, logo, application and software registration with OAPI. Protect your intellectual property across francophone Africa.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/oapi",

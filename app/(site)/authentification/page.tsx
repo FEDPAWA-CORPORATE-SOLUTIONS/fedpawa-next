@@ -11,7 +11,9 @@ const title = 'Espace Client | FEDPAWA CORPORATE SOLUTIONS';
 const description = 'Connectez-vous à votre espace client FEDPAWA : suivi des démarches, documents KYC, courriers scannés, factures et attestations fiscales.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

@@ -1,4 +1,6 @@
 // Tunnel souscription en — conversion de tunnel_souscription.php (vague C).
+// PAS de source EN pour ce flux (règle : JAMAIS INVENTER) :
+// contenu + méta servis en FR (copie exacte de la page FR).
 // Routing ?service=&pack= côté client (comportement tunnel.js source) :
 // la page reste statique, le panier s'initialise à l'hydratation.
 
@@ -9,11 +11,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title = 'Subscription Tunnel | FEDPAWA CORPORATE SOLUTIONS';
-const description = 'Subscribe to FEDPAWA services: company formation, tax, OAPI, contracts, debt collection. 4 steps: project, options, KYC documents, Mobile Money payment.';
+const title = "Tunnel de Souscription | FEDPAWA CORPORATE SOLUTIONS";
+const description =
+  "Souscrivez à vos services FEDPAWA : création d'entreprise, fiscalité, OAPI, contrats, recouvrement. 4 étapes : projet, options, pièces KYC, paiement Mobile Money.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   robots: { index: false, follow: true },
   alternates: {

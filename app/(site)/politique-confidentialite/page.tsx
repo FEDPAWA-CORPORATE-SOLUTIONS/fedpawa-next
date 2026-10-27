@@ -11,7 +11,9 @@ const title = 'FEDPAWA CORPORATE SOLUTIONS | Politique de Confidentialité';
 const description = 'Comment FEDPAWA collecte, utilise et protège vos données personnelles : KYC, paiements Mobile Money, courriers numérisés, cookies et vos droits.';
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/politique-confidentialite",

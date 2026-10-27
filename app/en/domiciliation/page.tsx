@@ -7,13 +7,14 @@ import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
-const title =
-  "FEDPAWA CORPORATE SOLUTIONS | Domiciliation for Legal Entities & Companies";
+const title = "FEDPAWA CORPORATE SOLUTIONS | Business Domiciliation in Douala";
 const description =
-  "First-class business address in Douala Logpom: prestigious registered office, mail handling, meeting rooms. From XAF 35,000/month excl. tax.";
+  "Business domiciliation in Douala Logpom: prestigious business address, mail handling, meeting rooms. From 35,000 FCFA/month.";
 
 export const metadata: Metadata = {
-  title,
+  // Title déjà complet (suffixe marque inclus) — absolute évite la
+  // duplication du template « %s | FEDPAWA CORPORATE SOLUTIONS ».
+  title: { absolute: title },
   description,
   alternates: {
     canonical: "/en/domiciliation",
