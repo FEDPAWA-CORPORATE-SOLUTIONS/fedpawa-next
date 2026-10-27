@@ -34,11 +34,46 @@ const SUBJECT_KEYS = [
   { key: "subjectAutre", value: "Autre" },
 ] as const;
 
-/** Mappe ?service=fiscalite-devis → option "Fiscalité" du select. */
+/**
+ * Normalise une chaîne : minuscules + suppression des accents/diacritiques
+ * (é→e…) via NFD + strip des combining marks — robuste sur tous les
+ * navigateurs cibles (Intl manquant sur certains anciens WebViews).
+ */
+function normalizeKey(s: string): string {
+  return s
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+/**
+ * Mappe ?service=… → option du select sujet.
+ * Parité source : les CTA vitrines envoient fiscalite-devis,
+ * fiscalite-reel, oapi-recherche, oapi-brevet, audit-juridique.
+ * Normalisation des DEUX côtés (accents + casse) : "Fiscalité"
+ * (valeur du select) doit matcher "fiscalite" (segment URL).
+ * Roots non triviaux mappés explicitement (audit-juridique →
+ * Contrats : segment "audit" inexistant dans les libellés).
+ */
+const SERVICE_ROOT_TO_SUBJECT: Record<string, string> = {
+  "audit-juridique": "Contrats",
+};
+
 function subjectFromQuery(queryService: string | null): string {
   if (!queryService) return "";
   const root = queryService.split("-")[0];
-  const hit = SUBJECT_KEYS.find((s) => s.value.toLowerCase().startsWith(root));
+  // Mapping explicite prioritaire (roots sans rapport avec un libellé)
+  const explicit = SERVICE_ROOT_TO_SUBJECT[normalizeKey(queryService)];
+  if (explicit) return explicit;
+  const normRoot = normalizeKey(root);
+  const hit = SUBJECT_KEYS.find(
+    (s) =>
+      normalizeKey(s.value).startsWith(normRoot) ||
+      // "creation" vs "Création d'entreprise" : le libellé complet normalisé
+      // doit aussi matcher la query entière normalisée (ex. "creation").
+      normalizeKey(s.value).split(" ")[0] === normRoot,
+  );
   return hit ? hit.value : "";
 }
 

@@ -7,8 +7,9 @@
 import Link from "next/link";
 import NavLinks from "./NavLinks";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { getDictionary, type Locale } from "@/lib/i18n";
-import { routesFor } from "@/lib/routes";
+import { mirrorHref, routesFor } from "@/lib/routes";
 import { getToken, logout } from "@/lib/auth";
 
 export interface HeaderProps {
@@ -109,7 +110,11 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
     void logout(routes.auth);
   };
 
-  const langHref = locale === "en" ? "/" : "/en";
+  // Page jumelle FR↔EN depuis la route courante (parité main.js
+  // source l.147-153 switchLanguage : la page est conservée,
+  // /fiscalite ↔ /en/fiscalite, / ↔ /en).
+  const pathname = usePathname();
+  const langHref = mirrorHref(pathname, locale === "en" ? "fr" : "en");
 
   return (
     <>
