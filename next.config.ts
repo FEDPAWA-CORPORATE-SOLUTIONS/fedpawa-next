@@ -30,6 +30,10 @@ const csp = [
   "base-uri 'self'",
   "form-action 'self'",
   "frame-ancestors 'none'",
+  // PWA — service worker /sw.js servi same-origin (public/).
+  "worker-src 'self'",
+  // Manifest lié par Next (app/manifest.ts) + SW /sw.js.
+  "manifest-src 'self'",
 ].join("; ");
 
 const nextConfig: NextConfig = {

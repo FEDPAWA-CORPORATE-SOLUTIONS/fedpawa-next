@@ -8,6 +8,7 @@ import "../globals.css";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import RevealOnScroll from "@/components/site/RevealOnScroll";
+import PwaProvider from "@/components/pwa/PwaProvider";
 import { getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/routes";
 
@@ -132,9 +133,12 @@ export default function EnRootLayout({ children }: { children: React.ReactNode }
       <body>
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var p=location.pathname;var m=document.querySelectorAll(".main-nav a[href]");for(var i=0;i<m.length;i++){var a=m[i];var h=a.getAttribute("href");if(!h||h==="#")continue;var act=(p===h)||(h!=="/"&&p.indexOf(h+"/")===0);if(act){a.classList.add("is-active");var dd=a.closest(".nav-dropdown");if(dd){var t=dd.querySelector(":scope>a.nav-link");if(t)t.classList.add("is-active")}}}}catch(e){}})();` }} />
         {/* is-active polyfill: parité PHP (état actif rendu avant JS, aucun flash) */}
-        <Header locale="en" />
-        <main>{children}</main>
-        <Footer locale="en" />
+        {/* PWA : enregistre /sw.js + bouton notifications (contexte) */}
+        <PwaProvider locale="en">
+          <Header locale="en" />
+          <main>{children}</main>
+          <Footer locale="en" />
+        </PwaProvider>
         {/* Réplique du §4 de main.js : reveal au scroll des .reveal */}
         <RevealOnScroll />
       </body>

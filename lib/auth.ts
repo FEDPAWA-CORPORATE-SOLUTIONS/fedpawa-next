@@ -138,8 +138,37 @@ export function fetchMe(): Promise<MeResponse> {
  * (auth:sanctum, Bearer automatique) puis suppression du token
  * local AVANT la redirection vers la page d'authentification.
  * Erreurs réseau ignorées — le token local est toujours purgé.
+ *
+ * PWA : avant la purge, best-effort POST /api/v1/push/unsubscribe
+ * {endpoint} pour retirer la souscription push côté API (l'endpoint
+ * n'est plus utilisable sans token). Unsubscribe navigateur +
+ * purge flag refus : la prochaine session pourra re-souscrire.
  */
 export async function logout(authPath: string): Promise<void> {
+  // PWA — best-effort : retire la souscription push côté serveur.
+  try {
+    if ("serviceWorker" in navigator) {
+      const registration = await navigator.serviceWorker.ready;
+      const sub = await registration.pushManager.getSubscription();
+      if (sub) {
+        await Promise.allSettled([
+          sub.unsubscribe(),
+          request<unknown>("/api/v1/push/unsubscribe", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...authHeaders(),
+            },
+            credentials: "include",
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          }),
+        ]);
+      }
+    }
+  } catch {
+    // Push = best-effort : ne bloque jamais la déconnexion.
+  }
+  window.localStorage.removeItem("fedpawa-push-dismissed");
   try {
     await request<unknown>("/api/v1/auth/logout", {
       method: "POST",

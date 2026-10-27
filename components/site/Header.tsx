@@ -11,6 +11,8 @@ import { usePathname } from "next/navigation";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { mirrorHref, routesFor } from "@/lib/routes";
 import { getToken, logout } from "@/lib/auth";
+import { usePwaNotifications } from "@/components/pwa/PwaProvider";
+import NotificationBell from "@/components/dashboard/NotificationBell";
 
 export interface HeaderProps {
   locale?: Locale;
@@ -35,6 +37,9 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   // (parité main.js source : défaut dark, lecture au montage client).
   const [darkMode, setDarkMode] = useState(true);
   const [connected, setConnected] = useState(false);
+  // PWA — bouton notifications (masqué si permission != "default"
+  // ou refus persistant ; logique dans PwaProvider).
+  const pwa = usePwaNotifications();
 
   const servicesActive = [
     "services",
@@ -178,8 +183,12 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             <span></span>
             <span></span>
           </button>
-          {/* nav-actions : état de connexion — token Sanctum (localStorage) */}
+          {/* nav-actions : état de connexion — token Sanctum (localStorage).
+              Cloche notifications (vague E) si connecté, avant le CTA login. */}
           <div className="nav-actions" id="navActions">
+            {connected && (
+              <NotificationBell locale={locale} variant="desktop" />
+            )}
             {!connected && (
               <Link className="nav-login" href={routes.auth}>
                 {locale === "en" ? "Sign in" : "Se Connecter"}
@@ -250,7 +259,39 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             </Link>
           )}
 
+          {/* Cloche notifications mobile (vague E) — item du menu, si connecté. */}
+          {connected && (
+            <NotificationBell locale={locale} variant="mobile" />
+          )}
+
           <div className="mobile-nav-toggles">
+            {/* PWA — « Activer les notifications » sous le lang-toggle
+                (style .lang-toggle existant ; masqué si permission
+                != default ou refus persistant). */}
+            {pwa.canAsk && (
+              <button
+                type="button"
+                className="lang-toggle mobile-lang-toggle mobile-push-toggle"
+                id="mobilePushToggle"
+                aria-label={pwa.texts.ariaLabel}
+                title={pwa.texts.activate}
+                disabled={pwa.busy}
+                onClick={() => {
+                  void pwa.enableNotifications();
+                }}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  style={{ width: 16, height: 16 }}
+                >
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </button>
+            )}
             <button
               className="mode-toggle mobile-mode-toggle"
               id="mobileModeToggle"
