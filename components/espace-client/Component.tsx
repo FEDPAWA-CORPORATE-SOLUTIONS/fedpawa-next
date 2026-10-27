@@ -661,6 +661,13 @@ function TabDocuments() {
     async (files: FileList | File[]) => {
       const list = Array.from(files);
       if (!list.length) return;
+      // Parité back (KycSubmitRequest/FileUploader) : max 10 Mo par fichier.
+      const MAX_BYTES = 10 * 1024 * 1024;
+      const tooBig = list.find((f) => f.size > MAX_BYTES);
+      if (tooBig) {
+        toast(`« ${tooBig.name} » dépasse 10 Mo (maximum autorisé).`, "error");
+        return;
+      }
       const fd = new FormData();
       // le backend attend exactement ces deux champs (KycService)
       if (list[0]) fd.append("piece_identite", list[0], list[0].name || "identite.pdf");
@@ -719,7 +726,7 @@ function TabDocuments() {
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
           <h4>Glissez-déposez vos fichiers ici</h4>
-          <p>ou cliquez pour parcourir. Formats acceptés : PDF, PNG, JPG (Max 5Mo)</p>
+          <p>ou cliquez pour parcourir. Formats acceptés : PDF, PNG, JPG (Max 10Mo)</p>
           <input
             ref={fileInputRef}
             type="file"
