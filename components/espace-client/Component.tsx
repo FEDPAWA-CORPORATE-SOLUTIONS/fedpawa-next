@@ -16,7 +16,9 @@ import {
   apiAuthGetBlob,
   apiAuthPost,
   apiAuthPostForm,
+  getToken,
 } from "@/lib/auth";
+import { markNotificationsRead } from "@/lib/notifications";
 import type {
   ApiCourrier,
   ApiFacture,
@@ -104,10 +106,42 @@ type TabId =
   | "profil"
   | "support";
 
+// ---------- Notifications (vague E) ----------
+// Marquage auto best-effort : visiter un onglet marque lues les
+// notifications du type correspondant (?tab=courriers → type
+// courrier, POST /notifications/read {types:[…]}).
+const TAB_TO_NOTIF_TYPE: Partial<Record<TabId, string>> = {
+  courriers: "courrier",
+  factures: "facture",
+  documents: "kyc",
+  abonnement: "abonnement",
+  support: "support",
+};
+
 export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
   const routes = routesFor(locale);
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
   void routes;
+
+  // ?tab=… : ouvre directement l'onglet demandé (ex. ?tab=courriers
+  // depuis une notification). Client-only, après montage.
+  useEffect(() => {
+    const wanted = new URLSearchParams(window.location.search).get("tab");
+    if (wanted && (["dashboard", "abonnement", "factures", "contrats", "documents", "courriers", "profil", "support"] as TabId[]).includes(wanted as TabId)) {
+      setActiveTab(wanted as TabId);
+    }
+  }, []);
+
+  // Onglet visité → notifications de ce type marquées lues (best-effort,
+  // silencieux si l'API échoue / 401).
+  useEffect(() => {
+    const type = TAB_TO_NOTIF_TYPE[activeTab];
+    if (!type || !getToken()) return;
+    markNotificationsRead({ types: [type] }).catch(() => {
+      /* best-effort */
+    });
+  }, [activeTab]);
+
   return (
     <DashboardUIProvider>
       <div className="db-layout">
