@@ -40,6 +40,9 @@ export function useUserPageGuard(locale: Locale = "fr"): UserGuardStatus {
         }
         // Anonyme : expulsion vers l'authentification avec ?next=
         // (window.location.replace = parité source auth-guard.js).
+        // next = pathname+search courant : forcément interne, mais la
+        // garde isSafeNextPath est appliquée par le consommateur
+        // (Auth.tsx) — ici on n'introduit jamais d'URL externe.
         setStatus("denied");
         const routes = routesFor(locale);
         const next = encodeURIComponent(

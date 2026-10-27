@@ -18,7 +18,7 @@ import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
 import { setToken } from "@/lib/auth";
-import { routesFor } from "@/lib/routes";
+import { routesFor, isSafeNextPath } from "@/lib/routes";
 
 export interface AuthProps {
   locale?: Locale;
@@ -111,13 +111,16 @@ export default function Auth({ locale = "fr" }: AuthProps) {
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("next")
           : null;
+      // Garde anti open-redirect (audit #3, P0 — parité auth.js source
+      // qui validait next par regex) : chemin interne UNIQUEMENT.
+      const safeNext = isSafeNextPath(next) ? next : null;
       setTimeout(() => {
         // Admin: redirect backend explicite. Client: ?next= puis espace client.
         const base =
           data.redirect === "admin_dashboard.html"
             ? routes.adminDashboard
             : data.redirect || routes.espaceClient;
-        window.location.href = next ? next : base;
+        window.location.href = safeNext ?? base;
       }, 800);
     } catch (err) {
       if (err instanceof ApiError && err.status > 0) {

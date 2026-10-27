@@ -116,6 +116,15 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
   const svcBool = (svc: string, field: string): boolean =>
     (serviceData[svc]?.[field] as boolean) ?? false;
 
+  // Démarche « entreprise existante » (Transformation/Restructuration/
+  // Légalisation) → bloc RCCM/NIU actuels visible ET required (parité
+  // tunnel.js initServiceFormConditionals : démarche vide = création).
+  const isExistingCreationDemarche = (): boolean => {
+    const demarche =
+      svcVal("creation", "demarche") || "Création d'une nouvelle structure";
+    return !/Création d'une nouvelle structure/i.test(demarche);
+  };
+
   const setCom = (k: keyof Common, v: string) => setCommon((c) => ({ ...c, [k]: v }));
 
   // ---------- Routing ?service=&pack= + SKIP KYC (client, cf. tunnel.js) ----------
@@ -197,14 +206,19 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
       if (svc === "creation") {
         req(svcVal("creation", "denomination"), t.creationDenomination);
         if (!svcBool("creation", "existante")) {
-          // démarche ≠ création → RCCM/NIU actuels requis
-          if (!/Création d'une nouvelle structure/i.test(svcVal("creation", "demarche"))) {
+          // démarche ≠ création → RCCM/NIU actuels requis.
+          // Parité tunnel.js (initServiceFormConditionals) : les champs du
+          // bloc conditionnel replié ne sont required QUE si visible —
+          // démarche vide au 1er chargement = « création » = bloc caché.
+          if (isExistingCreationDemarche()) {
             req(svcVal("creation", "rccmActuel"), t.rccmActuel);
             req(svcVal("creation", "niuActuel"), t.niuActuel);
           }
         }
       } else if (svc === "fiscalite") {
         req(svcVal("fiscalite", "denomination"), t.fDenomination);
+        // Parité tunnel.js : NIU/RCCM requis seulement si l'utilisateur
+        // n'a PAS coché « je ne dispose pas encore de NIU » (bloc visible).
         if (!svcBool("fiscalite", "noNiu")) {
           req(svcVal("fiscalite", "rccm"), t.fRccm);
           req(svcVal("fiscalite", "niu"), t.fNiu);
@@ -607,7 +621,7 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
                       </div>
                     </div>
                   </div>
-                  {!/Création d'une nouvelle structure/i.test(svcVal("creation", "demarche") || "Création d'une nouvelle structure") && (
+                  {!svcBool("creation", "existante") && !isExistingCreationDemarche() && (
                     <div
                       id="creation-existante"
                       style={{ marginTop: 20, padding: 12, background: "var(--color-bg-alt)", borderRadius: 8, border: "1px dashed var(--color-border)" }}
