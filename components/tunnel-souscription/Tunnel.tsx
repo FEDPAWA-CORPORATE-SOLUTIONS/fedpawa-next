@@ -17,8 +17,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
-import { apiPost, ApiError } from "@/lib/api";
-import { apiAuthPost } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { apiAuthPost, fetchMe } from "@/lib/auth";
 import { routesFor } from "@/lib/routes";
 import PayModal from "@/components/souscription-domiciliation/PayModal";
 import { PLANS, SERVICE_NAME_KEYS, OPTION_CARDS, type ServiceId } from "./plans";
@@ -145,10 +145,12 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
       window.location.replace(routes.home + "#services");
       return;
     }
-    // SKIP KYC si déjà fourni (/api/v1/auth/me → kyc_status).
+    // SKIP KYC si déjà fourni (GET /api/v1/auth/me → kyc_status).
     (async () => {
       try {
-        const me = await apiPost<{ authenticated?: boolean; kyc_status?: string }>("/api/v1/auth/me", {});
+        // fetchMe = GET + Bearer : le POST non authentifié visait une route
+        // GET et n'envoyait pas le token → kyc_status n'arrivait jamais.
+        const me = await fetchMe();
         if (me && me.authenticated && me.kyc_status) setKycDone(me.kyc_status);
       } catch {
         /* dégradation : étape KYC normale */

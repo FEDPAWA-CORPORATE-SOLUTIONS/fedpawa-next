@@ -19,6 +19,9 @@ export interface MeResponse {
   authenticated: boolean;
   role?: UserRole;
   name?: string;
+  email?: string;
+  /** Statut du dernier dossier KYC (null si jamais soumis) — parité /api/me. */
+  kyc_status?: string | null;
 }
 
 /** Lit le token Sanctum (null si absent). Client-only. */

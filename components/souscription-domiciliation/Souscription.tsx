@@ -17,8 +17,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
-import { apiPost, ApiError } from "@/lib/api";
-import { apiAuthPost } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { apiAuthPost, fetchMe } from "@/lib/auth";
 import { routesFor } from "@/lib/routes";
 import PayModal from "./PayModal";
 import {
@@ -131,7 +131,9 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
     // SKIP KYC si déjà fait dans l'espace client (GET /api/v1/auth/me → kyc_status).
     (async () => {
       try {
-        const me = await apiPost<{ authenticated?: boolean; kyc_status?: string }>("/api/v1/auth/me", {});
+        // fetchMe = GET + Bearer (l'ancien POST non authentifié était rejeté
+        // par une route GET et n'envoyait pas le token).
+        const me = await fetchMe();
         if (me && me.authenticated && me.kyc_status) setKycDone(me.kyc_status);
       } catch {
         /* dégradation : étape KYC normale */

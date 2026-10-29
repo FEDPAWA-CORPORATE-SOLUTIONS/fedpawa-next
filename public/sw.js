@@ -127,6 +127,13 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // API : JAMAIS de cache. Les réponses /api/* sont authentifiées (Bearer) et
+  // propres à un compte ; les mettre en cache (SWR ci-dessous) les servirait à
+  // un autre utilisateur du même navigateur. Pas de respondWith = réseau natif.
+  if (url.pathname.startsWith('/api/') || request.headers.get('authorization')) {
+    return;
+  }
+
   // Assets immutables (hashés) : cache-first.
   if (
     url.pathname.startsWith('/_next/static/') ||

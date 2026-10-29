@@ -115,7 +115,9 @@ const TAB_TO_NOTIF_TYPE: Partial<Record<TabId, string>> = {
   factures: "facture",
   documents: "kyc",
   abonnement: "abonnement",
-  support: "support",
+  // "ticket" est le type réel en base (PushService::TYPES) ; l'onglet s'appelle
+  // "support" côté UI — envoyer "support" faisait répondre 400 à l'API.
+  support: "ticket",
 };
 
 export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
