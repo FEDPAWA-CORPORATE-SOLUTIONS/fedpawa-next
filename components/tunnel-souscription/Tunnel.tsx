@@ -19,6 +19,8 @@ import { useEffect, useMemo, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { ApiError } from "@/lib/api";
 import { apiAuthPost, fetchMe } from "@/lib/auth";
+import { emailNonVerifieMessage, isEmailNonVerifieError } from "@/lib/verification";
+import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 import { routesFor } from "@/lib/routes";
 import PayModal from "@/components/souscription-domiciliation/PayModal";
 import { PLANS, SERVICE_NAME_KEYS, OPTION_CARDS, type ServiceId } from "./plans";
@@ -87,6 +89,7 @@ const INITIAL_COMMON: Common = {
 export default function Tunnel({ locale = "fr" }: TunnelProps) {
   const t = getPageDictionary(locale, "tunnel_souscription");
   const routes = routesFor(locale);
+  const verif = useEmailVerification();
   const [step, setStep] = useState(1);
   const [cart, setCart] = useState<Cart>(EMPTY_CART);
   const [common, setCommon] = useState<Common>(INITIAL_COMMON);
@@ -292,6 +295,12 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
     api?: Record<string, unknown>;
   }> {
     if (!cart.service) return { ok: false, message: t.noService };
+    // Blocage client si e-mail non vérifié (403 email_non_verifie serveur) :
+    // ré-affiche la modal bloquante.
+    if (verif.unverified) {
+      verif.requestGate();
+      return { ok: false, message: emailNonVerifieMessage(locale) };
+    }
     try {
       const data = await apiAuthPost<Record<string, unknown>>("/api/v1/souscription", {
         service: cart.service,
@@ -344,6 +353,12 @@ export default function Tunnel({ locale = "fr" }: TunnelProps) {
         api: apiPayload,
       };
     } catch (err) {
+      if (isEmailNonVerifieError(err)) {
+        // 403 email_non_verifie intercepté → ré-affiche la modal + re-lit /me.
+        verif.requestGate();
+        void verif.refresh();
+        return { ok: false, message: emailNonVerifieMessage(locale) };
+      }
       if (err instanceof ApiError) {
         const b = err.body as { message?: string; error?: string } | null;
         return { ok: false, message: b?.message || b?.error || t.submitKo };

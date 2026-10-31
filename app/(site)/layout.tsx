@@ -14,6 +14,7 @@ import Footer from "@/components/site/Footer";
 import RevealOnScroll from "@/components/site/RevealOnScroll";
 import AnalyticsBeacon from "@/components/AnalyticsBeacon";
 import PwaProvider from "@/components/pwa/PwaProvider";
+import EmailVerificationProvider from "@/components/verification/EmailVerificationProvider";
 import { getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/routes";
 
@@ -157,11 +158,14 @@ export default function FrRootLayout({ children }: { children: React.ReactNode }
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var p=location.pathname;var m=document.querySelectorAll(".main-nav a[href]");for(var i=0;i<m.length;i++){var a=m[i];var h=a.getAttribute("href");if(!h||h==="#")continue;var act=(p===h)||(h!=="/"&&p.indexOf(h+"/")===0);if(act){a.classList.add("is-active");var dd=a.closest(".nav-dropdown");if(dd){var t=dd.querySelector(":scope>a.nav-link");if(t)t.classList.add("is-active")}}}}catch(e){}})();` }} />
         {/* is-active polyfill: parité PHP (état actif rendu avant JS, aucun flash) */}
         {/* PWA : enregistre /sw.js + bouton notifications (contexte) */}
-        <PwaProvider locale="fr">
-          <Header locale="fr" />
-          <main>{children}</main>
-          <Footer locale="fr" />
-        </PwaProvider>
+        {/* Vérification e-mail : statut email_verified (source /auth/me) */}
+        <EmailVerificationProvider>
+          <PwaProvider locale="fr">
+            <Header locale="fr" />
+            <main>{children}</main>
+            <Footer locale="fr" />
+          </PwaProvider>
+        </EmailVerificationProvider>
         {/* Réplique du §4 de main.js : reveal au scroll des .reveal */}
         <RevealOnScroll />
         {/* Mesure d'audience navigateur — inerte sauf si NEXT_PUBLIC_ANALYTICS_ENABLED=true au build */}

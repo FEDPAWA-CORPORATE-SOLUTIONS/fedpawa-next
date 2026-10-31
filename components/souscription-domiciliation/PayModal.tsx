@@ -10,6 +10,8 @@
 import { useEffect, useState } from "react";
 import { apiPost, ApiError } from "@/lib/api";
 import { apiAuthGetBlob, apiAuthPost, setToken } from "@/lib/auth";
+import { isEmailNonVerifieError } from "@/lib/verification";
+import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 
 export interface PayModalConfig {
   label: string;
@@ -44,6 +46,7 @@ function fmt(n: number) {
 
 export default function PayModal({ config, onClose }: { config: PayModalConfig; onClose: () => void }) {
   const L = config.labels;
+  const verif = useEmailVerification();
   const [screen, setScreen] = useState<Screen | null>(null);
   const [loading, setLoading] = useState(false);
   const [momo, setMomo] = useState({ phone: "", operator: "" });
@@ -152,8 +155,15 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
       } else {
         setScreen({ kind: "contract", sub, payInfo: data });
       }
-    } catch {
-      setErr(L.payVerifKo);
+    } catch (err) {
+      // 403 email_non_verifie intercepté → ré-affiche la modal bloquante.
+      if (isEmailNonVerifieError(err)) {
+        verif.requestGate();
+        void verif.refresh();
+        setErr((err as ApiError).message);
+      } else {
+        setErr(L.payVerifKo);
+      }
     } finally {
       setLoading(false);
     }
@@ -201,8 +211,15 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
         return;
       }
       setScreen({ kind: "signed", contratUrl: data.contrat_url });
-    } catch {
-      setErr(L.paySignKo);
+    } catch (err) {
+      // 403 email_non_verifie intercepté → ré-affiche la modal bloquante.
+      if (isEmailNonVerifieError(err)) {
+        verif.requestGate();
+        void verif.refresh();
+        setErr((err as ApiError).message);
+      } else {
+        setErr(L.paySignKo);
+      }
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,6 @@
 import type { Metadata } from "next";
 import Home from "@/components/index/Home";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("fr").shared;
 
@@ -16,11 +15,11 @@ export const metadata: Metadata = {
   },
   description: meta.defaultDescription,
   alternates: {
-    canonical: "/",
+    canonical: "https://www.fedpawa.com/",
     languages: {
-      fr: SITE_URL + "/",
-      en: SITE_URL + "/en",
-      "x-default": SITE_URL + "/",
+      fr: "https://www.fedpawa.com/",
+      en: "https://www.fedpawa.com/en/index.php",
+      "x-default": "https://www.fedpawa.com/",
     },
   },
   openGraph: {
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title: meta.defaultTitle,
     description: meta.defaultDescription,
-    url: SITE_URL + "/",
+    url: "https://www.fedpawa.com/",
     locale: "fr_FR",
     alternateLocale: "en_US",
     images: [
@@ -52,13 +51,13 @@ export const metadata: Metadata = {
 const localBusinessJsonLd = {
   "@context": "https://schema.org",
   "@type": ["LocalBusiness", "ProfessionalService"],
-  "@id": SITE_URL + "/#localbusiness",
+  "@id": "https://www.fedpawa.com/#localbusiness.php",
   name: "FEDPAWA CORPORATE SOLUTIONS SARL",
   description:
     "Centre de domiciliation et infrastructure d'affaires à Logpom, Douala : adresse commerciale, gestion de courrier, création d'entreprise, conseil fiscal, OAPI et contrats.",
-  url: SITE_URL + "/",
-  image: SITE_URL + "/assets/images/og-cover.jpg",
-  logo: SITE_URL + "/assets/images/logo.jpg",
+  url: "https://www.fedpawa.com/",
+  image: "https://www.fedpawa.com/assets/images/og-cover.jpg.php",
+  logo: "https://www.fedpawa.com/assets/images/logo.jpg.php",
   telephone: "+237691704802",
   email: "contact@fedpawa.com",
   priceRange: "FCFA 25,000 - FCFA 70,000",

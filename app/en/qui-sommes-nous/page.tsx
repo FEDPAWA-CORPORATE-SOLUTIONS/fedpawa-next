@@ -3,7 +3,6 @@
 import type { Metadata } from "next";
 import About from "@/components/qui-sommes-nous/About";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
@@ -17,11 +16,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/en/qui-sommes-nous",
+    canonical: "https://www.fedpawa.com/en/qui-sommes-nous.php",
     languages: {
-      fr: SITE_URL + "/qui-sommes-nous",
-      en: SITE_URL + "/en/qui-sommes-nous",
-      "x-default": SITE_URL + "/qui-sommes-nous",
+      fr: "https://www.fedpawa.com/qui-sommes-nous.php",
+      en: "https://www.fedpawa.com/en/qui-sommes-nous.php",
+      "x-default": "https://www.fedpawa.com/qui-sommes-nous.php",
     },
   },
   openGraph: {
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/en/qui-sommes-nous",
+    url: "https://www.fedpawa.com/en/qui-sommes-nous.php",
     locale: "en_US",
     alternateLocale: "fr_FR",
     images: [

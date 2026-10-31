@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import Contrats from "@/components/contrats/Contrats";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
+import { ServiceJsonLd } from "@/components/seo/jsonld";
 
 const { meta } = getDictionary("en").shared;
 
@@ -17,11 +17,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/en/contrats",
+    canonical: "https://www.fedpawa.com/en/contrats.php",
     languages: {
-      fr: SITE_URL + "/contrats",
-      en: SITE_URL + "/en/contrats",
-      "x-default": SITE_URL + "/contrats",
+      fr: "https://www.fedpawa.com/contrats.php",
+      en: "https://www.fedpawa.com/en/contrats.php",
+      "x-default": "https://www.fedpawa.com/contrats.php",
     },
   },
   openGraph: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/en/contrats",
+    url: "https://www.fedpawa.com/en/contrats.php",
     locale: "en_US",
     alternateLocale: "fr_FR",
     images: [
@@ -45,5 +45,10 @@ export const metadata: Metadata = {
 };
 
 export default function EnContratsPage() {
-  return <Contrats locale="en" />;
+  return (
+    <>
+      <ServiceJsonLd service="contrats" locale="en" />
+      <Contrats locale="en" />
+    </>
+  );
 }

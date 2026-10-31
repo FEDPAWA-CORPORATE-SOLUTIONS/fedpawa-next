@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import Domiciliation from "@/components/domiciliation/Domiciliation";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
+import { ServiceJsonLd } from "@/components/seo/jsonld";
 
 const { meta } = getDictionary("en").shared;
 
@@ -17,11 +17,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/en/domiciliation",
+    canonical: "https://www.fedpawa.com/en/domiciliation.php",
     languages: {
-      fr: SITE_URL + "/domiciliation",
-      en: SITE_URL + "/en/domiciliation",
-      "x-default": SITE_URL + "/domiciliation",
+      fr: "https://www.fedpawa.com/domiciliation.php",
+      en: "https://www.fedpawa.com/en/domiciliation.php",
+      "x-default": "https://www.fedpawa.com/domiciliation.php",
     },
   },
   openGraph: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/en/domiciliation",
+    url: "https://www.fedpawa.com/en/domiciliation.php",
     locale: "en_US",
     alternateLocale: "fr_FR",
     images: [
@@ -45,5 +45,10 @@ export const metadata: Metadata = {
 };
 
 export default function EnDomiciliationPage() {
-  return <Domiciliation locale="en" />;
+  return (
+    <>
+      <ServiceJsonLd service="domiciliation" locale="en" />
+      <Domiciliation locale="en" />
+    </>
+  );
 }

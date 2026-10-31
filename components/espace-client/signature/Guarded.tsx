@@ -7,6 +7,7 @@
 "use client";
 
 import { useAuthGuard } from "@/components/dashboard/useAuthGuard";
+import VerificationBanner from "@/components/verification/VerificationBanner";
 import type { Locale } from "@/lib/i18n";
 
 export default function SignatureGuarded({
@@ -18,5 +19,10 @@ export default function SignatureGuarded({
 }) {
   const guard = useAuthGuard("client", locale);
   if (guard.status === "checking" || guard.status === "denied") return null;
-  return <>{children}</>;
+  return (
+    <>
+      <VerificationBanner locale={locale} />
+      {children}
+    </>
+  );
 }

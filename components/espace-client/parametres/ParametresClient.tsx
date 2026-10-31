@@ -15,6 +15,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthGuard } from "@/components/dashboard/useAuthGuard";
 import { DashboardUIProvider, useToast } from "@/components/dashboard/UI";
+import VerificationBanner from "@/components/verification/VerificationBanner";
 import { ApiError } from "@/lib/api";
 import {
   fetchNotificationPreferences,
@@ -42,6 +43,8 @@ export default function ParametresClient() {
   }
   return (
     <DashboardUIProvider>
+      {/* Bannière vérification e-mail persistante (CONTRAT-VERIF). */}
+      <VerificationBanner locale="fr" />
       <ParametresNotifications />
     </DashboardUIProvider>
   );

@@ -40,6 +40,7 @@ for i in $(seq 1 20); do
 done
 code="$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:3999/espace-client/parametres || true)"
 echo "GET /espace-client/parametres (nouvelle image) -> $code"
+curl -s -o /dev/null -w 'GET /verification-email (nouvelle image) -> %{http_code}\n' 'http://127.0.0.1:3999/verification-email?token=healthcheck'
 curl -s -o /dev/null -w 'GET /manifest.webmanifest -> %{http_code}\n' http://127.0.0.1:3999/manifest.webmanifest
 curl -s -o /dev/null -w 'GET /sw.js -> %{http_code}\n' http://127.0.0.1:3999/sw.js
 docker rm -f "$TEST_CID" >/dev/null
@@ -52,7 +53,7 @@ docker run -d --name "$CONTAINER" --restart unless-stopped -p "$PORT" "$IMAGE_NE
 echo "== 5/6 Vérifications post-deploy (voir CHECKLIST-DEPLOI-PROD.md) =="
 sleep 3
 docker ps --format '{{.Names}} {{.Image}} {{.Status}} {{.Ports}}' | grep "$CONTAINER" || true
-for p in / /espace-client /espace-client/parametres /manifest.webmanifest /sw.js /icons/icon-192x192.png /icons/icon-512x512.png /offline.html; do
+for p in / /espace-client /espace-client/parametres /verification-email /manifest.webmanifest /sw.js /icons/icon-192x192.png /icons/icon-512x512.png /offline.html; do
   curl -s -o /dev/null -w "GET $p -> %{http_code}\n" "https://app.fedpawa.com$p"
 done
 

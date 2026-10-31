@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import Oapi from "@/components/oapi/Oapi";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
+import { ServiceJsonLd } from "@/components/seo/jsonld";
 
 const { meta } = getDictionary("en").shared;
 
@@ -17,11 +17,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/en/oapi",
+    canonical: "https://www.fedpawa.com/en/oapi.php",
     languages: {
-      fr: SITE_URL + "/oapi",
-      en: SITE_URL + "/en/oapi",
-      "x-default": SITE_URL + "/oapi",
+      fr: "https://www.fedpawa.com/oapi.php",
+      en: "https://www.fedpawa.com/en/oapi.php",
+      "x-default": "https://www.fedpawa.com/oapi.php",
     },
   },
   openGraph: {
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/en/oapi",
+    url: "https://www.fedpawa.com/en/oapi.php",
     locale: "en_US",
     alternateLocale: "fr_FR",
     images: [
@@ -45,5 +45,10 @@ export const metadata: Metadata = {
 };
 
 export default function EnOapiPage() {
-  return <Oapi locale="en" />;
+  return (
+    <>
+      <ServiceJsonLd service="oapi" locale="en" />
+      <Oapi locale="en" />
+    </>
+  );
 }

@@ -22,6 +22,13 @@ export interface MeResponse {
   email?: string;
   /** Statut du dernier dossier KYC (null si jamais soumis) — parité /api/me. */
   kyc_status?: string | null;
+  /**
+   * Contrat VERIF : présent dans login et /me.
+   * `false` = e-mail non vérifié (bannière + modal actifs côté front).
+   * Absent (backend pas encore déployé) = traité comme vérifié côté front
+   * (dégradation gracieuse) : le gating réel reste serveur (403).
+   */
+  email_verified?: boolean;
 }
 
 /** Lit le token Sanctum (null si absent). Client-only. */

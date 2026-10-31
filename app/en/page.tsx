@@ -3,7 +3,6 @@
 import type { Metadata } from "next";
 import Home from "@/components/index/Home";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
@@ -17,11 +16,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/en",
+    canonical: "https://www.fedpawa.com/en/index.php",
     languages: {
-      fr: SITE_URL + "/",
-      en: SITE_URL + "/en",
-      "x-default": SITE_URL + "/",
+      fr: "https://www.fedpawa.com/",
+      en: "https://www.fedpawa.com/en/index.php",
+      "x-default": "https://www.fedpawa.com/",
     },
   },
   openGraph: {
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/en",
+    url: "https://www.fedpawa.com/en/index.php",
     locale: "en_US",
     alternateLocale: "fr_FR",
     images: [

@@ -3,7 +3,6 @@
 import type { Metadata } from "next";
 import Privacy from "@/components/politique-confidentialite/Privacy";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("en").shared;
 
@@ -17,11 +16,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/en/politique-confidentialite",
+    canonical: "https://www.fedpawa.com/en/politique-confidentialite.php",
     languages: {
-      fr: SITE_URL + "/politique-confidentialite",
-      en: SITE_URL + "/en/politique-confidentialite",
-      "x-default": SITE_URL + "/politique-confidentialite",
+      fr: "https://www.fedpawa.com/politique-confidentialite.php",
+      en: "https://www.fedpawa.com/en/politique-confidentialite.php",
+      "x-default": "https://www.fedpawa.com/politique-confidentialite.php",
     },
   },
   openGraph: {
@@ -29,7 +28,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/en/politique-confidentialite",
+    url: "https://www.fedpawa.com/en/politique-confidentialite.php",
     locale: "en_US",
     alternateLocale: "fr_FR",
     images: [

@@ -1744,3 +1744,103 @@ img, table { max-width: 100%; }
 
 
 
+
+/* ==========================================================
+   FEDPAWA — Vérification e-mail (CONTRAT-VERIF, worker A)
+   Bannière espace client + modal bloquante souscription +
+   page /verification-email. Non fermables tant que
+   email_verified=false.
+   ========================================================== */
+
+.btn-sm { padding: 10px 18px; font-size: 0.72rem; }
+
+/* ---------- Bannière espace client (persistante, non fermable) ---------- */
+.fp-verif-banner {
+  width: 100%;
+  background: var(--color-warning);
+  color: #fff;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.25);
+}
+.fp-verif-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+  flex-wrap: wrap;
+}
+.fp-verif-banner-icon { flex: 0 0 26px; width: 26px; height: 26px; }
+.fp-verif-banner-text { flex: 1 1 320px; display: flex; flex-direction: column; gap: 2px; font-size: 0.88rem; line-height: 1.4; }
+.fp-verif-banner-text strong { font-size: 0.95rem; }
+.fp-verif-banner-feedback { font-size: 0.8rem; font-weight: 600; }
+.fp-verif-banner-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.fp-verif-banner .btn-primary { background: #fff; color: var(--color-warning); }
+.fp-verif-banner .btn-primary:hover { background: #f4f4f4; color: var(--color-warning); }
+.fp-verif-banner .btn-outline { color: #fff; border-color: rgba(255, 255, 255, 0.7); }
+.fp-verif-banner .btn-outline:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+/* ---------- Modal bloquante souscription (non fermable) ---------- */
+.fp-verif-gate {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(10, 14, 24, 0.72);
+  backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+.fp-verif-gate-box {
+  background: var(--color-bg-main);
+  color: var(--color-text-main);
+  border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-warning);
+  border-radius: 12px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.45);
+  max-width: 520px;
+  width: 100%;
+  padding: 36px 32px;
+  text-align: center;
+}
+.fp-verif-gate-icon { width: 56px; height: 56px; margin: 0 auto 16px; color: var(--color-warning); }
+.fp-verif-gate-icon svg { width: 56px; height: 56px; }
+.fp-verif-gate-box h2 { margin: 0 0 10px; font-size: 1.35rem; color: var(--color-heading); }
+.fp-verif-gate-box p { font-size: 0.92rem; line-height: 1.55; color: var(--color-text-muted); }
+.fp-verif-gate-feedback { font-weight: 600; }
+.fp-verif-gate-feedback.fp-verif-success, .fp-verif-banner-feedback.fp-verif-success, .fp-verif-page-feedback.fp-verif-success { color: var(--color-success); }
+.fp-verif-gate-feedback.fp-verif-error, .fp-verif-banner-feedback.fp-verif-error, .fp-verif-page-feedback.fp-verif-error { color: var(--color-danger); }
+.fp-verif-gate-feedback.fp-verif-info, .fp-verif-banner-feedback.fp-verif-info, .fp-verif-page-feedback.fp-verif-info { color: var(--color-warning); }
+.fp-verif-gate-actions { display: flex; gap: 12px; justify-content: center; margin-top: 22px; flex-wrap: wrap; }
+
+/* ---------- Page /verification-email ---------- */
+.fp-verif-page { display: grid; place-items: center; padding: 80px 20px 100px; min-height: 50vh; }
+.fp-verif-page-card {
+  background: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  max-width: 560px;
+  width: 100%;
+  padding: 48px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+.fp-verif-page-card h1 { margin: 0; font-size: 1.5rem; color: var(--color-heading); }
+.fp-verif-page-card p { margin: 0; font-size: 0.95rem; line-height: 1.55; color: var(--color-text-muted); }
+.fp-verif-page-card .btn { margin-top: 10px; }
+.fp-verif-page-icon { width: 64px; height: 64px; border-radius: 50%; display: grid; place-items: center; }
+.fp-verif-page-icon svg { width: 32px; height: 32px; }
+.fp-verif-page-icon.fp-verif-ok { background: var(--color-success); color: #fff; }
+.fp-verif-page-icon.fp-verif-warn { background: var(--color-warning); color: #fff; }
+.fp-verif-page-icon.fp-verif-info { background: var(--color-primary); color: #fff; }
+.fp-verif-page-spinner { width: 40px; height: 40px; border: 4px solid var(--color-border); border-top-color: var(--color-primary); border-radius: 50%; animation: fp-verif-spin 0.8s linear infinite; }
+@keyframes fp-verif-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 640px) {
+  .fp-verif-banner-inner { align-items: flex-start; flex-direction: column; }
+  .fp-verif-gate-box { padding: 28px 20px; }
+  .fp-verif-page-card { padding: 36px 22px; }
+}

@@ -3,7 +3,6 @@
 import type { Metadata } from "next";
 import Cgu from "@/components/cgu/Cgu";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
 
 const { meta } = getDictionary("fr").shared;
 
@@ -16,11 +15,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/cgu",
+    canonical: "https://www.fedpawa.com/cgu.php",
     languages: {
-      fr: SITE_URL + "/cgu",
-      en: SITE_URL + "/en/cgu",
-      "x-default": SITE_URL + "/cgu",
+      fr: "https://www.fedpawa.com/cgu.php",
+      en: "https://www.fedpawa.com/en/cgu.php",
+      "x-default": "https://www.fedpawa.com/cgu.php",
     },
   },
   openGraph: {
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/cgu",
+    url: "https://www.fedpawa.com/cgu.php",
     locale: "fr_FR",
     alternateLocale: "en_US",
     images: [

@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import Creation from "@/components/creation-entreprise/Creation";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
+import { ServiceJsonLd } from "@/components/seo/jsonld";
 
 const { meta } = getDictionary("fr").shared;
 
@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/creation-entreprise",
+    canonical: "https://www.fedpawa.com/creation_entreprise.php",
     languages: {
-      fr: SITE_URL + "/creation-entreprise",
-      en: SITE_URL + "/en/creation-entreprise",
-      "x-default": SITE_URL + "/creation-entreprise",
+      fr: "https://www.fedpawa.com/creation_entreprise.php",
+      en: "https://www.fedpawa.com/en/creation-entreprise.php",
+      "x-default": "https://www.fedpawa.com/creation_entreprise.php",
     },
   },
   openGraph: {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/creation-entreprise",
+    url: "https://www.fedpawa.com/creation_entreprise.php",
     locale: "fr_FR",
     alternateLocale: "en_US",
     images: [
@@ -44,5 +44,10 @@ export const metadata: Metadata = {
 };
 
 export default function CreationPage() {
-  return <Creation locale="fr" />;
+  return (
+    <>
+      <ServiceJsonLd service="creation-entreprise" locale="fr" />
+      <Creation locale="fr" />
+    </>
+  );
 }

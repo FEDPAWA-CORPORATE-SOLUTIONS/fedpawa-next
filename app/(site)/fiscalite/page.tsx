@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import Fiscalite from "@/components/fiscalite/Fiscalite";
 import { getDictionary } from "@/lib/i18n";
-import { SITE_URL } from "@/lib/routes";
+import { ServiceJsonLd } from "@/components/seo/jsonld";
 
 const { meta } = getDictionary("fr").shared;
 
@@ -16,11 +16,11 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: {
-    canonical: "/fiscalite",
+    canonical: "https://www.fedpawa.com/fiscalite.php",
     languages: {
-      fr: SITE_URL + "/fiscalite",
-      en: SITE_URL + "/en/fiscalite",
-      "x-default": SITE_URL + "/fiscalite",
+      fr: "https://www.fedpawa.com/fiscalite.php",
+      en: "https://www.fedpawa.com/en/fiscalite.php",
+      "x-default": "https://www.fedpawa.com/fiscalite.php",
     },
   },
   openGraph: {
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     siteName: meta.siteName,
     title,
     description,
-    url: SITE_URL + "/fiscalite",
+    url: "https://www.fedpawa.com/fiscalite.php",
     locale: "fr_FR",
     alternateLocale: "en_US",
     images: [
@@ -44,5 +44,10 @@ export const metadata: Metadata = {
 };
 
 export default function FiscalitePage() {
-  return <Fiscalite locale="fr" />;
+  return (
+    <>
+      <ServiceJsonLd service="fiscalite" locale="fr" />
+      <Fiscalite locale="fr" />
+    </>
+  );
 }

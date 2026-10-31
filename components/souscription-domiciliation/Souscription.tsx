@@ -19,6 +19,8 @@ import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { ApiError } from "@/lib/api";
 import { apiAuthPost, fetchMe } from "@/lib/auth";
+import { emailNonVerifieMessage, isEmailNonVerifieError } from "@/lib/verification";
+import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 import { routesFor } from "@/lib/routes";
 import PayModal from "./PayModal";
 import {
@@ -108,6 +110,7 @@ const TOTAL_STEPS = 6;
 export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   const t = getPageDictionary(locale, "souscription_domiciliation");
   const routes = routesFor(locale);
+  const verif = useEmailVerification();
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<SouscriptionState>(INITIAL);
   const [errors, setErrors] = useState<string[]>([]);
@@ -270,6 +273,12 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
 
   // ---------- Paiement (PayModal onSubmit → POST /api/v1/souscription) ----------
   async function submitSouscription(pay: { phone: string; operator: string }) {
+    // Blocage client si e-mail non vérifié (le serveur renvoie de toute
+    // façon 403 email_non_verifie) : ré-affiche la modal bloquante.
+    if (verif.unverified) {
+      verif.requestGate();
+      return { ok: false, message: emailNonVerifieMessage(locale) };
+    }
     try {
       const out = await apiAuthPost<{
         message?: string;
@@ -323,6 +332,12 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         api: out,
       };
     } catch (err) {
+      if (isEmailNonVerifieError(err)) {
+        // 403 email_non_verifie intercepté → ré-affiche la modal + re-lit /me.
+        verif.requestGate();
+        void verif.refresh();
+        return { ok: false, message: emailNonVerifieMessage(locale) };
+      }
       if (err instanceof ApiError) {
         const b = err.body as { message?: string; error?: string } | null;
         return { ok: false, message: b?.message || b?.error || t.payKo };

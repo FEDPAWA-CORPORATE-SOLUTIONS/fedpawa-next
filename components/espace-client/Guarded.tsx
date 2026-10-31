@@ -9,6 +9,7 @@
 "use client";
 
 import EspaceClient from "@/components/espace-client/Component";
+import VerificationBanner from "@/components/verification/VerificationBanner";
 import { useAuthGuard } from "@/components/dashboard/useAuthGuard";
 import type { Locale } from "@/lib/i18n";
 
@@ -19,5 +20,12 @@ export default function EspaceClientGuarded({ locale }: { locale: Locale }) {
     return null;
   }
 
-  return <EspaceClient locale={locale} />;
+  // Bannière de vérification e-mail persistante (non fermable) en haut
+  // de l'espace client tant que email_verified=false (CONTRAT-VERIF).
+  return (
+    <>
+      <VerificationBanner locale={locale} />
+      <EspaceClient locale={locale} />
+    </>
+  );
 }

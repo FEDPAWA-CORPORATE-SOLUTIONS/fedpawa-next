@@ -23,6 +23,7 @@ export interface RouteMap {
   espaceClient: string;
   adminDashboard: string;
   adminDocument: string;
+  verificationEmail: string;
 }
 
 /** Routes FR (racine). */
@@ -44,6 +45,7 @@ export const frRoutes: RouteMap = {
   espaceClient: "/espace-client",
   adminDashboard: "/admin-dashboard",
   adminDocument: "/admin-document",
+  verificationEmail: "/verification-email",
 };
 
 /** Routes EN (miroir sous /en). */
@@ -66,6 +68,7 @@ export const enRoutes: RouteMap = {
   espaceClient: "/en/espace-client",
   adminDashboard: "/en/admin-dashboard",
   adminDocument: "/en/admin-document",
+  verificationEmail: "/en/verification-email",
 };
 
 /** Routes pour une locale. */
@@ -110,6 +113,7 @@ const MIRROR_SEGMENTS = [
   "espace-client",
   "admin-dashboard",
   "admin-document",
+  "verification-email",
 ] as const;
 
 /**
