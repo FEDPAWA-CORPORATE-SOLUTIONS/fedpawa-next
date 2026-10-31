@@ -14,6 +14,18 @@ import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
 
+// Origine de l'API Laravel consommée par le navigateur (fetch depuis
+// lib/api.ts / lib/auth.ts) : incluse dans connect-src pour que le
+// front puisse appeler l'API quand elle n'est pas same-origin
+// (dev/test : NEXT_PUBLIC_API_URL=http://app-test.fedpawa.com).
+const apiOrigin = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000").origin;
+  } catch {
+    return "http://localhost:8000";
+  }
+})();
+
 const csp = [
   "default-src 'self'",
   // JSON-LD inline (+ 'unsafe-eval' en dev pour HMR uniquement).
@@ -24,8 +36,10 @@ const csp = [
   // data: images (SVG inline) + blob: (uploads/aperçus).
   "img-src 'self' data: blob:",
   // Prod : API same-origin derrière le reverse proxy.
-  // Dev : API Laravel sur http://localhost:8000 (NEXT_PUBLIC_API_URL).
-  `connect-src 'self'${isDev ? " http://localhost:8000" : ""}`,
+  // Dev/test : origine de NEXT_PUBLIC_API_URL (ex. http://app-test.fedpawa.com).
+  `connect-src 'self' ${apiOrigin}`,
+  // Aperçu PDF du contrat à signer : iframe sur blob: (fetch authentifié Bearer).
+  "frame-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
   "form-action 'self'",
@@ -39,6 +53,18 @@ const csp = [
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
+  // Proxy API local UNIQUEMENT pour l'e2e hors ligne (worker A) :
+  // actif seulement si E2E_PROXY_API=1 au build — jamais en prod/test
+  // (où NEXT_PUBLIC_API_URL pointe déjà vers l'API, même origine via Caddy
+  // ou cross-origin autorisé). Permet de servir le front sur
+  // http://localhost:PORT (contexte sécurisé) avec /api/v1 en same-origin.
+  async rewrites() {
+    if (process.env.E2E_PROXY_API === "1") {
+      const target = (process.env.E2E_API_TARGET ?? "https://app.fedpawa.com").replace(/\/+$/, "");
+      return [{ source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` }];
+    }
+    return [];
+  },
   // 404 globale brandée — nécessaire avec les layouts racines
   // multiples FR/EN (cf. doc file-conventions/not-found).
   async headers() {

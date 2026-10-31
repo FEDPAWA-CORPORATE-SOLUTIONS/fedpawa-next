@@ -1655,4 +1655,92 @@ img, table { max-width: 100%; }
   .nav-actions .notif-bell { display: none; } /* mobile : cloche via le menu */
 }
 
+/* ==========================================================
+   Signature électronique (/espace-client/signature*) — classes
+   dédiées sig-*, surcouche des composants maison existants
+   (db-section, db-table, form-control, btn, badge, fp-check).
+   ========================================================== */
+.sig-main { padding-top: 32px; padding-bottom: 60px; }
+.sig-page .db-welcome { margin-bottom: 28px; }
+.sig-section { margin-bottom: 24px; }
+.sig-section h2 { font-size: 1.15rem; }
+.sig-doc-ligne { margin: 0 0 14px; font-size: 0.95rem; color: var(--color-text-main); }
+.sig-apercu { width: 100%; height: 70vh; min-height: 420px; border: 1px solid var(--color-border); background: #fff; }
+.sig-alert { padding: 14px 16px; border-radius: 10px; margin-bottom: 24px; font-size: 0.92rem; border: 1px solid var(--color-border); border-left: 4px solid var(--color-primary); background: var(--color-bg-alt); }
+.sig-alert-erreur { border-left-color: var(--color-danger); background: color-mix(in srgb, var(--color-danger) 8%, transparent); color: var(--color-text-main); }
+.sig-alert-info { border-left-color: var(--color-primary); }
+.sig-consent { display: flex; gap: 12px; align-items: flex-start; font-size: 0.92rem; line-height: 1.55; color: var(--color-text-main); cursor: pointer; }
+.sig-consent input { margin-top: 4px; flex-shrink: 0; }
+.sig-otp-group { max-width: 280px; }
+.sig-otp-input { font-size: 1.4rem; letter-spacing: 0.5em; text-align: center; font-weight: 700; }
+.sig-note { font-size: 0.82rem; color: var(--color-text-muted); margin: 10px 0 0; }
+.sig-note code { font-size: 0.78rem; word-break: break-all; }
+.sig-actions { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; margin: 8px 0 40px; }
+
+/* Pavé de signature */
+.sig-pad-modes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.sig-pad-mode { padding: 10px 18px; border: 1.5px solid var(--color-border-strong); background: var(--color-bg-main); color: var(--color-text-main); font-size: 0.8rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; border-radius: 999px; transition: var(--transition-fast); }
+.sig-pad-mode.active { border-color: var(--color-primary); color: var(--color-primary); background: var(--color-primary-soft); }
+.sig-pad-canvas-wrap { position: relative; border: 2px dashed var(--color-border-strong); border-radius: 12px; background: #fff; overflow: hidden; }
+.sig-pad-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; }
+.sig-pad-hint { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; font-size: 0.75rem; color: #9aa3b2; pointer-events: none; }
+.sig-pad-actions { margin-top: 12px; display: flex; justify-content: flex-end; }
+.sig-pad-clear { padding: 10px 22px; }
+
+/* Résultat : empreintes + téléchargements */
+.sig-empreintes { margin: 0 0 20px; display: grid; gap: 12px; }
+.sig-empreintes div { display: grid; gap: 4px; }
+.sig-empreintes dt { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); }
+.sig-empreintes dd { margin: 0; font-size: 0.92rem; color: var(--color-text-main); }
+.sig-hash { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.8rem; word-break: break-all; }
+.sig-telechargements { display: flex; gap: 14px; flex-wrap: wrap; }
+.sig-table { min-width: 0; }
+
+/* Mobile : le client camerounais signe souvent au téléphone */
+@media (max-width: 991px) {
+  .db-main.sig-main { padding: 24px 16px 48px; }
+  .sig-apercu { height: 55vh; min-height: 320px; }
+  .sig-telechargements .btn { width: 100%; }
+  .sig-actions .btn { width: 100%; }
+}
+@media (max-width: 575px) {
+  .db-welcome div h1 { font-size: 1.5rem; }
+  .sig-pad-canvas-wrap { border-radius: 8px; }
+  .sig-otp-input { font-size: 1.2rem; }
+  .db-section { padding: 20px; }
+}
+
+/* ==========================================================
+   Vague E — onglet Paramètres (espace-client/parametres)
+   ========================================================== */
+.fp-settings-title { font-size: 1.6rem; margin: 0 0 6px; color: var(--color-heading); }
+.fp-settings-block { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-border); }
+.fp-settings-block:first-of-type { border-top: none; padding-top: 0; }
+.fp-settings-h2 { font-size: 1.05rem; margin: 0 0 14px; color: var(--color-heading); }
+.fp-settings-muted { font-size: 0.85rem; color: var(--color-text-muted); margin: 6px 0 0; }
+.fp-settings-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 0; flex-wrap: wrap; }
+.fp-settings-master { padding: 14px 16px; background: var(--color-bg-section); border: 1px solid var(--color-border); border-radius: 10px; }
+.fp-settings-events { list-style: none; margin: 8px 0 0; padding: 0; }
+.fp-settings-events .fp-settings-row { border-bottom: 1px solid var(--color-border); }
+.fp-settings-events .fp-settings-row:last-child { border-bottom: none; }
+.fp-settings-error, .fp-settings-notice { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 12px 16px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-bg-section); font-size: 0.88rem; flex-wrap: wrap; }
+.fp-settings-error { border-left: 4px solid var(--color-danger); }
+.fp-settings-notice { border-left: 4px solid var(--color-warning); }
+.fp-status { font-size: 0.88rem; font-weight: 600; }
+.fp-status-on { color: var(--color-success); }
+.fp-status-off { color: var(--color-text-muted); font-weight: 500; }
+.fp-btn { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 12px 22px; border: 1.5px solid transparent; cursor: pointer; border-radius: 8px; transition: var(--transition-fast); }
+.fp-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.fp-btn-primary { background: var(--color-primary); color: var(--color-on-primary); }
+.fp-btn-secondary { background: transparent; color: var(--color-primary); border-color: var(--color-primary); }
+
+/* Interrupteur (role=switch) */
+.fp-switch { position: relative; width: 46px; height: 26px; border-radius: 999px; border: none; background: var(--color-border-strong); cursor: pointer; padding: 0; transition: background 0.2s ease; flex-shrink: 0; }
+.fp-switch .fp-switch-knob { position: absolute; top: 3px; left: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform 0.2s ease; box-shadow: 0 1px 3px rgba(0,0,0,.3); }
+.fp-switch.on { background: var(--color-success); }
+.fp-switch.on .fp-switch-knob { transform: translateX(20px); }
+.fp-switch:disabled { opacity: 0.5; cursor: not-allowed; }
+.fp-switch:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
+
+
 

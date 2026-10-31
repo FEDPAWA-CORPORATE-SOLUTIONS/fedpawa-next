@@ -8,6 +8,7 @@ import "../globals.css";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import RevealOnScroll from "@/components/site/RevealOnScroll";
+import AnalyticsBeacon from "@/components/AnalyticsBeacon";
 import PwaProvider from "@/components/pwa/PwaProvider";
 import { getDictionary } from "@/lib/i18n";
 import { SITE_URL } from "@/lib/routes";
@@ -141,6 +142,8 @@ export default function EnRootLayout({ children }: { children: React.ReactNode }
         </PwaProvider>
         {/* Réplique du §4 de main.js : reveal au scroll des .reveal */}
         <RevealOnScroll />
+        {/* Mesure d'audience navigateur — inerte sauf si NEXT_PUBLIC_ANALYTICS_ENABLED=true au build */}
+        <AnalyticsBeacon />
       </body>
     </html>
   );

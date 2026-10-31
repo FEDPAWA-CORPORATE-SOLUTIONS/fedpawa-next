@@ -113,6 +113,19 @@ export function apiAuthPost<T>(
   });
 }
 
+/** PUT authentifié, corps JSON sérialisé (préférences notifications, vague E). */
+export function apiAuthPut<T>(
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  return request<T>(path, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...authHeaders() },
+    credentials: "include",
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+}
+
 /**
  * POST authentifié multipart (uploads KYC / courriers).
  * Le Content-Type est posé par le navigateur (boundary FormData).

@@ -84,3 +84,65 @@ export function notificationIconSvg(type: string): string {
       return `<svg ${common}><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`;
   }
 }
+
+// ==========================================================
+// Préférences de notification (vague E) — contrat API :
+// GET  /api/v1/notifications/preferences
+//      → { global: bool, events: [{ type, label, enabled }] }
+// PUT  /api/v1/notifications/preferences
+//      body { global?: bool, events?: { <type>: bool } } → 200 JSON complet
+// ==========================================================
+
+import { apiAuthPut } from "@/lib/auth";
+
+/** Un type d'événement de notification avec son libellé FR. */
+export interface NotificationPreferenceEvent {
+  type: string;
+  label: string;
+  enabled: boolean;
+}
+
+/** Réponse GET/PUT /api/v1/notifications/preferences (contrat). */
+export interface NotificationPreferences {
+  global: boolean;
+  events: NotificationPreferenceEvent[];
+}
+
+/** Corps PUT (partiel accepté par le contrat). */
+export interface NotificationPreferencesUpdate {
+  global?: boolean;
+  events?: Record<string, boolean>;
+}
+
+/**
+ * Catalogue des types d'événements — source de vérité = CONTRAT.md
+ * (repris tel quel ; libellés FR pour l'onglet Paramètres).
+ */
+export const NOTIFICATION_EVENT_TYPES: ReadonlyArray<{
+  type: string;
+  label: string;
+}> = [
+  { type: "contrat_scelle", label: "Contrat scellé" },
+  { type: "contrat_signe", label: "Contrat signé" },
+  { type: "dossier_statut", label: "Statut du dossier" },
+  { type: "facture_emise", label: "Facture émise" },
+  { type: "paiement_recu", label: "Paiement reçu" },
+  { type: "ticket_reponse", label: "Réponse du support" },
+  { type: "courrier_recu", label: "Courrier reçu" },
+  { type: "compte_securite", label: "Sécurité du compte (nouvel appareil, mot de passe modifié)" },
+];
+
+/** GET /notifications/preferences (Bearer). Rejette ApiError (404 si backend pas prêt). */
+export function fetchNotificationPreferences(): Promise<NotificationPreferences> {
+  return apiAuthGet<NotificationPreferences>("/api/v1/notifications/preferences");
+}
+
+/** PUT /notifications/preferences — renvoie le JSON complet (200). */
+export function updateNotificationPreferences(
+  update: NotificationPreferencesUpdate,
+): Promise<NotificationPreferences> {
+  return apiAuthPut<NotificationPreferences>(
+    "/api/v1/notifications/preferences",
+    update,
+  );
+}
