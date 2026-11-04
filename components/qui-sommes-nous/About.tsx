@@ -177,7 +177,7 @@ export default function About({ locale = "fr" }: AboutProps) {
         </div>
       </section>
 
-      {/* ============== GALERIE PHOTOS + LIGHTBOX ============== */}
+      {/* ============== GALERIE PHOTOS ============== */}
       <section className="section-padding section-alt">
         <div className="container">
           <div className="section-header">
@@ -185,31 +185,75 @@ export default function About({ locale = "fr" }: AboutProps) {
             <h2>{t.galleryTitle}</h2>
             <p>{t.galleryIntro}</p>
           </div>
-          <div className="gallery-grid">
-            {GALLERY.map((g) => (
-              <div
-                key={g.img}
-                className={`gallery-item${g.cls ? ` ${g.cls}` : ""}`}
-              >
-                <picture>
-                  <source
-                    type="image/webp"
-                    srcSet={`/assets/images/${g.img}.webp`}
-                  />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`/assets/images/${g.img}.jpg`}
-                    alt={locale === "en" ? g.altEn : g.altFr}
-                    loading="lazy"
-                    onClick={() => openLightbox(g.img)}
-                  />
-                </picture>
-                <span className="gallery-caption">
-                  {locale === "en" ? g.captionEn : g.captionFr}
-                </span>
-              </div>
-            ))}
+          <div className="carousel-container">
+            <div className="carousel-track">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/assets/images/qui-about-carousel/-13.webp"
+                />
+                <img
+                  src="/assets/images/qui-about-carousel/-13.jpg"
+                  alt=""
+                  loading="lazy"
+                  className="carousel-slide"
+                />
+              </picture>
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/assets/images/qui-about-carousel/-14.webp"
+                />
+                <img
+                  src="/assets/images/qui-about-carousel/-14.jpg"
+                  alt=""
+                  loading="lazy"
+                  className="carousel-slide"
+                />
+              </picture>
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/assets/images/qui-about-carousel/-15.webp"
+                />
+                <img
+                  src="/assets/images/qui-about-carousel/-15.jpg"
+                  alt=""
+                  loading="lazy"
+                  className="carousel-slide"
+                />
+              </picture>
+            </div>
           </div>
+          <style>{`
+            .carousel-container {
+              overflow: hidden;
+              position: relative;
+              width: 100%;
+            }
+            .carousel-track {
+              display: flex;
+              transition: transform 0.5s ease-in-out;
+            }
+            .carousel-slide {
+              min-width: 100%;
+              box-sizing: border-box;
+            }
+            @keyframes slide {
+              0% { transform: translateX(0%); }
+              20% { transform: translateX(0%); }
+              25% { transform: translateX(-100%); }
+              45% { transform: translateX(-100%); }
+              50% { transform: translateX(-200%); }
+              70% { transform: translateX(-200%); }
+              75% { transform: translateX(-300%); }
+              95% { transform: translateX(-300%); }
+              100% { transform: translateX(0%); }
+            }
+            .carousel-container:hover .slide-animation {
+              animation: slide 15s linear infinite;
+            }
+          `}</style>
         </div>
       </section>
 

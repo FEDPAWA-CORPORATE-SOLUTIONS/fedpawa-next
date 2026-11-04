@@ -39,6 +39,9 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   const [connected, setConnected] = useState(false);
   // PWA — bouton notifications (masqué si permission != "default"
   // ou refus persistant ; logique dans PwaProvider).
+  // Déclencheur réactif : re-exécute quand le token change,
+  // afin que le bouton "Se Connecter" disparaisse dès que
+  // l'utilisateur est authentifié (token stocké en localStorage).
   const pwa = usePwaNotifications();
 
   const servicesActive = [
@@ -58,7 +61,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
     setDarkMode(mode === "dark");
     document.documentElement.setAttribute("data-mode", mode);
     setConnected(Boolean(getToken()));
-  }, []);
+  }, [getToken()]);
 
   // Fermeture du menu mobile au resize >= desktop (comportement fedpawa-ui.js).
   useEffect(() => {
@@ -168,7 +171,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             />
             <span className="brand-copy">
               <strong>FEDPAWA</strong>
-              <small>Corporate Solutions</small>
+              <strong style={{ fontWeight: 600 }}>Corporate Solutions SARL</strong>
             </span>
           </Link>
           <NavLinks locale={locale} />

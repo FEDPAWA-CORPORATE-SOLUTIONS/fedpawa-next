@@ -204,3 +204,12 @@ export async function logout(authPath: string): Promise<void> {
   setToken(null);
   window.location.href = authPath;
 }
+
+/** Suppression authentifiée (DELETE). */
+export function apiAuthDelete<T>(path: string): Promise<T> {
+  return request<T>(path, {
+    method: "DELETE",
+    headers: authHeaders(),
+    credentials: "include",
+  });
+}
