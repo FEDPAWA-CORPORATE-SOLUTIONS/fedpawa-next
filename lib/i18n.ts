@@ -28,6 +28,7 @@ export interface SharedDict {
     taxLegalAdvisory: string;
     oapiProtection: string;
     contracts: string;
+    publications: string;
   };
   footer: {
     brandPitch: string;
@@ -65,6 +66,7 @@ const sharedFr: SharedDict = {
     taxLegalAdvisory: "Conseils & Suivi Fiscal",
     oapiProtection: "Protection OAPI",
     contracts: "Contrats",
+    publications: "Publications",
   },
   footer: {
     brandPitch:
@@ -105,6 +107,7 @@ const sharedEn: SharedDict = {
     taxLegalAdvisory: "Tax & Legal Advisory",
     oapiProtection: "OAPI Protection",
     contracts: "Contracts",
+    publications: "Publications",
   },
   footer: {
     brandPitch:
@@ -152,6 +155,9 @@ export const frPages: PageSlugs = {
   admin_document: {},
   oapi: {},
   contrats: {},
+  publications: {},
+  admin_publications: {},
+  admin_mails: {},
 };
 
 /** Dictionnaires EN par page — vides en vague A (remplis par vagues B/C/D). */

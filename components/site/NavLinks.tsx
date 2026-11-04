@@ -84,6 +84,14 @@ export default function NavLinks({ locale = "fr" }: { locale?: "fr" | "en" }) {
         </li>
         <li>
           <Link
+            className={`nav-link${isActive(routes.publications) ? " is-active" : ""}`}
+            href={routes.publications}
+          >
+            {shared.nav.publications}
+          </Link>
+        </li>
+        <li>
+          <Link
             className={`nav-link${isActive(routes.aboutUs) ? " is-active" : ""}`}
             href={routes.aboutUs}
           >

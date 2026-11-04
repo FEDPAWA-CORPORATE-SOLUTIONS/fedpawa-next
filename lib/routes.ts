@@ -12,6 +12,7 @@ export interface RouteMap {
   fiscalite: string;
   oapi: string;
   contrats: string;
+  publications: string;
   aboutUs: string;
   contact: string;
   cgu: string;
@@ -34,6 +35,7 @@ export const frRoutes: RouteMap = {
   fiscalite: "/fiscalite",
   oapi: "/oapi",
   contrats: "/contrats",
+  publications: "/publications",
   aboutUs: "/qui-sommes-nous",
   contact: "/contact",
   cgu: "/cgu",
@@ -57,6 +59,7 @@ export const enRoutes: RouteMap = {
   fiscalite: "/en/fiscalite",
   oapi: "/en/oapi",
   contrats: "/en/contrats",
+  publications: "/en/publications",
   aboutUs: "/en/qui-sommes-nous",
   contact: "/en/contact",
   cgu: "/en/cgu",
@@ -102,6 +105,7 @@ const MIRROR_SEGMENTS = [
   "fiscalite",
   "oapi",
   "contrats",
+  "publications",
   "qui-sommes-nous",
   "contact",
   "cgu",

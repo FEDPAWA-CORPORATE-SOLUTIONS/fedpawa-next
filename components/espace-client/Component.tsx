@@ -20,6 +20,17 @@ import {
   getToken,
 } from "@/lib/auth";
 import { markNotificationsRead } from "@/lib/notifications";
+import {
+  fetchNonLues,
+  fetchPublicationsPage,
+  fetchPublicationDetail,
+  marquerPublicationLue,
+  marquerToutesLues,
+  PUBLICATIONS_PAR_PAGE,
+  type PublicationDetail,
+  type PublicationSummary,
+  type PublicationsPage,
+} from "@/lib/publications";
 import type {
   ApiCourrier,
   ApiFacture,
@@ -104,6 +115,7 @@ type TabId =
   | "contrats"
   | "documents"
   | "courriers"
+  | "publications"
   | "profil"
   | "support";
 
@@ -131,7 +143,7 @@ export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
   // depuis une notification). Client-only, après montage.
   useEffect(() => {
     const wanted = new URLSearchParams(window.location.search).get("tab");
-    if (wanted && (["dashboard", "abonnement", "factures", "contrats", "documents", "courriers", "profil", "support"] as TabId[]).includes(wanted as TabId)) {
+    if (wanted && (["dashboard", "abonnement", "factures", "contrats", "documents", "courriers", "publications", "profil", "support"] as TabId[]).includes(wanted as TabId)) {
       setActiveTab(wanted as TabId);
     }
   }, []);
@@ -181,6 +193,10 @@ export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
             <TabButton tab="courriers" label="Mes courriers" activeTab={activeTab} onSwitch={setActiveTab}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
             </TabButton>
+            {/* Publications (lane PUBLICATION) : annonces officielles FEDPAWA */}
+            <TabButton tab="publications" label="Publications" activeTab={activeTab} onSwitch={setActiveTab}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><path d="M8 9h8" /><path d="M8 13h8" /><path d="M8 17h5" /></svg>
+            </TabButton>
             <TabButton tab="profil" label="Mon profil" activeTab={activeTab} onSwitch={setActiveTab}>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
             </TabButton>
@@ -206,6 +222,7 @@ export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
             ["contrats", "Mes contrats"],
             ["documents", "Mes documents (KYC)"],
             ["courriers", "Mes courriers"],
+            ["publications", "Publications"],
             ["profil", "Mon profil"],
             ["support", "Support"],
           ] as [TabId, string][]).map(([tab, label]) => (
@@ -241,6 +258,9 @@ export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
           {activeTab === "contrats" && <TabContrats />}
           {activeTab === "documents" && <TabDocuments />}
           {activeTab === "courriers" && <TabCourriers />}
+          {activeTab === "publications" && (
+            <TabPublications routes={routes} />
+          )}
           {activeTab === "profil" && <TabProfil />}
           {activeTab === "support" && <TabSupport />}
         </main>
@@ -1218,6 +1238,266 @@ function TabSupport() {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==========================================================
+// Onglet Publications (lane PUBLICATION) — GET /api/v1/publications
+// (publiées uniquement) + suivi des non-lues (GET /publications/non-lues).
+// L'ouverture d'une publication marque « lu » (POST /publications/{id}/lu,
+// idempotent) et décrémente le badge de la cloche du header via
+// l'événement fedpawa:publication-lue.
+// ==========================================================
+
+const PUB_TYPE_LABELS: Record<string, string> = {
+  texte: "Texte",
+  texte_image: "Texte + image",
+  texte_video: "Texte + vidéo",
+  galerie: "Galerie",
+};
+
+function pubFirstImage(
+  medias: PublicationSummary["medias"],
+): string | null {
+  const img = [...medias]
+    .sort((a, b) => a.ordre - b.ordre)
+    .find((m) => m.type === "image");
+  return img?.url ?? null;
+}
+
+function pubFirstVideo(
+  medias: PublicationSummary["medias"],
+): string | null {
+  const vid = [...medias]
+    .sort((a, b) => a.ordre - b.ordre)
+    .find((m) => m.type === "video");
+  return vid?.url ?? null;
+}
+
+function TabPublications({ routes }: { routes: ReturnType<typeof routesFor> }) {
+  const [page, setPage] = useState(1);
+  const [resp, setResp] = useState<PublicationsPage<PublicationSummary> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [unreadIds, setUnreadIds] = useState<Set<number>>(new Set());
+  const [expandedId, setExpandedId] = useState<number | null>(null);
+  const [details, setDetails] = useState<Record<number, PublicationDetail>>({});
+
+  // Liste paginée (rechargée à chaque changement de page).
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    fetchPublicationsPage(page, PUBLICATIONS_PAR_PAGE)
+      .then((r) => {
+        if (!cancelled) {
+          setResp(r);
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [page]);
+
+  // Non-lues : une fois à l'entrée dans l'onglet.
+  useEffect(() => {
+    if (!getToken()) return;
+    fetchNonLues()
+      .then((n) => setUnreadIds(new Set(n.ids ?? [])))
+      .catch(() => {
+        /* best-effort */
+      });
+  }, []);
+
+  const toggle = (id: number) => {
+    if (expandedId === id) {
+      setExpandedId(null);
+      return;
+    }
+    setExpandedId(id);
+    // Détail à l'ouverture (contenu HTML + médias complets).
+    fetchPublicationDetail(id)
+      .then((d) => setDetails((prev) => ({ ...prev, [id]: d })))
+      .catch(() => {
+        /* best-effort */
+      });
+    if (getToken()) {
+      marquerPublicationLue(id).catch(() => {
+        /* best-effort */
+      });
+      setUnreadIds((prev) => {
+        if (!prev.has(id)) return prev;
+        const copy = new Set(prev);
+        copy.delete(id);
+        return copy;
+      });
+      // La cloche du header décrémente son badge immédiatement.
+      window.dispatchEvent(
+        new CustomEvent("fedpawa:publication-lue", { detail: { id } }),
+      );
+    }
+  };
+
+  const markAllRead = () => {
+    setUnreadIds(new Set());
+    marquerToutesLues().catch(() => {
+      /* best-effort */
+    });
+  };
+
+  const meta = resp?.meta ?? null;
+
+  return (
+    <div className="db-tab-content active" id="tab-publications">
+      <div className="db-welcome">
+        <div>
+          <h1>Publications</h1>
+          <p>Annonces, guides et actualités officielles de FEDPAWA.</p>
+        </div>
+      </div>
+      <div className="db-section">
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: 12,
+            flexWrap: "wrap",
+            marginBottom: 18,
+          }}
+        >
+          <p style={{ margin: 0, fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
+            {unreadIds.size > 0
+              ? `${unreadIds.size} publication${unreadIds.size > 1 ? "s" : ""} non lue${unreadIds.size > 1 ? "s" : ""}`
+              : "Vous êtes à jour."}
+          </p>
+          {unreadIds.size > 0 && (
+            <button type="button" className="btn btn-outline" onClick={markAllRead}>
+              Tout marquer comme lu
+            </button>
+          )}
+        </div>
+
+        {loading && !resp && <LoadingLine />}
+        {!loading && resp && resp.data.length === 0 && (
+          <p className="pub-empty">Aucune publication pour le moment.</p>
+        )}
+
+        <div className="pub-feed">
+          {resp?.data.map((pub) => {
+            const expanded = expandedId === pub.id;
+            const detail = details[pub.id];
+            const img = pubFirstImage(pub.medias);
+            return (
+              <article
+                key={pub.id}
+                className={`pub-card${expanded ? " expanded" : ""}`}
+              >
+                <header className="pub-card-head">
+                  <span className="badge badge-info">
+                    {PUB_TYPE_LABELS[pub.type] ?? pub.type}
+                  </span>
+                  {pub.publie_le && (
+                    <time dateTime={pub.publie_le}>{fmtDateTime(pub.publie_le)}</time>
+                  )}
+                  {unreadIds.has(pub.id) && (
+                    <span className="pub-unread">Non lu</span>
+                  )}
+                </header>
+                <h2 className="pub-card-title">{pub.titre}</h2>
+                {pub.chapeau && <p className="pub-card-chapeau">{pub.chapeau}</p>}
+                {(pub.type === "texte_image" || pub.type === "galerie") && img && (
+                  <img
+                    className="pub-media-img"
+                    src={img}
+                    alt={pub.titre}
+                    loading="lazy"
+                  />
+                )}
+                <div className="pub-card-foot">
+                  <button
+                    type="button"
+                    className="btn btn-outline pub-toggle"
+                    aria-expanded={expanded}
+                    onClick={() => toggle(pub.id)}
+                  >
+                    {expanded ? "Fermer" : "Lire la publication"}
+                  </button>
+                </div>
+                {expanded && (
+                  <div className="pub-card-body">
+                    {detail?.contenu ? (
+                      <div
+                        className="pub-content"
+                        dangerouslySetInnerHTML={{ __html: detail.contenu }}
+                      />
+                    ) : (
+                      <p className="pub-empty">Chargement…</p>
+                    )}
+                    {detail && pub.type === "texte_video" && pubFirstVideo(detail.medias) && (
+                      <video
+                        className="pub-media-video"
+                        src={pubFirstVideo(detail.medias) as string}
+                        controls
+                        preload="metadata"
+                        aria-label={pub.titre}
+                      />
+                    )}
+                    {detail && pub.type === "galerie" && (
+                      <div className="pub-gallery pub-gallery-full">
+                        {[...detail.medias]
+                          .filter((m) => m.type === "image")
+                          .sort((a, b) => a.ordre - b.ordre)
+                          .map((m) => (
+                            <img
+                              key={m.id ?? m.url}
+                              src={m.url}
+                              alt={pub.titre}
+                              loading="lazy"
+                            />
+                          ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </article>
+            );
+          })}
+        </div>
+
+        {meta && meta.derniere_page > 1 && (
+          <div className="pub-pagination">
+            <button
+              type="button"
+              className="btn btn-outline"
+              disabled={meta.page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              ← Page précédente
+            </button>
+            <span className="pub-pagination-info">
+              Page {meta.page} sur {meta.derniere_page}
+            </span>
+            <button
+              type="button"
+              className="btn btn-primary"
+              disabled={meta.page >= meta.derniere_page}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Page suivante →
+            </button>
+          </div>
+        )}
+
+        <div style={{ marginTop: 26 }}>
+          <Link className="btn btn-outline" href={routes.publications}>
+            Voir toutes les publications
+          </Link>
         </div>
       </div>
     </div>

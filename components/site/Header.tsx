@@ -12,7 +12,7 @@ import { getDictionary, type Locale } from "@/lib/i18n";
 import { mirrorHref, routesFor } from "@/lib/routes";
 import { getToken, logout } from "@/lib/auth";
 import { usePwaNotifications } from "@/components/pwa/PwaProvider";
-import NotificationBell from "@/components/dashboard/NotificationBell";
+import PublicationsBell from "@/components/publications/PublicationsBell";
 
 export interface HeaderProps {
   locale?: Locale;
@@ -190,7 +190,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               Cloche notifications (vague E) si connecté, avant le CTA login. */}
           <div className="nav-actions" id="navActions">
             {connected && (
-              <NotificationBell locale={locale} variant="desktop" />
+              <PublicationsBell locale={locale} variant="desktop" />
             )}
             {!connected && (
               <Link className="nav-login" href={routes.auth}>
@@ -228,6 +228,12 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
           <Link href={routes.contrats} onClick={() => setMobileOpen(false)}>
             {shared.nav.contracts}
           </Link>
+          <Link
+            href={routes.publications}
+            onClick={() => setMobileOpen(false)}
+          >
+            {shared.nav.publications}
+          </Link>
           <Link href={routes.aboutUs} onClick={() => setMobileOpen(false)}>
             {shared.nav.aboutUs}
           </Link>
@@ -264,7 +270,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
 
           {/* Cloche notifications mobile (vague E) — item du menu, si connecté. */}
           {connected && (
-            <NotificationBell locale={locale} variant="mobile" />
+            <PublicationsBell locale={locale} variant="mobile" />
           )}
 
           <div className="mobile-nav-toggles">

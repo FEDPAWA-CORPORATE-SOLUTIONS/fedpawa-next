@@ -21,7 +21,10 @@ export type PageSlug =
   | "admin_dashboard"
   | "admin_document"
   | "oapi"
-  | "contrats";
+  | "contrats"
+  | "publications"
+  | "admin_publications"
+  | "admin_mails";
 
 /** Contenu propre à une page (clés libres, valeurs texte). */
 export type PageDict = Record<string, string>;

@@ -18,6 +18,9 @@ import { souscriptionFr, souscriptionEn } from "./pages/souscription-domiciliati
 import { tunnelFr, tunnelEn } from "./pages/tunnel-souscription";
 import { oapiFr, oapiEn } from "./pages/oapi";
 import { contratsFr, contratsEn } from "./pages/contrats";
+import { publicationsFr, publicationsEn } from "./pages/publications";
+import { adminPublicationsFr, adminPublicationsEn } from "./pages/publications";
+import { adminMailsFr, adminMailsEn } from "./pages/admin-mails";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -35,6 +38,9 @@ export const frPageDicts: PageSlugs = {
   tunnel_souscription: tunnelFr,
   oapi: oapiFr,
   contrats: contratsFr,
+  publications: publicationsFr,
+  admin_publications: adminPublicationsFr,
+  admin_mails: adminMailsFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
@@ -53,4 +59,7 @@ export const enPageDicts: PageSlugs = {
   tunnel_souscription: tunnelEn,
   oapi: oapiEn,
   contrats: contratsEn,
+  publications: publicationsEn,
+  admin_publications: adminPublicationsEn,
+  admin_mails: adminMailsEn,
 };

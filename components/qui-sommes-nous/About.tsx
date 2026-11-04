@@ -190,10 +190,9 @@ export default function About({ locale = "fr" }: AboutProps) {
               <picture>
                 <source
                   type="image/webp"
-                  srcSet="/assets/images/qui-about-carousel/-13.webp"
                 />
                 <img
-                  src="/assets/images/qui-about-carousel/-13.jpg"
+                  src="/assets/images/qui-about-carousel/13.jpg"
                   alt=""
                   loading="lazy"
                   className="carousel-slide"
@@ -202,10 +201,9 @@ export default function About({ locale = "fr" }: AboutProps) {
               <picture>
                 <source
                   type="image/webp"
-                  srcSet="/assets/images/qui-about-carousel/-14.webp"
                 />
                 <img
-                  src="/assets/images/qui-about-carousel/-14.jpg"
+                  src="/assets/images/qui-about-carousel/14.jpg"
                   alt=""
                   loading="lazy"
                   className="carousel-slide"
@@ -214,10 +212,9 @@ export default function About({ locale = "fr" }: AboutProps) {
               <picture>
                 <source
                   type="image/webp"
-                  srcSet="/assets/images/qui-about-carousel/-15.webp"
                 />
                 <img
-                  src="/assets/images/qui-about-carousel/-15.jpg"
+                  src="/assets/images/qui-about-carousel/15.jpg"
                   alt=""
                   loading="lazy"
                   className="carousel-slide"
