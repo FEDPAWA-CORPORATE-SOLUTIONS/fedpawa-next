@@ -201,7 +201,12 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
         </div>
       </header>
 
-      {/* ============== MOBILE NAVIGATION ============== */}
+
+  // --- LOGIQUE PROFIL ---
+  const isAdmin = profileType === "admin";
+  // Options admin : visibles seulement si profileType est "admin"
+  // Options client : visibles par défaut
+\n      {/* ============== MOBILE NAVIGATION ============== */}
       <div
         className={`mobile-nav${mobileOpen ? " open" : ""}`}
         id="mobileNav"
