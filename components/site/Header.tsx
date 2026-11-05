@@ -244,7 +244,17 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
           </Link>
           <Link href={routes.contact} onClick={() => setMobileOpen(false)}>
             {shared.nav.contact}
-          </Link>
+
+          {connected && (
+            <div className="profile-menu-section" style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column' }}>
+              <Link href={isAdmin ? routes.adminDashboard : routes.espaceClient} onClick={() => setMobileOpen(false)}>
+                {isAdmin ? "Dashboard" : "Espace Client"}
+              </Link>
+              <Link href="/parametres" onClick={() => setMobileOpen(false)}>
+                Paramètres
+              </Link>
+            </div>
+          )}          </Link>
 
           {/* CTA mobile : login si déconnecté, déconnexion sinon (F4 source) */}
           {connected ? (
