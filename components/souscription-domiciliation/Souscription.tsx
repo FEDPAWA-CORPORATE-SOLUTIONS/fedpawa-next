@@ -9,7 +9,7 @@
 // - Gammes/packs dynamiques + détail pack + sidebar récap
 // - Dropzones KYC (3 fichiers) — upload différé côté serveur
 // - 3 validations obligatoires section 6
-// - Étape facturation : proforma HT/TVA/TTC + PayModal
+// - Étape facturation : proforma (total = montant exact, sans TVA) + PayModal
 //   (fedpawa-pay répliqué) → POST /api/v1/souscription puis
 //   /api/v1/paiement/verifier puis /api/v1/signature.
 // ==========================================================
@@ -28,7 +28,6 @@ import {
   PACK_DETAILS,
   EXTRA_OPTIONS,
   PERIODICITES,
-  TVA_RATE,
   fmtFCFA,
   COUNTRIES,
   SECTEURS,
@@ -250,8 +249,6 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   }
 
   // ---------- Facture proforma ----------
-  const baseHT = Math.round(total / (1 + TVA_RATE));
-  const tva = total - baseHT;
   // Date de facture calculée côté client uniquement (prerender-safe :
   // new Date() est interdit au rendu statique des Client Components).
   const [invoice, setInvoice] = useState<{ dateStr: string; num: string } | null>(null);
@@ -1251,7 +1248,11 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
                               FEDPAWA CORPORATE SOLUTIONS SARL
                             </strong>
                             <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
-                              Douala · Logpom · Cameroun
+                              NIU : M09261890362B
+                              <br />
+                              RCCM : CM-DLA-01-2026-B13-00767
+                              <br />
+                              Siège Social : Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun
                               <br />
                               +237 691 70 48 02 · contact@fedpawa.com
                             </div>
@@ -1312,15 +1313,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
                                 {packLabel} — {t.invoiceDomiciliation} ({periodLabel})
                               </td>
                               <td style={{ textAlign: "right", padding: 10, borderBottom: "1px solid var(--color-border)" }}>
-                                {fmtFCFA(baseHT)}
-                              </td>
-                            </tr>
-                            <tr>
-                              <td style={{ padding: 10, borderBottom: "1px solid var(--color-border)" }}>
-                                {t.invoiceTva}
-                              </td>
-                              <td style={{ textAlign: "right", padding: 10, borderBottom: "1px solid var(--color-border)" }}>
-                                {fmtFCFA(tva)}
+                                {fmtFCFA(total)}
                               </td>
                             </tr>
                             <tr style={{ background: "var(--color-bg-alt)", fontWeight: 700 }}>

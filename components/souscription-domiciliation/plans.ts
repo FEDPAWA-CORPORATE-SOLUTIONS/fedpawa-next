@@ -202,9 +202,6 @@ export const PERIODICITES: Record<string, { months: number; key: string }> = {
   annuel: { months: 12, key: "perAnnee" },
 };
 
-/** TVA Cameroun 19,25 % (cf. buildInvoice). */
-export const TVA_RATE = 0.1925;
-
 /** Format FCFA. */
 export function fmtFCFA(n: number): string {
   return n.toLocaleString("fr-FR") + " FCFA";

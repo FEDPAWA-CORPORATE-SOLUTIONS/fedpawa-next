@@ -12,6 +12,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
+import Carousel from "./Carousel";
 
 export interface AboutProps {
   locale?: Locale;
@@ -178,81 +179,8 @@ export default function About({ locale = "fr" }: AboutProps) {
       </section>
 
       {/* ============== GALERIE PHOTOS ============== */}
-      <section className="section-padding section-alt">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-kicker">{t.galleryKicker}</span>
-            <h2>{t.galleryTitle}</h2>
-            <p>{t.galleryIntro}</p>
-          </div>
-          <div className="carousel-container">
-            <div className="carousel-track">
-              <picture>
-                <source
-                  type="image/webp"
-                />
-                <img
-                  src="/assets/images/qui-about-carousel/13.jpg"
-                  alt=""
-                  loading="lazy"
-                  className="carousel-slide"
-                />
-              </picture>
-              <picture>
-                <source
-                  type="image/webp"
-                />
-                <img
-                  src="/assets/images/qui-about-carousel/14.jpg"
-                  alt=""
-                  loading="lazy"
-                  className="carousel-slide"
-                />
-              </picture>
-              <picture>
-                <source
-                  type="image/webp"
-                />
-                <img
-                  src="/assets/images/qui-about-carousel/15.jpg"
-                  alt=""
-                  loading="lazy"
-                  className="carousel-slide"
-                />
-              </picture>
-            </div>
-          </div>
-          <style>{`
-            .carousel-container {
-              overflow: hidden;
-              position: relative;
-              width: 100%;
-            }
-            .carousel-track {
-              display: flex;
-              transition: transform 0.5s ease-in-out;
-            }
-            .carousel-slide {
-              min-width: 100%;
-              box-sizing: border-box;
-            }
-            @keyframes slide {
-              0% { transform: translateX(0%); }
-              20% { transform: translateX(0%); }
-              25% { transform: translateX(-100%); }
-              45% { transform: translateX(-100%); }
-              50% { transform: translateX(-200%); }
-              70% { transform: translateX(-200%); }
-              75% { transform: translateX(-300%); }
-              95% { transform: translateX(-300%); }
-              100% { transform: translateX(0%); }
-            }
-            .carousel-container:hover .slide-animation {
-              animation: slide 15s linear infinite;
-            }
-          `}</style>
-        </div>
-      </section>
+      <Carousel />
+
 
       {/* ============== CHIFFRES CLÉS (compteurs animés) ============== */}
       <section className="stats-section">
