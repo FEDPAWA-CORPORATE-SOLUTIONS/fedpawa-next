@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
+import { getFriendlyErrorMessage } from "@/lib/errors";
 import { setToken } from "@/lib/auth";
 import { routesFor, isSafeNextPath } from "@/lib/routes";
 
@@ -26,10 +27,15 @@ export interface AuthProps {
 
 type Tab = "login" | "signup";
 
-interface AuthToast {
+interface InlineAuthMsg {
   message: string;
-  type: "success" | "error";
+  type: "success" | "error"; // "success" | "error" → colors: green | red
 }
+
+// Message shown inline above the CTA button (login or signup form).
+// Replaces the transient toast — stays visible until the user switches tabs
+// or submits again.
+const CLEAR_ON_TAB_SWITCH = true;
 
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
@@ -51,10 +57,11 @@ export default function Auth({ locale = "fr" }: AuthProps) {
   const routes = routesFor(locale);
 
   const [tab, setTab] = useState<Tab>("login");
-  const [toast, setToast] = useState<AuthToast | null>(null);
   const [loading, setLoading] = useState(false);
   const [pwdVisible, setPwdVisible] = useState<Record<string, boolean>>({});
-
+  // Inline message shown above the CTA button — replaces the toast.
+  // "error" = red, "success" = green. Cleared when the user switches tabs.
+  const [inlineMsg, setInlineMsg] = useState<InlineAuthMsg | null>(null);
   // Login state
   const [login, setLogin] = useState({ email: "", motDePasse: "", remember: false });
   // Signup state
@@ -71,13 +78,10 @@ export default function Auth({ locale = "fr" }: AuthProps) {
   });
 
   useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), 3500);
+    if (!inlineMsg) return;
+    const timer = setTimeout(() => setInlineMsg(null), 3500);
     return () => clearTimeout(timer);
-  }, [toast]);
-
-  const showToast = (message: string, type: "success" | "error" = "success") =>
-    setToast({ message, type });
+  }, [inlineMsg, tab]);  // also clear when tab switches
 
   const setPwd = (field: string, value: string) =>
     setLogin((s) => ({ ...s, [field]: value }));
@@ -87,7 +91,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
     const email = login.email.trim();
     const mot_de_passe = login.motDePasse;
     if (!email || !mot_de_passe) {
-      showToast(t.toastFillAll, "error");
+      setInlineMsg({ message: t.toastFillAll, type: "error" });
       return;
     }
     setLoading(true);
@@ -106,7 +110,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       // FIX: le token Sanctum n'était jamais stocké — posé AVANT la
       // redirection pour que /auth/me (garde) reconnaisse la session.
       if (data.token) setToken(data.token);
-      showToast(t.toastLoginOk, "success");
+      setInlineMsg({ message: t.toastLoginOk, type: "success" });
       const next =
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("next")
@@ -124,10 +128,9 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       }, 800);
     } catch (err) {
       if (err instanceof ApiError && err.status > 0) {
-        const b = err.body as { error?: string } | null;
-        showToast(b?.error || t.toastLoginKo, "error");
+        setInlineMsg({ message: getFriendlyErrorMessage(err, "auth"), type: "error" });
       } else {
-        showToast(t.toastServerKo, "error");
+        setInlineMsg({ message: t.toastServerKo, type: "error" });
       }
     } finally {
       setLoading(false);
@@ -135,51 +138,49 @@ export default function Auth({ locale = "fr" }: AuthProps) {
   }
 
   async function handleSignup(e: React.FormEvent) {
-    e.preventDefault();
     if (!signup.cgu) {
-      showToast(t.toastCguMissing, "error");
+      setInlineMsg({ message: t.toastCguMissing, type: "error" });
       return;
     }
-    if (signup.motDePasse !== signup.confirm) {
-      showToast(t.toastPwdMismatch, "error");
-      return;
-    }
-    if (!PWD_REGEX.test(signup.motDePasse)) {
-      showToast(t.toastPwdWeak, "error");
-      return;
-    }
-    setLoading(true);
-    try {
-      await apiPost("/api/v1/auth/register", {
-        nom: signup.nom.trim(),
-        entreprise: signup.entreprise.trim(),
-        email: signup.email.trim(),
-        telephone: signup.telephone.trim(),
-        mot_de_passe: signup.motDePasse,
-      });
-      showToast(t.toastSignupOk, "success");
-      setSignup({
-        civility: "",
-        nom: "",
-        entreprise: "",
-        forme: "",
-        email: "",
-        telephone: "",
-        motDePasse: "",
-        confirm: "",
-        cgu: false,
-      });
-      setTab("login");
-    } catch (err) {
-      if (err instanceof ApiError && err.status > 0) {
-        const b = err.body as { error?: string } | null;
-        showToast(b?.error || t.toastSignupKo, "error");
-      } else {
-        showToast(t.toastServerKo, "error");
+      if (signup.motDePasse !== signup.confirm) {
+        setInlineMsg({ message: t.toastPwdMismatch, type: "error" });
+        return;
       }
-    } finally {
-      setLoading(false);
-    }
+      if (!PWD_REGEX.test(signup.motDePasse)) {
+        setInlineMsg({ message: t.toastPwdWeak, type: "error" });
+        return;
+      }
+      setLoading(true);
+      try {
+        await apiPost("/api/v1/auth/register", {
+          nom: signup.nom.trim(),
+          entreprise: signup.entreprise.trim(),
+          email: signup.email.trim(),
+          telephone: signup.telephone.trim(),
+          mot_de_passe: signup.motDePasse,
+        });
+        setInlineMsg({ message: t.toastSignupOk, type: "success" });
+        setSignup({
+          civility: "",
+          nom: "",
+          entreprise: "",
+          forme: "",
+          email: "",
+          telephone: "",
+          motDePasse: "",
+          confirm: "",
+          cgu: false,
+        });
+        setTab("login");
+      } catch (err) {
+        if (err instanceof ApiError && err.status > 0) {
+          setInlineMsg({ message: getFriendlyErrorMessage(err, "auth"), type: "error" });
+        } else {
+          setInlineMsg({ message: t.toastServerKo, type: "error" });
+        }
+      } finally {
+        setLoading(false);
+      }
   }
 
   const pwdToggle = (id: string) => (
@@ -302,6 +303,22 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                   {t.forgot}
                 </Link>
               </div>
+              {inlineMsg && (
+                <div
+                  className={`auth-inline-msg auth-inline-msg-${inlineMsg.type}`}
+          style={{
+            background: inlineMsg.type === "success" ? "#d4edda" : "#f8d7da",
+            color: inlineMsg.type === "success" ? "#155724" : "#721c24",
+            padding: "12px 16px",
+            borderRadius: 6,
+            marginBottom: "16px",
+            fontWeight: 600,
+            border: `1px solid ${inlineMsg.type === "success" ? "#28a745" : "#dc3545"}`,
+          }}
+        >
+          {inlineMsg.message}
+        </div>
+      )}
               <button
                 type="submit"
                 className="btn btn-primary btn-block"
@@ -460,6 +477,22 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                 />
                 <label htmlFor="cgu" dangerouslySetInnerHTML={{ __html: t.cguLabel }} />
               </div>
+              {inlineMsg && (
+                <div
+                  className={`auth-inline-msg auth-inline-msg-${inlineMsg.type}`}
+                  style={{
+                    background: inlineMsg.type === "success" ? "#d4edda" : "#f8d7da",
+                    color: inlineMsg.type === "success" ? "#155724" : "#721c24",
+                    padding: "12px 16px",
+                    borderRadius: 6,
+                    marginBottom: "16px",
+                    fontWeight: 600,
+                    border: `1px solid ${inlineMsg.type === "success" ? "#28a745" : "#dc3545"}`,
+                  }}
+                >
+                  {inlineMsg.message}
+                </div>
+              )}
               <button
                 type="submit"
                 className="btn btn-primary btn-block"
@@ -486,27 +519,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       </section>
 
       {/* ============== TOAST ============== */}
-      {toast && (
-        <div
-          className={`auth-toast auth-toast-${toast.type}`}
-          style={{
-            position: "fixed",
-            top: 20,
-            right: 20,
-            zIndex: 99999,
-            padding: "14px 20px",
-            borderRadius: 8,
-            color: "#fff",
-            background: toast.type === "success" ? "#28a745" : "#dc3545",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-            fontSize: "0.9rem",
-            transition: "opacity 0.3s ease",
-          }}
-          role="status"
-        >
-          {toast.message}
-        </div>
-      )}
+      
 
       {/* ============== GLOBAL LOADER ============== */}
       {loading && (
