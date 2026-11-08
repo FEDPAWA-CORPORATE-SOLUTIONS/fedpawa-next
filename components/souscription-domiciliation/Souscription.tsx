@@ -15,6 +15,7 @@
 // ==========================================================
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { ApiError } from "@/lib/api";
@@ -136,6 +137,28 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         // fetchMe = GET + Bearer (l'ancien POST non authentifié était rejeté
         // par une route GET et n'envoyait pas le token).
         const me = await fetchMe();
+        if (me && me.authenticated) {
+          // Pré-remplir les champs issus du compte utilisateur (si non vides).
+          const fill = (key: keyof SouscriptionState, src: string) => {
+            if (!form[key] && src) setForm((f) => ({ ...f, [key]: src }));
+          };
+          fill("denomination", me.denomination ?? undefined);
+          fill("civilite", me.civilite ?? undefined);
+          fill("nomComplet", me.fullName ?? undefined);
+          fill("fonction", me.function ?? undefined);
+          fill("nationalite", me.nationality ?? undefined);
+          fill("email", me.email ?? undefined);
+          fill("telephone", me.phone ?? undefined);
+          fill("adresse", me.address ?? undefined);
+          fill("ville", me.city ?? undefined);
+          fill("rccm", me.rccm ?? undefined);
+          fill("niu", me.niu ?? undefined);
+          // Persister en sessionStorage pour le prochain retour sur la page.
+          sessionStorage.setItem(
+            "souscription_domiciliation_data",
+            JSON.stringify(form)
+          );
+        }
         if (me && me.authenticated && me.kyc_status) setKycDone(me.kyc_status);
       } catch {
         /* dégradation : étape KYC normale */
@@ -208,6 +231,10 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
     }
     setErrors([]);
     if (step < TOTAL_STEPS) setStep(step + 1);
+  }
+
+  function domPrev() {
+    if (step > 1) setStep(step - 1);
   }
 
   function goToStep(n: number) {
@@ -336,8 +363,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         return { ok: false, message: emailNonVerifieMessage(locale) };
       }
       if (err instanceof ApiError) {
-        const b = err.body as { message?: string; error?: string } | null;
-        return { ok: false, message: b?.message || b?.error || t.payKo };
+        return { ok: false, message: getFriendlyErrorMessage(err, "souscription") };
       }
       return { ok: false, message: t.payNetworkKo };
     }
@@ -441,6 +467,24 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
             })}
           </div>
         </div>
+      </div>
+
+      <div
+        className="nav-actions"
+        style={{
+          marginTop: "1rem",
+          display: "flex",
+          justifyContent: "flex-end",
+        }}
+      >
+        {step > 1 && (
+          <button
+            className="btn btn-outline"
+            onClick={() => domPrev()}
+          >
+            {t.prev}
+          </button>
+        )}
       </div>
 
       <div className="container" style={{ padding: "32px 16px 64px" }}>
