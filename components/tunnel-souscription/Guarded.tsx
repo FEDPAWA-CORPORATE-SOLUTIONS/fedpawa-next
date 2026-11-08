@@ -8,7 +8,7 @@
 
 "use client";
 
-import Tunnel from "@/components/tunnel-souscription/Tunnel";
+import Abonnement from "./Abonnement";
 import VerificationGateModal from "@/components/verification/VerificationGateModal";
 import { useUserPageGuard } from "@/components/dashboard/useUserPageGuard";
 import type { Locale } from "@/lib/i18n";
@@ -28,7 +28,7 @@ export default function TunnelGuarded({
 
   return (
     <>
-      <Tunnel locale={locale} service={service} pack={pack} />
+      <Abonnement locale={locale} service={service} pack={pack} />
       <VerificationGateModal locale={locale} />
     </>
   );
