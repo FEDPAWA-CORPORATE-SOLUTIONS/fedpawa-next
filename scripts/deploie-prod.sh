@@ -18,7 +18,7 @@ TAG_ROLLBACK="fedpawa-next:prod-pre-deploy-$(date -u +%Y%m%dT%H%M%SZ)"
 CONTAINER="fedpawa-next"
 PORT="127.0.0.1:3000:3000"
 SRC="/root/fedpawa-next"
-API_URL="https://app.fedpawa.com"
+API_URL="https://www.fedpawa.com"
 
 echo "== 1/6 Sauvegarde de l'image prod actuelle (rollback) =="
 docker tag "$IMAGE_OLD" "$TAG_ROLLBACK"

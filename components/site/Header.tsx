@@ -43,6 +43,11 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   // afin que le bouton "Se Connecter" disparaisse dès que
   // l'utilisateur est authentifié (token stocké en localStorage).
   const pwa = usePwaNotifications();
+  // --- LOGIQUE PROFIL ---
+  const profileType = "client"; // défini par défaut ; peut être mis à jour depuis /api/v1/auth/me
+  const isAdmin = profileType === "admin";
+  // Options admin : visibles seulement si profileType est "admin"
+  // Options client : visibles par défaut
 
   const servicesActive = [
     "services",
@@ -171,7 +176,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             />
             <span className="brand-copy">
               <strong>FEDPAWA</strong>
-              <strong style={{ fontWeight: 600 }}>Corporate Solutions SARL</strong>
+              <small>Corporate Solutions</small>
             </span>
           </Link>
           <NavLinks locale={locale} />
@@ -201,12 +206,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
         </div>
       </header>
 
-
-  // --- LOGIQUE PROFIL ---
-  const isAdmin = profileType === "admin";
-  // Options admin : visibles seulement si profileType est "admin"
-  // Options client : visibles par défaut
-\n      {/* ============== MOBILE NAVIGATION ============== */}
+      {/* ============== MOBILE NAVIGATION ============== */}
       <div
         className={`mobile-nav${mobileOpen ? " open" : ""}`}
         id="mobileNav"

@@ -16,6 +16,7 @@ import {
   apiAuthGet,
   apiAuthPost,
 } from "@/lib/auth";
+import { getFriendlyErrorMessage } from "@/lib/errors";
 import type {
   AdminLists,
   AdminOverview,
@@ -196,7 +197,7 @@ function AdminDataProvider({ children }: { children: React.ReactNode }) {
     ]).then(([l, o]) => {
       if (cancelled) return;
       if (!l && !o) {
-        setError("Impossible de charger les données d'administration.");
+        setError(getFriendlyErrorMessage(null as unknown as { status: number }, "dashboard-admin") ?? "Les données n'ont pas pu être chargées pour le moment. Réessayez dans quelques instants.");
       } else {
         setLists(l);
         setOverview(o);
@@ -681,7 +682,7 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
           setTemplateContent(tpl.content);
           setEditorOpen(true);
         } else {
-          toast(tpl.error ?? "Impossible de charger le modèle de contrat.", "error");
+          toast(tpl.error ?? "Le modèle de contrat n'a pas pu être chargé pour le moment. Réessayez dans quelques instants.", "error");
         }
       } else {
         setOtpError(res.error ?? "Code invalide.");

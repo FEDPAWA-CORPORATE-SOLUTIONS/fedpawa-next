@@ -26,14 +26,24 @@ export default function Abonnement() {
   const [selectedService, setSelectedService] = useState<string | null>(
     serviceFromUrl || null
   );
+  const [restoreData, setRestoreData] = useState<any>({});
+  const [showRestoreModal, setShowRestoreModal] = useState(false);
 
-  // Persistance sessionStorage
+  // Persistance localStorage
   useEffect(() => {
-    const saved = sessionStorage.getItem('abonnement_data');
-    if (saved) setFormData(JSON.parse(saved));
+    const saved = localStorage.getItem('abonnement_data');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Object.keys(parsed).length > 0) {
+        setRestoreData(parsed);
+        setShowRestoreModal(true);
+      }
+    }
   }, []);
   useEffect(() => {
-    sessionStorage.setItem('abonnement_data', JSON.stringify(formData));
+    if (Object.keys(formData).length > 0) {
+      localStorage.setItem('abonnement_data', JSON.stringify(formData));
+    }
   }, [formData]);
 
   const updateData = (newData: any) => setFormData((prev: any) => ({ ...prev, ...newData }));
@@ -73,6 +83,35 @@ export default function Abonnement() {
             <div style={{marginTop:'1.5rem',display:'flex',gap:'1rem'}}>
               <button className="btn btn-primary" onClick={handleEmailVerify}>Vérifier</button>
               <button className="btn btn-outline" onClick={handleEmailNoThanks}>Non merci</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de restauration de progression */}
+      {showRestoreModal && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center',
+          alignItems: 'center', zIndex: 9998
+        }}>
+          <div style={{
+            background: '#fff', padding: '2rem', borderRadius: '8px',
+            maxWidth: '480px', textAlign: 'center', boxShadow: '0 10px 30px rgba(0,0,0,0.3)'
+          }}>
+            <p><strong>Reprise de votre progression</strong></p>
+            <p>Vous avez une progression enregistrée. Voulez-vous la reprendre ou recommencer ?</p>
+            <div style={{marginTop: '1.5rem', display: 'flex', gap: '1rem'}}>
+              <button className="btn btn-primary" onClick={() => {
+                setFormData(restoreData);
+                setShowRestoreModal(false);
+              }}>Reprendre</button>
+              <button className="btn btn-outline" onClick={() => {
+                setFormData({});
+                setShowRestoreModal(false);
+                localStorage.removeItem('abonnement_data');
+                setCurrentStep(0);
+              }}>Recommencer</button>
             </div>
           </div>
         </div>

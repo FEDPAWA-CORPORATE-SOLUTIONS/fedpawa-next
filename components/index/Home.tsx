@@ -203,7 +203,7 @@ export default function Home({ locale = "fr" }: HomeProps) {
                   />
                   {/* eslint-disable-next-line @next/next/no-img-element -- <Image> interdit: dimensions source inconnues */}
                   <img
-                    src="/assets/images/home_hero.jpg"
+                    src="/assets/images/home_hero_new.jpg"
                     alt="Professionnels camerounais au bureau à Douala"
                   />
                 </picture>

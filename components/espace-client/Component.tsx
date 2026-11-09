@@ -19,6 +19,7 @@ import {
   apiAuthPostForm,
   getToken,
 } from "@/lib/auth";
+import { getFriendlyErrorMessage } from "@/lib/errors";
 import { markNotificationsRead } from "@/lib/notifications";
 import {
   fetchNonLues,
@@ -328,7 +329,7 @@ function useDashboardData(reloadKey: number): LoadState {
         setState({
           data: null,
           loading: false,
-          error: err.message ?? "Erreur de chargement.",
+          error: getFriendlyErrorMessage(err as unknown as { status: number }, "espace-client") ?? "Les informations n'ont pas pu être chargées pour le moment. Réessayez dans quelques instants.",
         });
       });
     return () => {

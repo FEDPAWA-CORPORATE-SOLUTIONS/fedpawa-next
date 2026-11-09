@@ -69,6 +69,7 @@ export async function apiFetch<T = unknown>(
   let response: Response;
   try {
     response = await fetch(buildUrl(path), {
+      credentials: 'include',
       ...rest,
       headers: buildHeaders(init),
       body: body !== undefined ? JSON.stringify(body) : undefined,

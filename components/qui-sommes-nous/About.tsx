@@ -19,6 +19,7 @@ export interface AboutProps {
 }
 
 /** Item de galerie source : image + classe taille + légende. */
+// 12 images uniformisées 736×736 extraites de QUI_final.zip (crop centré équitable).
 const GALLERY: {
   img: string;
   cls: string;
@@ -27,16 +28,18 @@ const GALLERY: {
   altFr: string;
   altEn: string;
 }[] = [
-  { img: "qui_1", cls: "w-2 h-2", captionFr: "Accueil & Réception", captionEn: "Reception & Welcome", altFr: "Accueil et réception FEDPAWA", altEn: "Reception and welcome desk" },
-  { img: "qui_7", cls: "", captionFr: "Bureau Privé Executive", captionEn: "Executive Private Office", altFr: "Bureau privé Executive", altEn: "Executive private office" },
-  { img: "qui_8", cls: "", captionFr: "Salle de Réunion", captionEn: "Meeting Room", altFr: "Salle de réunion", altEn: "Meeting room" },
-  { img: "qui_9", cls: "", captionFr: "Espace de Travail", captionEn: "Workspace", altFr: "Espace de travail", altEn: "Workspace" },
-  { img: "qui_10", cls: "", captionFr: "Espace Café & Détente", captionEn: "Coffee & Lounge Area", altFr: "Espace café et détente", altEn: "Coffee and lounge area" },
-  { img: "qui_11", cls: "", captionFr: "Secrétariat Téléphonique", captionEn: "Telephone Secretariat", altFr: "Secrétariat téléphonique", altEn: "Telephone secretariat" },
-  { img: "qui_12", cls: "w-2", captionFr: "Gestion du Courrier", captionEn: "Mail Handling", altFr: "Gestion du courrier", altEn: "Mail handling" },
-  { img: "qui_13", cls: "", captionFr: "Hub Opérationnel Logpom", captionEn: "Logpom Operational Hub", altFr: "Hub opérationnel Logpom", altEn: "Logpom operational hub" },
-  { img: "qui_14", cls: "", captionFr: "Bureaux Haut Standing", captionEn: "High-End Offices", altFr: "Bureaux équipés haut standing", altEn: "High-end equipped offices" },
-  { img: "qui_15", cls: "", captionFr: "Connexion Haut Débit", captionEn: "High-Speed Connection", altFr: "Connexion haut débit", altEn: "High-speed connection" },
+  { img: "qui_1", cls: "", captionFr: "Découverte FEDPAWA", captionEn: "Discover FEDPAWA", altFr: "Image FEDPAWA 1", altEn: "FEDPAWA image 1" },
+  { img: "qui_2", cls: "", captionFr: "Espace FEDPAWA", captionEn: "FEDPAWA Space", altFr: "Image FEDPAWA 2", altEn: "FEDPAWA image 2" },
+  { img: "qui_3", cls: "", captionFr: "Univers FEDPAWA", captionEn: "FEDPAWA Universe", altFr: "Image FEDPAWA 3", altEn: "FEDPAWA image 3" },
+  { img: "qui_4", cls: "", captionFr: "Médias & Vidéos", captionEn: "Media & Videos", altFr: "Médias et vidéos verticales", altEn: "Vertical media and videos" },
+  { img: "qui_5", cls: "", captionFr: "Stratégie d'Entreprise", captionEn: "Corporate Strategy", altFr: "Stratégie d'entreprise", altEn: "Corporate strategy" },
+  { img: "qui_6", cls: "", captionFr: "Numérisation & Digitalisation", captionEn: "Digitization & Digitalization", altFr: "Numérisation et digitalisation", altEn: "Digitization and digitalization" },
+  { img: "qui_7", cls: "", captionFr: "Formalités en Ligne", captionEn: "Online Formalities", altFr: "Formalités administratives en ligne", altEn: "Online administrative formalities" },
+  { img: "qui_8", cls: "", captionFr: "Bien-être & Ergonomie", captionEn: "Wellness & Ergonomics", altFr: "Bien-être et ergonomie au travail", altEn: "Wellness and ergonomics at work" },
+  { img: "qui_9", cls: "", captionFr: "Services aux Talents", captionEn: "Talent Services", altFr: "Services aux talents", altEn: "Talent services" },
+  { img: "qui_10", cls: "", captionFr: "Cession d'Entreprise", captionEn: "Business Exit", altFr: "Raisons de cession d'entreprise", altEn: "Business owners selling reasons" },
+  { img: "qui_11", cls: "", captionFr: "Transition 5.0", captionEn: "Transition 5.0", altFr: "Transition industrielle 5.0", altEn: "Industry transition 5.0" },
+  { img: "qui_12", cls: "", captionFr: "Téléphonie d'Entreprise", captionEn: "Business Phone Systems", altFr: "Système téléphonique d'entreprise", altEn: "Business phone systems" },
 ];
 
 export default function About({ locale = "fr" }: AboutProps) {
@@ -179,7 +182,21 @@ export default function About({ locale = "fr" }: AboutProps) {
       </section>
 
       {/* ============== GALERIE PHOTOS ============== */}
-      <Carousel />
+      <section className="section-padding">
+        <div className="container">
+          <div className="gallery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
+            {GALLERY.map((item, index) => (
+              <div key={index} style={{ height: '300px', overflow: 'hidden', borderRadius: '8px', cursor: 'pointer' }} onClick={() => openLightbox(item.img)}>
+                <img 
+                  src={`/assets/images/${item.img}.jpg`} 
+                  alt={item.altFr} 
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
 
       {/* ============== CHIFFRES CLÉS (compteurs animés) ============== */}

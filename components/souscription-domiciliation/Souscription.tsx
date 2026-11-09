@@ -107,6 +107,29 @@ const INITIAL: SouscriptionState = {
 
 const TOTAL_STEPS = 6;
 
+// ---------- Brouillon localStorage (persistance + reprise) ----------
+// Les fichiers KYC (File) ne sont pas sérialisables → exclus du brouillon.
+const DRAFT_KEY = "souscription_domiciliation_draft_v1";
+type Draft = Omit<SouscriptionState, "files"> & { step: number; savedAt: string };
+
+const DRAFT_FIELDS: (keyof Omit<SouscriptionState, "files">)[] = [
+  "statutStructure", "denomination", "formeJuridique", "formeAutre", "rccm", "niu",
+  "noImmat", "secteur", "description", "civilite", "nomComplet", "fonction",
+  "nationalite", "typePiece", "numPiece", "email", "telephone", "adresse", "ville",
+  "pays", "gamme", "pack", "periodicite", "options", "chkCgv", "chkCadre", "chkExactitude",
+];
+
+/** Le brouillon mérite une reprise ? (au moins un champ significatif non vide) */
+function draftHasContent(d: Draft): boolean {
+  if (d.step > 1) return true;
+  if (Array.isArray(d.options) && d.options.length) return true;
+  if (d.noImmat || d.chkCgv || d.chkCadre || d.chkExactitude) return true;
+  return DRAFT_FIELDS.some((k) => {
+    const v = d[k];
+    return typeof v === "string" && v.trim() !== "";
+  });
+}
+
 export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   const t = getPageDictionary(locale, "souscription_domiciliation");
   const routes = routesFor(locale);
@@ -120,17 +143,45 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   const [kycDone, setKycDone] = useState<string | null>(null); // statut KYC si déjà fourni
   const [dragOver, setDragOver] = useState<string | null>(null);
   const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
+  // Brouillon localStorage : sauvegarde persistante + modale de reprise.
+  const [savedDraft, setSavedDraft] = useState<Draft | null>(null);
+  const [draftResolved, setDraftResolved] = useState(false);
+  const meRef = useRef<Record<string, string | undefined> | null>(null);
 
   const set = <K extends keyof SouscriptionState>(key: K, value: SouscriptionState[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
 
+  // ---------- Brouillon : pré-remplissage URL + /me, persistance, reprise ----------
   // Pré-sélection depuis l'URL (?pack=national-premium) — cf. init du JS source.
-  useEffect(() => {
+  const applyUrlPack = () => {
     const urlPack = new URLSearchParams(window.location.search).get("pack");
     if (urlPack && (urlPack.startsWith("national-") || urlPack.startsWith("international-"))) {
       const g: Gamme = urlPack.startsWith("national-") ? "nationale" : "internationale";
       setForm((f) => ({ ...f, gamme: g, pack: urlPack }));
     }
+  };
+  // Pré-remplissage compte utilisateur : update fonctionnel → ne jamais
+  // écraser une valeur déjà saisie (brouillon restauré inclus).
+  const applyMeFill = (me: Record<string, string | undefined>) => {
+    const fill = (key: keyof SouscriptionState, src?: string) => {
+      if (!src) return;
+      setForm((f) => (f[key] ? f : ({ ...f, [key]: src } as SouscriptionState)));
+    };
+    fill("denomination", me.denomination);
+    fill("civilite", me.civilite);
+    fill("nomComplet", me.fullName);
+    fill("fonction", me.function);
+    fill("nationalite", me.nationality);
+    fill("email", me.email);
+    fill("telephone", me.phone);
+    fill("adresse", me.address);
+    fill("ville", me.city);
+    fill("rccm", me.rccm);
+    fill("niu", me.niu);
+  };
+
+  useEffect(() => {
+    applyUrlPack();
     // SKIP KYC si déjà fait dans l'espace client (GET /api/v1/auth/me → kyc_status).
     (async () => {
       try {
@@ -138,33 +189,105 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         // par une route GET et n'envoyait pas le token).
         const me = await fetchMe();
         if (me && me.authenticated) {
-          // Pré-remplir les champs issus du compte utilisateur (si non vides).
-          const fill = (key: keyof SouscriptionState, src: string) => {
-            if (!form[key] && src) setForm((f) => ({ ...f, [key]: src }));
-          };
-          fill("denomination", me.denomination ?? undefined);
-          fill("civilite", me.civilite ?? undefined);
-          fill("nomComplet", me.fullName ?? undefined);
-          fill("fonction", me.function ?? undefined);
-          fill("nationalite", me.nationality ?? undefined);
-          fill("email", me.email ?? undefined);
-          fill("telephone", me.phone ?? undefined);
-          fill("adresse", me.address ?? undefined);
-          fill("ville", me.city ?? undefined);
-          fill("rccm", me.rccm ?? undefined);
-          fill("niu", me.niu ?? undefined);
-          // Persister en sessionStorage pour le prochain retour sur la page.
-          sessionStorage.setItem(
-            "souscription_domiciliation_data",
-            JSON.stringify(form)
-          );
+          meRef.current = me as unknown as Record<string, string | undefined>;
+          applyMeFill(meRef.current);
+          if (me.kyc_status) setKycDone(me.kyc_status);
         }
-        if (me && me.authenticated && me.kyc_status) setKycDone(me.kyc_status);
       } catch {
         /* dégradation : étape KYC normale */
       }
     })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Chargement du brouillon sauvegardé (localStorage) au montage.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const d = JSON.parse(raw) as Draft;
+      if (draftHasContent(d)) setSavedDraft(d);
+      else localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* brouillon corrompu → ignoré */
+    }
+  }, []);
+
+  // Persistance : tout changement d'état → localStorage. Gelée jusqu'à la
+  // décision de reprise (sinon le pré-remplissage /me écraserait le brouillon).
+  useEffect(() => {
+    if (!draftResolved) return;
+    try {
+      const { files: _files, ...rest } = form;
+      void _files;
+      const draft: Draft = { ...rest, step, savedAt: new Date().toISOString() };
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch {
+      /* quota / navigation privée : persistance indisponible */
+    }
+  }, [form, step, draftResolved]);
+
+  // Verrou du scroll pendant la modale de reprise.
+  useEffect(() => {
+    document.body.style.overflow = !!savedDraft && !draftResolved ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [savedDraft, draftResolved]);
+
+  // ---------- Reprise / remise à zéro du brouillon ----------
+  function resumeDraft() {
+    const d = savedDraft;
+    if (d) {
+      setForm((f) => ({
+        ...f,
+        statutStructure: d.statutStructure ?? f.statutStructure,
+        denomination: d.denomination ?? f.denomination,
+        formeJuridique: d.formeJuridique ?? f.formeJuridique,
+        formeAutre: d.formeAutre ?? f.formeAutre,
+        rccm: d.rccm ?? f.rccm,
+        niu: d.niu ?? f.niu,
+        noImmat: d.noImmat ?? f.noImmat,
+        secteur: d.secteur ?? f.secteur,
+        description: d.description ?? f.description,
+        civilite: d.civilite ?? f.civilite,
+        nomComplet: d.nomComplet ?? f.nomComplet,
+        fonction: d.fonction ?? f.fonction,
+        nationalite: d.nationalite ?? f.nationalite,
+        typePiece: d.typePiece ?? f.typePiece,
+        numPiece: d.numPiece ?? f.numPiece,
+        email: d.email ?? f.email,
+        telephone: d.telephone ?? f.telephone,
+        adresse: d.adresse ?? f.adresse,
+        ville: d.ville ?? f.ville,
+        pays: d.pays ?? f.pays,
+        gamme: d.gamme ?? f.gamme,
+        pack: d.pack ?? f.pack,
+        periodicite: d.periodicite ?? f.periodicite,
+        options: d.options ?? f.options,
+        chkCgv: d.chkCgv ?? f.chkCgv,
+        chkCadre: d.chkCadre ?? f.chkCadre,
+        chkExactitude: d.chkExactitude ?? f.chkExactitude,
+      }));
+      if (d.step >= 1 && d.step <= TOTAL_STEPS) setStep(d.step);
+    }
+    setSavedDraft(null);
+    setDraftResolved(true);
+  }
+
+  function restartDraft() {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {
+      /* ignore */
+    }
+    setSavedDraft(null);
+    setDraftResolved(true);
+    setForm({ ...INITIAL, options: [], files: {} });
+    setStep(1);
+    applyUrlPack();
+    if (meRef.current) applyMeFill(meRef.current);
+  }
 
   // Naviguer revient en haut (showStep → window.scrollTo).
   useEffect(() => {
@@ -419,6 +542,16 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   }
 
   const stepLabels = [t.step1, t.step2, t.step3, t.step4, t.step5, t.step6];
+
+  // Priorité des modales : la modale e-mail non vérifié (bloquante, rendue
+  // dans Guarded) et toute autre modale ouverte passent AVANT ; la reprise
+  // de brouillon attend son tour (2e position).
+  const gateModalOpen =
+    verif.status === "unverified" ||
+    (verif.gateOpen && verif.status !== "anonymous" && verif.status !== "verified");
+  const resumePending = !!savedDraft && !draftResolved;
+  const showResumeModal =
+    resumePending && !gateModalOpen && smartModal === "closed" && !showPayModal;
 
   return (
     <>
@@ -1452,6 +1585,69 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
           )}
         </div>
       </div>
+
+      {/* ============== MODALE REPRISE DE BROUILLON (petite, 2e priorité) ============== */}
+      {showResumeModal && (
+        <div
+          id="draft-resume-overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(8,12,24,0.45)",
+            zIndex: 9500,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 20,
+          }}
+        >
+          <div
+            id="draft-resume-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t.draftTitle}
+            style={{
+              background: "var(--color-bg-main)",
+              borderRadius: 14,
+              maxWidth: 420,
+              width: "100%",
+              padding: 24,
+              boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            <h3 style={{ fontSize: "1.1rem", marginBottom: 8 }}>{t.draftTitle}</h3>
+            <p
+              style={{
+                fontSize: "0.88rem",
+                color: "var(--color-text-muted)",
+                lineHeight: 1.55,
+                marginBottom: 18,
+              }}
+            >
+              {t.draftText}
+            </p>
+            <div style={{ display: "grid", gap: 10 }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                style={{ width: "100%" }}
+                onClick={resumeDraft}
+              >
+                {t.draftContinue}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ width: "100%" }}
+                onClick={restartDraft}
+              >
+                {t.draftRestart}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ============== MODALE SMART-DETECTION (persistante) ============== */}
       {smartModal !== "closed" && (

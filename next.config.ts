@@ -36,8 +36,8 @@ const csp = [
   // data: images (SVG inline) + blob: (uploads/aperçus).
   "img-src 'self' data: blob:",
   // Prod : API same-origin derrière le reverse proxy.
-  // Dev/test : origine de NEXT_PUBLIC_API_URL (ex. http://app-test.fedpawa.com).
-  `connect-src 'self' ${apiOrigin}`,
+  // Si NEXT_PUBLIC_API_URL est vide ou local, on n'ajoute rien au connect-src (same-origin suffit).
+  `connect-src 'self'${apiOrigin.includes("localhost") || !apiOrigin ? "" : ` ${apiOrigin}`}`,
   // Aperçu PDF du contrat à signer : iframe sur blob: (fetch authentifié Bearer).
   "frame-src 'self' blob:",
   "object-src 'none'",

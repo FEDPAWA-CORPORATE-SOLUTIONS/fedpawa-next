@@ -19,6 +19,12 @@ export const souscriptionFr: PageDict = {
   step5: "Documents",
   step6: "Facturation",
   prev: "Précédent",
+
+  // Reprise de brouillon (localStorage)
+  draftTitle: "Reprendre votre souscription ?",
+  draftText: "Des informations déjà saisies dans ce formulaire ont été sauvegardées sur cet appareil. Voulez-vous continuer le remplissage là où vous vous êtes arrêté, ou recommencer à zéro ?",
+  draftContinue: "Continuer le remplissage",
+  draftRestart: "Recommencer à zéro",
   formTitle: "Renseignez vos informations",
   formSubtitle: "Service de Domiciliation d'Entreprises et Mise à Disposition d'Infrastructures",
 
@@ -244,6 +250,12 @@ export const souscriptionFr: PageDict = {
 };
 
 export const souscriptionEn: PageDict = {
+  // Draft resume (localStorage)
+  draftTitle: "Resume your application?",
+  draftText: "Information you already entered in this form has been saved on this device. Would you like to continue where you left off, or start over from scratch?",
+  draftContinue: "Continue where I left off",
+  draftRestart: "Start over",
+
   // Stepper
   stepLabel: "Étape",
   stepOver: "/",

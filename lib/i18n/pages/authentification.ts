@@ -52,7 +52,7 @@ export const authFr: PageDict = {
   toastPwdMismatch: "Les mots de passe ne correspondent pas.",
   toastPwdWeak:
     "Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.",
-  toastServerKo: "Erreur de connexion au serveur.",
+  toastServerKo: "Votre tentative n'a pas pu aboutir. Vérifiez votre connexion internet et réessayez. Si le problème persiste, contactez notre support.",
   showPwd: "Afficher le mot de passe",
 };
 
@@ -103,6 +103,6 @@ export const authEn: PageDict = {
   toastPwdMismatch: "Passwords do not match.",
   toastPwdWeak:
     "The password must contain at least 8 characters, one uppercase letter and one number.",
-  toastServerKo: "Server connection error.",
+  toastServerKo: "Your request could not be completed. Check your internet connection and try again. If the problem persists, contact our support team.",
   showPwd: "Show password",
 };
