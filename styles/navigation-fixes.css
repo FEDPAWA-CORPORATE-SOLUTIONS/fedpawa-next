@@ -1,0 +1,30 @@
+@media (max-width: 992px) {
+  .hidden-mobile { display: none !important; }
+}
+.profile-dropdown { position: relative; }
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  padding: 10px;
+  list-style: none;
+  min-width: 150px;
+  z-index: 100;
+}
+.accordion-list {
+  list-style: none;
+  padding-left: 20px;
+  margin-top: 10px;
+}
+.mobile-nav button {
+  background: none;
+  border: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  width: 100%;
+  padding: 10px 0;
+  cursor: pointer;
+}

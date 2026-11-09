@@ -33,6 +33,9 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   const { shared } = getDictionary(locale);
   const routes = routesFor(locale);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopProfileOpen, setDesktopProfileOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
   // Mode sombre/clair : data-mode sur <html> + localStorage "fedpawa-mode"
   // (parité main.js source : défaut dark, lecture au montage client).
   const [darkMode, setDarkMode] = useState(true);
@@ -45,7 +48,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   const pwa = usePwaNotifications();
   // --- LOGIQUE PROFIL ---
   const profileType = "client"; // défini par défaut ; peut être mis à jour depuis /api/v1/auth/me
-  const isAdmin = profileType === "admin";
+
   // Options admin : visibles seulement si profileType est "admin"
   // Options client : visibles par défaut
 
@@ -195,8 +198,20 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               Cloche notifications (vague E) si connecté, avant le CTA login. */}
           <div className="nav-actions" id="navActions">
             {connected && (
-              <PublicationsBell locale={locale} variant="desktop" />
+              <div className="profile-dropdown">
+                <button className="profile-btn" onClick={() => setDesktopProfileOpen(!desktopProfileOpen)}>
+                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                </button>
+                {desktopProfileOpen && (
+                  <ul className="dropdown-menu" style={{ position: "absolute", right: 0, background: "white", color: "black", listStyle: "none", padding: "10px", zIndex: 10 }}>
+                    <li><Link href={routes.espaceClient} onClick={() => setDesktopProfileOpen(false)}>Espace Client</Link></li>
+                    <li><Link href="/parametres" onClick={() => setDesktopProfileOpen(false)}>Paramètres</Link></li>
+                    <li><button onClick={handleLogout}>Déconnexion</button></li>
+                  </ul>
+                )}
+              </div>
             )}
+            {connected && <PublicationsBell locale={locale} variant="desktop" />}
             {!connected && (
               <Link className="nav-login" href={routes.auth}>
                 {locale === "en" ? "Sign in" : "Se Connecter"}
@@ -212,49 +227,37 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
         id="mobileNav"
       >
         <nav>
-          <Link href={routes.home} onClick={() => setMobileOpen(false)}>
-            {shared.nav.home}
-          </Link>
-          <Link href={routes.domiciliation} onClick={() => setMobileOpen(false)}>
-            {shared.nav.domiciliation}
-          </Link>
-          <Link
-            href={routes.creationEntreprise}
-            onClick={() => setMobileOpen(false)}
-          >
-            {shared.nav.companyFormation}
-          </Link>
-          <Link href={routes.fiscalite} onClick={() => setMobileOpen(false)}>
-            {shared.nav.taxLegalAdvisory}
-          </Link>
-          <Link href={routes.oapi} onClick={() => setMobileOpen(false)}>
-            {shared.nav.oapiProtection}
-          </Link>
-          <Link href={routes.contrats} onClick={() => setMobileOpen(false)}>
-            {shared.nav.contracts}
-          </Link>
-          <Link
-            href={routes.publications}
-            onClick={() => setMobileOpen(false)}
-          >
-            {shared.nav.publications}
-          </Link>
-          <Link href={routes.aboutUs} onClick={() => setMobileOpen(false)}>
-            {shared.nav.aboutUs}
-          </Link>
-          <Link href={routes.contact} onClick={() => setMobileOpen(false)}>
-            {shared.nav.contact}
+          <Link href={routes.home} onClick={() => setMobileOpen(false)}>{shared.nav.home}</Link>
+          
+          <div className="mobile-accordion">
+             <button onClick={() => setMobileServicesOpen(!mobileServicesOpen)}>Services ▾</button>
+             {mobileServicesOpen && (
+               <ul>
+                 <li><Link href={routes.domiciliation} onClick={() => setMobileOpen(false)}>{shared.nav.domiciliation}</Link></li>
+                 <li><Link href={routes.creationEntreprise} onClick={() => setMobileOpen(false)}>{shared.nav.companyFormation}</Link></li>
+                 <li><Link href={routes.fiscalite} onClick={() => setMobileOpen(false)}>{shared.nav.taxLegalAdvisory}</Link></li>
+                 <li><Link href={routes.oapi} onClick={() => setMobileOpen(false)}>{shared.nav.oapiProtection}</Link></li>
+                 <li><Link href={routes.contrats} onClick={() => setMobileOpen(false)}>{shared.nav.contracts}</Link></li>
+               </ul>
+             )}
+          </div>
+          
+          <Link href={routes.publications} onClick={() => setMobileOpen(false)}>{shared.nav.publications}</Link>
+          <Link href={routes.aboutUs} onClick={() => setMobileOpen(false)}>{shared.nav.aboutUs}</Link>
+          <Link href={routes.contact} onClick={() => setMobileOpen(false)}>{shared.nav.contact}</Link>
 
           {connected && (
-            <div className="profile-menu-section" style={{ paddingLeft: '20px', display: 'flex', flexDirection: 'column' }}>
-              <Link href={isAdmin ? routes.adminDashboard : routes.espaceClient} onClick={() => setMobileOpen(false)}>
-                {isAdmin ? "Dashboard" : "Espace Client"}
-              </Link>
-              <Link href="/parametres" onClick={() => setMobileOpen(false)}>
-                Paramètres
-              </Link>
+            <div className="mobile-accordion">
+              <button onClick={() => setMobileProfileOpen(!mobileProfileOpen)}>Mon compte ▾</button>
+              {mobileProfileOpen && (
+                <ul>
+                  <li><Link href={routes.espaceClient} onClick={() => setMobileOpen(false)}>Espace Client</Link></li>
+                  <li><Link href="/parametres" onClick={() => setMobileOpen(false)}>Paramètres</Link></li>
+                  <li><button onClick={handleLogout}>Déconnexion</button></li>
+                </ul>
+              )}
             </div>
-          )}          </Link>
+          )}
 
           {/* CTA mobile : login si déconnecté, déconnexion sinon (F4 source) */}
           {connected ? (

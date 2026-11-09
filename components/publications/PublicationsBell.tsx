@@ -196,6 +196,7 @@ export default function PublicationsBell({
             ? "notif-bell-btn"
             : "lang-toggle mobile-lang-toggle notif-bell-btn"
         }
+        style={{ color: "red" }}
         aria-label={t.ariaLabel}
         aria-expanded={open}
         aria-haspopup="true"

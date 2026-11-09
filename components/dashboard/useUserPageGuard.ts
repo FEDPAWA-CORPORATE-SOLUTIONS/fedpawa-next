@@ -51,10 +51,12 @@ export function useUserPageGuard(locale: Locale = "fr"): UserGuardStatus {
         window.location.replace(`${routes.auth}?next=${next}`);
       })
       .catch(() => {
-        // API injoignable : laisser la page visible (dégradation
-        // gracieuse, cohérent avec le site statique source).
-        if (!cancelled) setStatus("allowed");
-      });
+          // API injoignable : refuser l'accès côté client (mauvaise état auth)
+          // plutôt que de laisser passer les anons par défaut. Le composant
+          // parental peut afficher un message d'erreur ou laisser la page
+          // telle quelle si le projet le veut, mais par défaut on refuse.
+          if (!cancelled) setStatus("denied");
+        });
 
     return () => {
       cancelled = true;
