@@ -1,7 +1,10 @@
-// ==========================================================
+// ============================================================
 // FEDPAWA — Nos Valeurs / Savoir-Faire / Différence (nos-4)
-// Design B : "Moderne Décliné" — variations sur le thème about-vision-box
-// Règle : titre de section, puis alternance stricte texte | image
+// Design B : "Corporate Or & Nuit"
+// Famille de style : fond bleu nuit profond, cartes sombres,
+// accents or marqués, image et texte de même largeur,
+// espacement réduit entre les groupes.
+// Règle : titre de section, puis alternance bloc texte | image.
 // ==========================================================
 
 "use client";
@@ -46,8 +49,14 @@ function alt(locale: Locale, img: string) {
   return locale === "en" ? item.altEn : item.altFr;
 }
 
-/** Bloc texte | image — style moderne : carte blanche, bordure or, texte à gauche */
-function ModernPair({
+/**
+ * Paire texte | image — Design B Corporate Or & Nuit
+ * - Image et texte ont exactement la même largeur (flex: 1)
+ * - Carte sombre avec bordure or et fond dégradé nuit
+ * - Icône or en haut du bloc texte
+ * - Espacement réduit entre les groupes (margin-bottom: 24px)
+ */
+function CorporatePair({
   img,
   reversed,
   children,
@@ -60,61 +69,55 @@ function ModernPair({
   onOpen: (img: string) => void;
   locale: Locale;
 }) {
-  const poleColors: Record<string, string> = {
-    qui_10: "var(--color-primary)",
-    qui_4: "var(--color-gold)",
-    qui_5: "var(--color-success)",
-    qui_2: "var(--color-warning)",
-    qui_3: "var(--color-primary)",
-    qui_9: "var(--color-gold)",
-    qui_12: "var(--color-warning)",
-    qui_6: "var(--color-success)",
-  };
-  const accent = poleColors[img] ?? "var(--color-gold)";
-
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-        gap: "40px",
+        display: "flex",
         alignItems: "center",
-        marginBottom: "56px",
+        gap: 20,
+        marginBottom: 24,
+        borderRadius: 12,
+        background: "#111827",
+        border: "1px solid rgba(212, 175, 55, 0.35)",
+        boxShadow: "0 4px 14px rgba(0, 0, 0, 0.35)",
       }}
     >
+      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, transparent, #d4af37, transparent)" }} />
+
       <div
         style={{
-          order: reversed ? 2 : 1,
+          flex: 1,
+          minHeight: 240,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "0 20px",
-          borderLeft: reversed ? "none" : `4px solid ${accent}`,
-          paddingLeft: reversed ? "20px" : "16px",
+          padding: 24,
+          order: reversed ? 2 : 1,
         }}
       >
         {children}
       </div>
+
       <figure
         style={{
           margin: 0,
-          borderRadius: "12px",
-          overflow: "hidden",
+          flex: 1,
+          minHeight: 240,
           cursor: "pointer",
-          boxShadow: "0 10px 30px rgba(10, 14, 24, 0.14)",
+          overflow: "hidden",
           order: reversed ? 1 : 2,
-          border: `1px solid ${accent}`,
+          borderRadius: "0 12px 12px 0",
         }}
         onClick={() => onOpen(img)}
       >
-        <div style={{ borderRadius: "12px", overflow: "hidden" }}>
+        <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>
           <picture>
             <source type="image/webp" srcSet={`/assets/images/${img}.webp`} />
             <img
               src={`/assets/images/${img}.jpg`}
               alt={alt(locale, img)}
               loading="lazy"
-              style={{ width: "100%", height: "380px", objectFit: "cover", display: "block" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", filter: "grayscale(20%)" }}
             />
           </picture>
         </div>
@@ -167,188 +170,178 @@ export default function AboutNos4({ locale = "fr" }: AboutNos4Props) {
         </div>
       </section>
 
-      {/* ============== NOS VALEURS — Design B : Moderne Décliné ============== */}
-      <section style={{ padding: "6rem 0", background: "var(--color-bg)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <span className="section-kicker" style={{ color: "var(--color-gold)", fontSize: "0.875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", display: "inline-block" }}>
+      {/* ============== NOS VALEURS — Variation 1 : Texte | Image, carte or ============== */}
+      <section style={{ padding: "5rem 0", background: "#0a1120" }}>
+        <div className="container" style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span className="section-kicker" style={{ color: "#d4af37", fontSize: "0.875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.75rem", display: "inline-block" }}>
               {t.pillarsKicker}
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "var(--color-primary)", marginBottom: "1rem" }}>{t.pillarsTitle}</h2>
-            <p style={{ fontSize: "1.125rem", lineHeight: 1.8, color: "var(--color-text)" }}>{t.pillarsIntro}</p>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, lineHeight: 1.3, color: "#ffffff", marginBottom: "0.75rem", letterSpacing: "-0.02em" }}>{t.pillarsTitle}</h2>
+            <p style={{ fontSize: "1.05rem", lineHeight: 1.7, color: "#9ca3af", maxWidth: 700, margin: "0 auto" }}>{t.pillarsIntro}</p>
           </div>
 
-          {/* 1. Texte | Image */}
-          <ModernPair img="qui_1" reversed={false} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_1" reversed={false} locale={locale} onOpen={openLightbox}>
             <div>
-              <div style={{ width: "48px", height: "48px", background: "var(--color-gold)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ width: "1.5rem", height: "1.5rem" }}>
+              <div style={{ width: "40px", height: "40px", background: "#d4af37", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth={2} style={{ width: "1.25rem", height: "1.25rem" }}>
                   <path d="M12 2L2 7l10 5 10-5-10-5z" />
                   <path d="M2 17l10 5 10-5" />
                   <path d="M2 12l10 5 10-5" />
                 </svg>
               </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar1Title}</h3>
-              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar1Text}</p>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar1Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#d1d5db", margin: 0 }}>{t.pillar1Text}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* 2. Image | Texte */}
-          <ModernPair img="qui_7" reversed={true} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_7" reversed={true} locale={locale} onOpen={openLightbox}>
             <div>
-              <div style={{ width: "48px", height: "48px", background: "var(--color-primary)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ width: "1.5rem", height: "1.5rem" }}>
+              <div style={{ width: "40px", height: "40px", background: "#d4af37", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth={2} style={{ width: "1.25rem", height: "1.25rem" }}>
                   <circle cx="12" cy="12" r="10" />
                   <line x1="2" y1="12" x2="22" y2="12" />
                   <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
                 </svg>
               </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar2Title}</h3>
-              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar2Text}</p>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar2Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#d1d5db", margin: 0 }}>{t.pillar2Text}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* 3. Texte | Image */}
-          <ModernPair img="qui_11" reversed={false} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_11" reversed={false} locale={locale} onOpen={openLightbox}>
             <div>
-              <div style={{ width: "48px", height: "48px", background: "var(--color-success)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ width: "1.5rem", height: "1.5rem" }}>
+              <div style={{ width: "40px", height: "40px", background: "#d4af37", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth={2} style={{ width: "1.25rem", height: "1.25rem" }}>
                   <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
                   <polyline points="22 4 12 14.01 9 11.01" />
                 </svg>
               </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar3Title}</h3>
-              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar3Text}</p>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar3Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#d1d5db", margin: 0 }}>{t.pillar3Text}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* 4. Image | Texte */}
-          <ModernPair img="qui_8" reversed={true} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_8" reversed={true} locale={locale} onOpen={openLightbox}>
             <div>
-              <div style={{ width: "48px", height: "48px", background: "var(--color-warning)", borderRadius: "10px", display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} style={{ width: "1.5rem", height: "1.5rem" }}>
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <div style={{ width: "40px", height: "40px", background: "#d4af37", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "1rem" }}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="#111827" strokeWidth={2} style={{ width: "1.25rem", height: "1.25rem" }}>
+                  <path d="M3 21h18" />
+                  <path d="M5 21V8l7-5 7 5v13" />
+                  <path d="M9 21v-5h6v5" />
                 </svg>
               </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar4Title}</h3>
-              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar4Text}</p>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar4Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#d1d5db", margin: 0 }}>{t.pillar4Text}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
         </div>
       </section>
 
-      {/* ============== NOTRE SAVOIR-FAIRE — Design B : Moderne Décliné ============== */}
-      <section style={{ padding: "6rem 0", background: "var(--color-bg-alt)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <span className="section-kicker" style={{ color: "var(--color-gold)", fontSize: "0.875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", display: "inline-block" }}>
+      {/* ============== NOTRE SAVOIR-FAIRE — Variation 2 : Texte | Image, bordure or ============== */}
+      <section style={{ padding: "5rem 0", background: "#0a1120" }}>
+        <div className="container" style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span className="section-kicker" style={{ color: "#d4af37", fontSize: "0.875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.75rem", display: "inline-block" }}>
               {t.expertiseKicker}
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "var(--color-primary)", marginBottom: "1rem" }}>{t.expertiseTitle}</h2>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, lineHeight: 1.3, color: "#ffffff", marginBottom: "0.75rem", letterSpacing: "-0.02em" }}>{t.expertiseTitle}</h2>
           </div>
 
-          {/* 1. Image | Texte */}
-          <ModernPair img="qui_10" reversed={false} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_10" reversed={false} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole1Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole1Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole1Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole1Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole1Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>{t.pole1Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#d1d5db", fontStyle: "italic" }}>{t.pole1Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#d1d5db", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole1Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole1Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole1Item3}</li>
               </ul>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* 2. Texte | Image */}
-          <ModernPair img="qui_4" reversed={true} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_4" reversed={true} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole2Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole2Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole2Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole2Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole2Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>{t.pole2Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#d1d5db", fontStyle: "italic" }}>{t.pole2Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#d1d5db", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole2Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole2Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole2Item3}</li>
               </ul>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* 3. Image | Texte */}
-          <ModernPair img="qui_5" reversed={false} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_5" reversed={false} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole3Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole3Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole3Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole3Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole3Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>{t.pole3Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#d1d5db", fontStyle: "italic" }}>{t.pole3Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#d1d5db", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole3Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole3Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole3Item3}</li>
               </ul>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* 4. Texte | Image */}
-          <ModernPair img="qui_2" reversed={true} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_2" reversed={true} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole4Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole4Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole4Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole4Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative", color: "var(--color-text)" }}>:: {t.pole4Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#ffffff", marginBottom: "0.5rem" }}>{t.pole4Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#d1d5db", fontStyle: "italic" }}>{t.pole4Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#d1d5db", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole4Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole4Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#ffffff" }}>:: {t.pole4Item3}</li>
               </ul>
             </div>
-          </ModernPair>
+          </CorporatePair>
         </div>
       </section>
 
-      {/* ============== NOTRE DIFFÉRENCE — Design B : Moderne Décliné ============== */}
-      <section style={{ padding: "6rem 0", background: "var(--color-bg)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <span className="section-kicker" style={{ color: "var(--color-gold)", fontSize: "0.875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", display: "inline-block" }}>
+      {/* ============== NOTRE DIFFÉRENCE — Variation 3 : Texte | Image, blocs or ============== */}
+      <section style={{ padding: "5rem 0", background: "#0a1120" }}>
+        <div className="container" style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span className="section-kicker" style={{ color: "#d4af37", fontSize: "0.875rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: "0.75rem", display: "inline-block" }}>
               {t.compareKicker}
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "var(--color-primary)", marginBottom: "1rem" }}>{t.compareTitle}</h2>
-            <p style={{ fontSize: "1.125rem", lineHeight: 1.8, color: "var(--color-text)" }}>{t.compareIntro}</p>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, lineHeight: 1.3, color: "#ffffff", marginBottom: "0.75rem", letterSpacing: "-0.02em" }}>{t.compareTitle}</h2>
+            <p style={{ fontSize: "1.05rem", lineHeight: 1.7, color: "#9ca3af", maxWidth: 700, margin: "0 auto" }}>{t.compareIntro}</p>
           </div>
 
-          {/* Texte | Image */}
-          <ModernPair img="qui_3" reversed={false} locale={locale} onOpen={openLightbox}>
+          <CorporatePair img="qui_3" reversed={false} locale={locale} onOpen={openLightbox}>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ padding: "1.5rem", background: "rgba(10, 14, 24, 0.03)", borderRadius: "12px", borderLeft: "4px solid var(--color-text-muted)" }}>
-                <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadTradition}</h4>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.row1Tradition}</p>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Tradition}</p>
+              <div style={{ padding: "1.5rem", background: "rgba(212, 175, 55, 0.08)", borderRadius: 8, border: "1px solid rgba(212, 175, 55, 0.2)" }}>
+                <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadTradition}</h4>
+                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#9ca3af", margin: 0 }}>{t.row1Tradition}</p>
+                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#9ca3af", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Tradition}</p>
               </div>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* Image | Texte */}
-          <ModernPair img="qui_9" reversed={true} locale={locale} onOpen={openLightbox}>
-            <div style={{ padding: "1.5rem", background: "linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.02) 100%)", borderRadius: "12px", borderLeft: "4px solid var(--color-gold)" }}>
-              <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-gold)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", margin: 0 }}>{t.row1Fedpawa}</p>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Fedpawa}</p>
+          <CorporatePair img="qui_9" reversed={true} locale={locale} onOpen={openLightbox}>
+            <div style={{ padding: "1.5rem", background: "rgba(212, 175, 55, 0.12)", borderRadius: 8, border: "1px solid #d4af37" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#d4af37", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#ffffff", margin: 0 }}>{t.row1Fedpawa}</p>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#ffffff", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Fedpawa}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* Texte | Image */}
-          <ModernPair img="qui_12" reversed={false} locale={locale} onOpen={openLightbox}>
-            <div style={{ padding: "1.5rem", background: "rgba(10, 14, 24, 0.03)", borderRadius: "12px", borderLeft: "4px solid var(--color-text-muted)" }}>
-              <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadCriteria}</h4>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.row3Criteria}</p>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Criteria}</p>
+          <CorporatePair img="qui_12" reversed={false} locale={locale} onOpen={openLightbox}>
+            <div style={{ padding: "1.5rem", background: "rgba(212, 175, 55, 0.08)", borderRadius: 8, border: "1px solid rgba(212, 175, 55, 0.2)" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadCriteria}</h4>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#9ca3af", margin: 0 }}>{t.row3Criteria}</p>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#9ca3af", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Criteria}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
 
-          {/* Image | Texte */}
-          <ModernPair img="qui_6" reversed={true} locale={locale} onOpen={openLightbox}>
-            <div style={{ padding: "1.5rem", background: "linear-gradient(135deg, rgba(212, 175, 55, 0.1) 0%, rgba(212, 175, 55, 0.02) 100%)", borderRadius: "12px", borderLeft: "4px solid var(--color-gold)" }}>
-              <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-gold)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", margin: 0 }}>{t.row3Fedpawa}</p>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Fedpawa}</p>
+          <CorporatePair img="qui_6" reversed={true} locale={locale} onOpen={openLightbox}>
+            <div style={{ padding: "1.5rem", background: "rgba(212, 175, 55, 0.12)", borderRadius: 8, border: "1px solid #d4af37" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#d4af37", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#ffffff", margin: 0 }}>{t.row3Fedpawa}</p>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#ffffff", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Fedpawa}</p>
             </div>
-          </ModernPair>
+          </CorporatePair>
         </div>
       </section>
 

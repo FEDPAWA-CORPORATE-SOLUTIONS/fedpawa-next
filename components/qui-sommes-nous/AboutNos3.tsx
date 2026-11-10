@@ -1,7 +1,9 @@
-// ==========================================================
+// ============================================================
 // FEDPAWA — Nos Valeurs / Savoir-Faire / Différence (nos-3)
-// Design A : "Vision Box Élégante" — inspiré de about-vision-box
-// Règle : titre de section, puis alternance stricte image | bloc texte
+// Design A : "Minimaliste Élégante"
+// Famille de style : fond blanc/gris chaud, accents or subtils,
+// cartes épurées, image et texte de même largeur, espacement réduit.
+// Règle : titre de section, puis alternance image | bloc texte.
 // ==========================================================
 
 "use client";
@@ -46,8 +48,14 @@ function alt(locale: Locale, img: string) {
   return locale === "en" ? item.altEn : item.altFr;
 }
 
-/** Bloc image | texte — style about-vision-box : carte élégante, fond sombre, bordure or */
-function VisionPair({
+/**
+ * Paire image | texte — Design A Minimaliste Élégante
+ * - Image et texte ont exactement la même largeur (flex: 1)
+ * - Carte blanche avec bordure très fine et ombre légère
+ * - Accent or discret en haut de la carte
+ * - Espacement réduit entre les groupes (margin-bottom: 24px)
+ */
+function ElegantPair({
   img,
   reversed,
   children,
@@ -63,44 +71,52 @@ function VisionPair({
   return (
     <div
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-        gap: "40px",
+        display: "flex",
         alignItems: "center",
-        marginBottom: "56px",
+        gap: 20,
+        marginBottom: 24,
+        borderRadius: 10,
+        overflow: "hidden",
+        background: "#ffffff",
+        border: "1px solid #e5e5e5",
+        boxShadow: "0 2px 8px rgba(10, 14, 24, 0.06)",
       }}
     >
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: "linear-gradient(90deg, transparent, #d4af37, transparent)" }} />
+
       <figure
         style={{
           margin: 0,
-          borderRadius: "16px",
-          overflow: "hidden",
+          flex: 1,
+          minHeight: 260,
           cursor: "pointer",
-          boxShadow: "0 12px 36px rgba(10, 14, 24, 0.18)",
+          overflow: "hidden",
           order: reversed ? 2 : 1,
-          border: "1px solid rgba(212, 175, 55, 0.25)",
         }}
         onClick={() => onOpen(img)}
       >
-        <div style={{ borderRadius: "16px", overflow: "hidden" }}>
+        <div style={{ width: "100%", height: "100%", overflow: "hidden" }}>
           <picture>
             <source type="image/webp" srcSet={`/assets/images/${img}.webp`} />
             <img
               src={`/assets/images/${img}.jpg`}
               alt={alt(locale, img)}
               loading="lazy"
-              style={{ width: "100%", height: "420px", objectFit: "cover", display: "block" }}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
             />
           </picture>
         </div>
       </figure>
+
       <div
         style={{
-          order: reversed ? 1 : 2,
+          flex: 1,
+          minHeight: 260,
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "0 20px",
+          padding: 24,
+          order: reversed ? 1 : 2,
         }}
       >
         {children}
@@ -122,7 +138,6 @@ export default function AboutNos3({ locale = "fr" }: AboutNos3Props) {
       document.body.style.overflow = "";
     };
   }, [lightboxSrc]);
-
   useEffect(() => {
     document.body.style.overflow = rdvOpen ? "hidden" : "";
     return () => {
@@ -154,151 +169,151 @@ export default function AboutNos3({ locale = "fr" }: AboutNos3Props) {
         </div>
       </section>
 
-      {/* ============== NOS VALEURS — Design A : Vision Box Élégante ============== */}
-      <section style={{ padding: "6rem 0", background: "var(--color-bg)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <span className="section-kicker" style={{ color: "var(--color-gold)", fontSize: "0.875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", display: "inline-block" }}>
+      {/* ============== NOS VALEURS — Variation 1 : Image | Texte alterné ============== */}
+      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
+        <div className="container" style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span className="section-kicker" style={{ color: "#d4af37", fontSize: "0.875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem", display: "inline-block" }}>
               {t.pillarsKicker}
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "var(--color-primary)", marginBottom: "1rem" }}>{t.pillarsTitle}</h2>
-            <p style={{ fontSize: "1.125rem", lineHeight: 1.8, color: "var(--color-text)" }}>{t.pillarsIntro}</p>
+            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "#1f2937", marginBottom: "0.75rem" }}>{t.pillarsTitle}</h2>
+            <p style={{ fontSize: "1.05rem", lineHeight: 1.7, color: "#4b5563", maxWidth: 700, margin: "0 auto" }}>{t.pillarsIntro}</p>
           </div>
 
-          {/* 1. Image | Texte */}
-          <VisionPair img="qui_1" reversed={false} locale={locale} onOpen={openLightbox}>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar1Title}</h3>
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar1Text}</p>
-          </VisionPair>
+          <ElegantPair img="qui_1" reversed={false} locale={locale} onOpen={openLightbox}>
+            <div>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar1Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#4b5563", margin: 0 }}>{t.pillar1Text}</p>
+            </div>
+          </ElegantPair>
 
-          {/* 2. Texte | Image */}
-          <VisionPair img="qui_7" reversed={true} locale={locale} onOpen={openLightbox}>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar2Title}</h3>
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar2Text}</p>
-          </VisionPair>
+          <ElegantPair img="qui_7" reversed={true} locale={locale} onOpen={openLightbox}>
+            <div>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar2Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#4b5563", margin: 0 }}>{t.pillar2Text}</p>
+            </div>
+          </ElegantPair>
 
-          {/* 3. Image | Texte */}
-          <VisionPair img="qui_11" reversed={false} locale={locale} onOpen={openLightbox}>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar3Title}</h3>
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar3Text}</p>
-          </VisionPair>
+          <ElegantPair img="qui_11" reversed={false} locale={locale} onOpen={openLightbox}>
+            <div>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar3Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#4b5563", margin: 0 }}>{t.pillar3Text}</p>
+            </div>
+          </ElegantPair>
 
-          {/* 4. Texte | Image */}
-          <VisionPair img="qui_8" reversed={true} locale={locale} onOpen={openLightbox}>
-            <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.75rem", lineHeight: 1.4 }}>{t.pillar4Title}</h3>
-            <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.pillar4Text}</p>
-          </VisionPair>
+          <ElegantPair img="qui_8" reversed={true} locale={locale} onOpen={openLightbox}>
+            <div>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem", lineHeight: 1.4 }}>{t.pillar4Title}</h3>
+              <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "#4b5563", margin: 0 }}>{t.pillar4Text}</p>
+            </div>
+          </ElegantPair>
         </div>
       </section>
 
-      {/* ============== NOTRE SAVOIR-FAIRE — Design A : Vision Box Élégante ============== */}
-      <section style={{ padding: "6rem 0", background: "var(--color-bg-alt)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <span className="section-kicker" style={{ color: "var(--color-gold)", fontSize: "0.875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", display: "inline-block" }}>
+      {/* ============== NOTRE SAVOIR-FAIRE — Variation 2 : Texte | Image alterné ============== */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span className="section-kicker" style={{ color: "#d4af37", fontSize: "0.875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem", display: "inline-block" }}>
               {t.expertiseKicker}
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "var(--color-primary)", marginBottom: "1rem" }}>{t.expertiseTitle}</h2>
+            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "#1f2937", marginBottom: "0.75rem" }}>{t.expertiseTitle}</h2>
           </div>
 
-          <VisionPair img="qui_10" reversed={false} locale={locale} onOpen={openLightbox}>
+          <ElegantPair img="qui_10" reversed={false} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole1Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole1Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole1Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole1Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole1Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem" }}>{t.pole1Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#6b7280", fontStyle: "italic" }}>{t.pole1Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#4b5563", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole1Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole1Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole1Item3}</li>
               </ul>
             </div>
-          </VisionPair>
+          </ElegantPair>
 
-          <VisionPair img="qui_4" reversed={true} locale={locale} onOpen={openLightbox}>
+          <ElegantPair img="qui_4" reversed={true} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole2Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole2Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole2Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole2Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole2Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem" }}>{t.pole2Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#6b7280", fontStyle: "italic" }}>{t.pole2Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#4b5563", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole2Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole2Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole2Item3}</li>
               </ul>
             </div>
-          </VisionPair>
+          </ElegantPair>
 
-          <VisionPair img="qui_5" reversed={false} locale={locale} onOpen={openLightbox}>
+          <ElegantPair img="qui_5" reversed={false} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole3Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole3Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole3Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole3Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole3Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem" }}>{t.pole3Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#6b7280", fontStyle: "italic" }}>{t.pole3Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#4b5563", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole3Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole3Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole3Item3}</li>
               </ul>
             </div>
-          </VisionPair>
+          </ElegantPair>
 
-          <VisionPair img="qui_2" reversed={true} locale={locale} onOpen={openLightbox}>
+          <ElegantPair img="qui_2" reversed={true} locale={locale} onOpen={openLightbox}>
             <div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "0.5rem" }}>{t.pole4Title}</h3>
-              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "var(--color-text-muted)", fontStyle: "italic" }}>{t.pole4Obj}</span>
-              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "var(--color-text-muted)", fontSize: "0.95rem", lineHeight: 1.7 }}>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole4Item1}</li>
-                <li style={{ marginBottom: "0.5rem", paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole4Item2}</li>
-                <li style={{ marginBottom: 0, paddingLeft: "1.2rem", position: "relative" }}>:: {t.pole4Item3}</li>
+              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, color: "#111827", marginBottom: "0.5rem" }}>{t.pole4Title}</h3>
+              <span style={{ display: "block", marginBottom: "1rem", fontSize: "0.875rem", color: "#6b7280", fontStyle: "italic" }}>{t.pole4Obj}</span>
+              <ul style={{ listStyle: "none", padding: 0, margin: 0, color: "#4b5563", fontSize: "0.95rem", lineHeight: 1.7 }}>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole4Item1}</li>
+                <li style={{ marginBottom: "0.4rem", paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole4Item2}</li>
+                <li style={{ marginBottom: 0, paddingLeft: "1rem", position: "relative", color: "#1f2937" }}>:: {t.pole4Item3}</li>
               </ul>
             </div>
-          </VisionPair>
+          </ElegantPair>
         </div>
       </section>
 
-      {/* ============== NOTRE DIFFÉRENCE — Design A : Vision Box Élégante ============== */}
-      <section style={{ padding: "6rem 0", background: "var(--color-bg)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "4rem" }}>
-            <span className="section-kicker" style={{ color: "var(--color-gold)", fontSize: "0.875rem", fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "1rem", display: "inline-block" }}>
+      {/* ============== NOTRE DIFFÉRENCE — Variation 3 : Carte encadrée or ============== */}
+      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
+        <div className="container" style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
+            <span className="section-kicker" style={{ color: "#d4af37", fontSize: "0.875rem", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: "0.75rem", display: "inline-block" }}>
               {t.compareKicker}
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "var(--color-primary)", marginBottom: "1rem" }}>{t.compareTitle}</h2>
-            <p style={{ fontSize: "1.125rem", lineHeight: 1.8, color: "var(--color-text)" }}>{t.compareIntro}</p>
+            <h2 style={{ fontSize: "2rem", fontWeight: 700, lineHeight: 1.3, color: "#1f2937", marginBottom: "0.75rem" }}>{t.compareTitle}</h2>
+            <p style={{ fontSize: "1.05rem", lineHeight: 1.8, color: "#4b5563", maxWidth: 700, margin: "0 auto" }}>{t.compareIntro}</p>
           </div>
 
-          {/* Approche traditionnelle | Image */}
-          <VisionPair img="qui_3" reversed={false} locale={locale} onOpen={openLightbox}>
+          <ElegantPair img="qui_3" reversed={false} locale={locale} onOpen={openLightbox}>
             <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <div style={{ padding: "1.5rem", background: "rgba(10, 14, 24, 0.04)", borderRadius: "12px", border: "1px solid rgba(10, 14, 24, 0.08)" }}>
-                <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadTradition}</h4>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.row1Tradition}</p>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Tradition}</p>
+              <div style={{ padding: "1.5rem", background: "#f9fafb", borderRadius: 8, border: "1px solid #e5e5e5" }}>
+                <h4 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadTradition}</h4>
+                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#4b5563", margin: 0 }}>{t.row1Tradition}</p>
+                <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#4b5563", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Tradition}</p>
               </div>
             </div>
-          </VisionPair>
+          </ElegantPair>
 
-          {/* Image | Approche FEDPAWA */}
-          <VisionPair img="qui_9" reversed={true} locale={locale} onOpen={openLightbox}>
-            <div style={{ padding: "1.5rem", background: "linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.04) 100%)", borderRadius: "12px", border: "1px solid rgba(212, 175, 55, 0.35)" }}>
-              <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-gold)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", margin: 0 }}>{t.row1Fedpawa}</p>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Fedpawa}</p>
+          <ElegantPair img="qui_9" reversed={true} locale={locale} onOpen={openLightbox}>
+            <div style={{ padding: "1.5rem", background: "#fdf7ec", borderRadius: 8, border: "1px solid #fed7aa" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#78350f", margin: 0 }}>{t.row1Fedpawa}</p>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#78350f", marginTop: "0.75rem", marginBottom: 0 }}>{t.row2Fedpawa}</p>
             </div>
-          </VisionPair>
+          </ElegantPair>
 
-          {/* Image | Approche traditionnelle (suite) */}
-          <VisionPair img="qui_12" reversed={false} locale={locale} onOpen={openLightbox}>
-            <div style={{ padding: "1.5rem", background: "rgba(10, 14, 24, 0.04)", borderRadius: "12px", border: "1px solid rgba(10, 14, 24, 0.08)" }}>
-              <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-text-muted)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadCriteria}</h4>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", margin: 0 }}>{t.row3Criteria}</p>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text-muted)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Criteria}</p>
+          <ElegantPair img="qui_12" reversed={false} locale={locale} onOpen={openLightbox}>
+            <div style={{ padding: "1.5rem", background: "#f9fafb", borderRadius: 8, border: "1px solid #e5e5e5" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadCriteria}</h4>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#4b5563", margin: 0 }}>{t.row3Criteria}</p>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#4b5563", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Criteria}</p>
             </div>
-          </VisionPair>
+          </ElegantPair>
 
-          {/* Texte | Approche FEDPAWA (suite) */}
-          <VisionPair img="qui_6" reversed={true} locale={locale} onOpen={openLightbox}>
-            <div style={{ padding: "1.5rem", background: "linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.04) 100%)", borderRadius: "12px", border: "1px solid rgba(212, 175, 55, 0.35)" }}>
-              <h4 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--color-gold)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", margin: 0 }}>{t.row3Fedpawa}</p>
-              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "var(--color-text)", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Fedpawa}</p>
+          <ElegantPair img="qui_6" reversed={true} locale={locale} onOpen={openLightbox}>
+            <div style={{ padding: "1.5rem", background: "#fdf7ec", borderRadius: 8, border: "1px solid #fed7aa" }}>
+              <h4 style={{ fontSize: "0.95rem", fontWeight: 600, color: "#92400e", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>{t.compareHeadFedpawa}</h4>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#78350f", margin: 0 }}>{t.row3Fedpawa}</p>
+              <p style={{ fontSize: "0.9rem", lineHeight: 1.7, color: "#78350f", marginTop: "0.75rem", marginBottom: 0 }}>{t.row4Fedpawa}</p>
             </div>
-          </VisionPair>
+          </ElegantPair>
         </div>
       </section>
 
