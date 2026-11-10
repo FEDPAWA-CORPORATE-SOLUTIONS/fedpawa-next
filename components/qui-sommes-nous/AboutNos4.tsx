@@ -36,11 +36,13 @@ const GALLERY: {
 ];
 
 function caption(locale: Locale, img: string) {
-  const item = GALLERY.find((g) => g.img === img)!;
+  const item = GALLERY.find((g) => g.img === img);
+  if (!item) return img;
   return locale === "en" ? item.captionEn : item.captionFr;
 }
 function alt(locale: Locale, img: string) {
-  const item = GALLERY.find((g) => g.img === img)!;
+  const item = GALLERY.find((g) => g.img === img);
+  if (!item) return img;
   return locale === "en" ? item.altEn : item.altFr;
 }
 
