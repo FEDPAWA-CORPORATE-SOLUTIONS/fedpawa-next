@@ -388,6 +388,7 @@ export default function ActiveSectionVariants({
                 width: "100%",
                 maxWidth: 900,
                 padding: 0,
+                marginBottom: "2rem",
                 borderRadius: 0,
                 background: isActive ? "#ffffff" : "#fafafa",
                 border: isActive ? `1px solid ${it.color}` : "none",
