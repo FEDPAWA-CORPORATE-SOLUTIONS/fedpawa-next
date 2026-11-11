@@ -354,7 +354,7 @@ export default function ActiveSectionVariants({
 
   // ========== VARIANTE 3 : Stacked Timeline (responsive, sans bordure arrondie, sans padding) ==========
   // Cartes verticales empilées, image à gauche et texte à droite (colonne sur mobile).
-  // Pas de border-radius, pas de padding entre conteneur et contenu.
+  // Titre unique en noir plus grand. Numéro intégré. Espacement image ↔ texte renforcé.
   const renderV3 = () => {
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -384,7 +384,7 @@ export default function ActiveSectionVariants({
                 display: "flex",
                 flexDirection: isMobile ? "column" : "row",
                 alignItems: "center",
-                gap: isMobile ? 0 : "1rem",
+                gap: isMobile ? 0 : "2rem",
                 width: "100%",
                 maxWidth: 900,
                 padding: 0,
@@ -405,6 +405,7 @@ export default function ActiveSectionVariants({
                   overflow: "hidden",
                   border: isActive ? `1px solid ${it.color}` : "none",
                   flexShrink: 0,
+                  marginRight: isMobile ? 0 : "0.5rem",
                 }}
               >
                 <img
@@ -418,8 +419,8 @@ export default function ActiveSectionVariants({
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "8px",
-                    marginBottom: "0.5rem",
+                    gap: "12px",
+                    marginBottom: "0.75rem",
                   }}
                 >
                   <div
@@ -438,30 +439,19 @@ export default function ActiveSectionVariants({
                   >
                     {it.number}
                   </div>
-                  <span
+                  <h3
                     style={{
-                      fontSize: "0.875rem",
-                      fontWeight: 600,
-                      color: isActive ? it.color : "#9ca3af",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.05em",
+                      fontSize: isActive ? "1.4rem" : "1.1rem",
+                      fontWeight: 800,
+                      color: isActive ? "#111827" : "#4b5563",
+                      margin: 0,
+                      lineHeight: 1.4,
+                      transition: "all 0.3s ease",
                     }}
                   >
                     {it.title}
-                  </span>
+                  </h3>
                 </div>
-                <h3
-                  style={{
-                    fontSize: isActive ? "1.25rem" : "1rem",
-                    fontWeight: 800,
-                    color: isActive ? "#111827" : "#4b5563",
-                    margin: "0 0 0.5rem 0",
-                    lineHeight: 1.4,
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {it.title}
-                </h3>
                 <p
                   style={{
                     fontSize: isActive ? "1rem" : "0.9rem",
