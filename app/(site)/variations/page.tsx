@@ -9,7 +9,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
-import ActiveSectionRemix from "@/components/qui-sommes-nous/ActiveSectionRemix";
+import ActiveSectionVariants from "@/components/qui-sommes-nous/ActiveSectionVariants";
 
 export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
   const t = getPageDictionary(locale, "qui-sommes-nous");
@@ -82,7 +82,7 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.pillarsTitle}</h2>
           </div>
-          <ActiveSectionRemix locale={locale} sectionTitle="" items={valeursItems} variant={1} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={3} />
         </div>
       </section>
 
@@ -95,7 +95,7 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.expertiseTitle}</h2>
           </div>
-          <ActiveSectionRemix locale={locale} sectionTitle="" items={savoirFaireItems} variant={2} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={savoirFaireItems} variant={3} />
         </div>
       </section>
 
@@ -108,7 +108,7 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.compareTitle}</h2>
           </div>
-          <ActiveSectionRemix locale={locale} sectionTitle="" items={differenceItems} variant={3} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={differenceItems} variant={3} />
         </div>
       </section>
 
@@ -121,7 +121,7 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.ctaTitle}</h2>
           </div>
-          <ActiveSectionRemix locale={locale} sectionTitle="" items={valeursItems} variant={4} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={3} />
         </div>
       </section>
 

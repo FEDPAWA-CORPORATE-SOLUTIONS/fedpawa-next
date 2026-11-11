@@ -14,7 +14,7 @@
 
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type Locale } from "@/lib/i18n";
 
 export interface RemixItem {
@@ -352,126 +352,136 @@ export default function ActiveSectionVariants({
     </div>
   );
 
-  // ========== VARIANTE 3 : Stacked Timeline ==========
-  // Cartes verticales empilées, visuel à gauche de chaque carte active
-  const renderV3 = () => (
-    <div
-      onWheel={handleWheel}
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: "1.5rem",
-        minHeight: "70vh",
-        alignItems: "center",
-      }}
-    >
-      {items.map((it, i) => {
-        const isActive = i === activeIndex;
-        return (
-          <div
-            key={it.number}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "2rem",
-              width: "100%",
-              maxWidth: 900,
-              padding: isActive ? "2rem 2.5rem" : "1rem 1.5rem",
-              borderRadius: 16,
-              background: isActive ? "#ffffff" : "#f8fafc",
-              border: `1px solid ${isActive ? item.color : "#e5e5e5"}`,
-              boxShadow: isActive ? "0 10px 30px rgba(10, 14, 24, 0.12)" : "none",
-              transform: isActive ? "scale(1)" : "scale(0.94)",
-              opacity: isActive ? 1 : 0.5,
-              transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
-              cursor: "pointer",
-            }}
-            onClick={handleClick(i)}
-          >
+  // ========== VARIANTE 3 : Stacked Timeline (responsive, sans bordure arrondie, sans padding) ==========
+  // Cartes verticales empilées, image à gauche et texte à droite (colonne sur mobile).
+  // Pas de border-radius, pas de padding entre conteneur et contenu.
+  const renderV3 = () => {
+    const [isMobile, setIsMobile] = useState(false);
+    useEffect(() => {
+      const check = () => setIsMobile(window.innerWidth < 768);
+      check();
+      window.addEventListener("resize", check);
+      return () => window.removeEventListener("resize", check);
+    }, []);
+
+    return (
+      <div
+        onWheel={handleWheel}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 0,
+          minHeight: "70vh",
+          alignItems: "center",
+        }}
+      >
+        {items.map((it, i) => {
+          const isActive = i === activeIndex;
+          return (
             <div
+              key={it.number}
               style={{
-                width: 130,
-                height: 130,
-                borderRadius: 12,
-                overflow: "hidden",
-                border: `2px solid ${isActive ? it.color : "#e5e5e5"}`,
-                flexShrink: 0,
+                display: "flex",
+                flexDirection: isMobile ? "column" : "row",
+                alignItems: "center",
+                gap: isMobile ? 0 : "1rem",
+                width: "100%",
+                maxWidth: 900,
+                padding: 0,
+                borderRadius: 0,
+                background: isActive ? "#ffffff" : "#fafafa",
+                border: isActive ? `1px solid ${it.color}` : "none",
+                boxShadow: isActive ? "0 4px 12px rgba(10, 14, 24, 0.08)" : "none",
+                transition: "all 0.3s ease",
+                cursor: "pointer",
               }}
+              onClick={handleClick(i)}
             >
-              <img
-                src={`/assets/images/${it.image}.jpg`}
-                alt={it.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-              />
-            </div>
-            <div style={{ flex: 1 }}>
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "10px",
-                  marginBottom: "0.5rem",
+                  width: isMobile ? "100%" : 160,
+                  height: isMobile ? 200 : 160,
+                  borderRadius: 0,
+                  overflow: "hidden",
+                  border: isActive ? `1px solid ${it.color}` : "none",
+                  flexShrink: 0,
                 }}
               >
+                <img
+                  src={`/assets/images/${it.image}.jpg`}
+                  alt={it.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                />
+              </div>
+              <div style={{ flex: 1, padding: isMobile ? "1rem 0 0 0" : 0 }}>
                 <div
                   style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: "50%",
-                    background: isActive ? it.color : "#e5e5e5",
-                    color: isActive ? "#ffffff" : "#9ca3af",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: "1rem",
-                    fontWeight: 800,
+                    gap: "8px",
+                    marginBottom: "0.5rem",
                   }}
                 >
-                  {it.number}
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 0,
+                      background: isActive ? it.color : "#e5e5e5",
+                      color: isActive ? "#ffffff" : "#9ca3af",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "1rem",
+                      fontWeight: 800,
+                    }}
+                  >
+                    {it.number}
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "0.875rem",
+                      fontWeight: 600,
+                      color: isActive ? it.color : "#9ca3af",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.05em",
+                    }}
+                  >
+                    {it.title}
+                  </span>
                 </div>
-                <span
+                <h3
                   style={{
-                    fontSize: "0.875rem",
-                    fontWeight: 600,
-                    color: isActive ? it.color : "#9ca3af",
-                    textTransform: "uppercase",
-                    letterSpacing: "0.05em",
+                    fontSize: isActive ? "1.25rem" : "1rem",
+                    fontWeight: 800,
+                    color: isActive ? "#111827" : "#4b5563",
+                    margin: "0 0 0.5rem 0",
+                    lineHeight: 1.4,
+                    transition: "all 0.3s ease",
                   }}
                 >
                   {it.title}
-                </span>
+                </h3>
+                <p
+                  style={{
+                    fontSize: isActive ? "1rem" : "0.9rem",
+                    lineHeight: 1.7,
+                    color: isActive ? "#111827" : "#9ca3af",
+                    margin: 0,
+                    maxWidth: "none",
+                    fontWeight: isActive ? 600 : 400,
+                    transition: "all 0.3s ease",
+                  }}
+                >
+                  {it.text}
+                </p>
               </div>
-              <h3
-                style={{
-                  fontSize: isActive ? "1.35rem" : "1.15rem",
-                  fontWeight: 800,
-                  color: isActive ? "#111827" : "#4b5563",
-                  margin: "0 0 0.5rem 0",
-                  lineHeight: 1.4,
-                  transition: "all 0.3s ease",
-                }}
-              >
-                {it.title}
-              </h3>
-              <p
-                style={{
-                  fontSize: isActive ? "1rem" : "0.9rem",
-                  lineHeight: 1.7,
-                  color: isActive ? "#111827" : "#9ca3af",
-                  margin: 0,
-                  maxWidth: isActive ? 560 : 500,
-                  fontWeight: isActive ? 600 : 400,
-                  transition: "all 0.3s ease",
-                }}
-              >
-                {it.text}
-              </p>
             </div>
-          </div>
-        );
-      })}
-    </div>
-  );
+          );
+        })}
+      </div>
+    );
+  };
 
   // ========== VARIANTE 4 : Grid Focus ==========
   // Visuel en grand en haut, 3 cartes en grille en dessous
