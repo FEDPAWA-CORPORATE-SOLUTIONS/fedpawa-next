@@ -903,7 +903,7 @@ html[data-theme="navy"] .form-card h4 { color: var(--color-gold); }
    ========================================================== */
 
 /* Histoire & Vision */
-.about-vision-box { background-color: #1A237E; color: #fff; padding: 40px; border-left: 5px solid var(--color-gold); box-shadow: 0 10px 30px rgba(26, 35, 126, 0.2); height: 100%; display: flex; flex-direction: column; justify-content: center; }
+.about-vision-box { background-color: #1A237E; color: #fff; padding: 40px; border-left: 5px solid var(--color-gold); box-shadow: 0 10px 30px rgba(26, 35, 126, 0.2); height: 100%; display: flex; flex-direction: column; justify-content: flex-start; }
 html[data-theme="navy"] .about-vision-box { background-color: #0d1542; }
 .about-vision-box h3 { color: #fff; font-size: 1.4rem; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; }
 .about-vision-box p { font-size: 0.95rem; color: rgba(255,255,255,0.85); line-height: 1.7; }
