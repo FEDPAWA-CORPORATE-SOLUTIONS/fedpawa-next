@@ -1,6 +1,8 @@
 // ============================================================
 // FEDPAWA — Nos Valeurs / Savoir-Faire / Différence (nos-3)
-// Design A : Vision Box Élégante (restauration)
+// 3 variantes de transition entre la v3 "Stacked Timeline"
+// et le design minimaliste "About Us" (cartes, lignes fines,
+// images en haut, icônes, texte épuré).
 // ==========================================================
 
 "use client";
@@ -9,7 +11,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
-import AboutNos3 from "@/components/qui-sommes-nous/AboutNos3";
+import ActiveSectionNos3Transition from "@/components/qui-sommes-nous/ActiveSectionNos3Transition";
 
 export default function Nos3Page({ locale = "fr" }: { locale?: Locale }) {
   const t = getPageDictionary(locale, "qui-sommes-nous");
@@ -33,6 +35,87 @@ export default function Nos3Page({ locale = "fr" }: { locale?: Locale }) {
 
   const openLightbox = (img: string) => setLightboxSrc(`/assets/images/${img}.jpg`);
 
+  const valeursItems = [
+    {
+      number: "01",
+      title: t.pillar1Title,
+      text: t.pillar1Text,
+      image: "qui_1",
+      icon: "building",
+      color: "#d4af37",
+    },
+    {
+      number: "02",
+      title: t.pillar2Title,
+      text: t.pillar2Text,
+      image: "qui_7",
+      icon: "document",
+      color: "#111827",
+    },
+    {
+      number: "03",
+      title: t.pillar3Title,
+      text: t.pillar3Text,
+      image: "qui_11",
+      icon: "users",
+      color: "#d4af37",
+    },
+  ];
+
+  const savoirFaireItems = [
+    {
+      number: "01",
+      title: t.pole1Title,
+      text: `${t.pole1Obj}. ${t.pole1Item1} ${t.pole1Item2} ${t.pole1Item3}`,
+      image: "qui_10",
+      icon: "camera",
+      color: "#111827",
+    },
+    {
+      number: "02",
+      title: t.pole2Title,
+      text: `${t.pole2Obj}. ${t.pole2Item1} ${t.pole2Item2} ${t.pole2Item3}`,
+      image: "qui_4",
+      icon: "printer",
+      color: "#d4af37",
+    },
+    {
+      number: "03",
+      title: t.pole3Title,
+      text: `${t.pole3Obj}. ${t.pole3Item1} ${t.pole3Item2} ${t.pole3Item3}`,
+      image: "qui_5",
+      icon: "phone",
+      color: "#111827",
+    },
+  ];
+
+  const differenceItems = [
+    {
+      number: "01",
+      title: t.compareHeadTradition,
+      text: `${t.row1Tradition} ${t.row2Tradition}`,
+      image: "qui_3",
+      icon: "document",
+      color: "#6b7280",
+    },
+    {
+      number: "02",
+      title: t.compareHeadFedpawa,
+      text: `${t.row1Fedpawa} ${t.row2Fedpawa}`,
+      image: "qui_9",
+      icon: "building",
+      color: "#d4af37",
+    },
+    {
+      number: "03",
+      title: t.compareHeadCriteria,
+      text: `${t.row3Criteria} ${t.row4Criteria}`,
+      image: "qui_12",
+      icon: "camera",
+      color: "#6b7280",
+    },
+  ];
+
   return (
     <>
       <section className="page-hero">
@@ -54,9 +137,39 @@ export default function Nos3Page({ locale = "fr" }: { locale?: Locale }) {
         </div>
       </section>
 
-      <section style={{ padding: "6rem 0", background: "var(--color-bg)" }}>
-        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <AboutNos3 locale={locale} />
+      {/* TRANSITION 1 : Stacked Minimal (proche de v3) — Nos Valeurs */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <ActiveSectionNos3Transition
+            locale={locale}
+            sectionTitle={t.pillarsTitle}
+            items={valeursItems}
+            transition={1}
+          />
+        </div>
+      </section>
+
+      {/* TRANSITION 2 : Card Center (intermédiaire) — Savoir-Faire */}
+      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <ActiveSectionNos3Transition
+            locale={locale}
+            sectionTitle={t.expertiseTitle}
+            items={savoirFaireItems}
+            transition={2}
+          />
+        </div>
+      </section>
+
+      {/* TRANSITION 3 : About Us Style (proche de l'image) — Différence */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <ActiveSectionNos3Transition
+            locale={locale}
+            sectionTitle={t.compareTitle}
+            items={differenceItems}
+            transition={3}
+          />
         </div>
       </section>
 
@@ -64,9 +177,7 @@ export default function Nos3Page({ locale = "fr" }: { locale?: Locale }) {
         <div className="container">
           <h2>{t.ctaTitle}</h2>
           <p>{t.ctaText}</p>
-          <Link href={routes.contact} className="btn btn-gold">
-            {t.ctaButton}
-          </Link>
+          <Link href={routes.contact} className="btn btn-gold">{t.ctaButton}</Link>
         </div>
       </section>
 
