@@ -1,8 +1,6 @@
 // ============================================================
 // FEDPAWA — Nos Valeurs / Savoir-Faire / Différence (nos-3)
-// Variante 3 : Stacked Timeline
-// Cartes verticales empilées, visuel à gauche de chaque carte active,
-// défiler un par un.
+// Design A : Vision Box Élégante (restauration)
 // ==========================================================
 
 "use client";
@@ -11,9 +9,9 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
-import ActiveSectionRemix from "@/components/qui-sommes-nous/ActiveSectionRemix";
+import AboutNos3 from "@/components/qui-sommes-nous/AboutNos3";
 
-export default function AboutNos3({ locale = "fr" }: { locale?: Locale }) {
+export default function Nos3Page({ locale = "fr" }: { locale?: Locale }) {
   const t = getPageDictionary(locale, "qui-sommes-nous");
   const routes = routesFor(locale);
 
@@ -34,78 +32,6 @@ export default function AboutNos3({ locale = "fr" }: { locale?: Locale }) {
   }, [rdvOpen]);
 
   const openLightbox = (img: string) => setLightboxSrc(`/assets/images/${img}.jpg`);
-
-  const valeursItems = [
-    {
-      number: "01",
-      title: t.pillar1Title,
-      text: t.pillar1Text,
-      image: "qui_1",
-      color: "#d4af37",
-    },
-    {
-      number: "02",
-      title: t.pillar2Title,
-      text: t.pillar2Text,
-      image: "qui_7",
-      color: "#111827",
-    },
-    {
-      number: "03",
-      title: t.pillar3Title,
-      text: t.pillar3Text,
-      image: "qui_11",
-      color: "#d4af37",
-    },
-  ];
-
-  const savoirFaireItems = [
-    {
-      number: "01",
-      title: t.pole1Title,
-      text: `${t.pole1Obj}. ${t.pole1Item1} ${t.pole1Item2} ${t.pole1Item3}`,
-      image: "qui_10",
-      color: "#111827",
-    },
-    {
-      number: "02",
-      title: t.pole2Title,
-      text: `${t.pole2Obj}. ${t.pole2Item1} ${t.pole2Item2} ${t.pole2Item3}`,
-      image: "qui_4",
-      color: "#d4af37",
-    },
-    {
-      number: "03",
-      title: t.pole3Title,
-      text: `${t.pole3Obj}. ${t.pole3Item1} ${t.pole3Item2} ${t.pole3Item3}`,
-      image: "qui_5",
-      color: "#111827",
-    },
-  ];
-
-  const differenceItems = [
-    {
-      number: "01",
-      title: t.compareHeadTradition,
-      text: `${t.row1Tradition} ${t.row2Tradition}`,
-      image: "qui_3",
-      color: "#6b7280",
-    },
-    {
-      number: "02",
-      title: t.compareHeadFedpawa,
-      text: `${t.row1Fedpawa} ${t.row2Fedpawa}`,
-      image: "qui_9",
-      color: "#d4af37",
-    },
-    {
-      number: "03",
-      title: t.compareHeadCriteria,
-      text: `${t.row3Criteria} ${t.row4Criteria}`,
-      image: "qui_12",
-      color: "#6b7280",
-    },
-  ];
 
   return (
     <>
@@ -128,36 +54,9 @@ export default function AboutNos3({ locale = "fr" }: { locale?: Locale }) {
         </div>
       </section>
 
-      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
-        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <ActiveSectionRemix
-            locale={locale}
-            sectionTitle={t.pillarsTitle}
-            items={valeursItems}
-            variant={3}
-          />
-        </div>
-      </section>
-
-      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
-        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <ActiveSectionRemix
-            locale={locale}
-            sectionTitle={t.expertiseTitle}
-            items={savoirFaireItems}
-            variant={3}
-          />
-        </div>
-      </section>
-
-      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
-        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <ActiveSectionRemix
-            locale={locale}
-            sectionTitle={t.compareTitle}
-            items={differenceItems}
-            variant={3}
-          />
+      <section style={{ padding: "6rem 0", background: "var(--color-bg)" }}>
+        <div className="container" style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <AboutNos3 locale={locale} />
         </div>
       </section>
 
