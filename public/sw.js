@@ -80,7 +80,7 @@ function cacheFirst(request, cacheName) {
           cache.put(request, clone).then(() => trimCache(cacheName, 200));
         }
         return response;
-      });
+      }).catch(() => new Response(null, { status: 404 }));
     }),
   );
 }
@@ -113,7 +113,7 @@ function networkFirstPage(event, request) {
     })
     .catch(() =>
       caches.open(PAGES_CACHE).then((cache) =>
-        cache.match(request).then((cached) => cached || cache.match(OFFLINE_URL)),
+        cache.match(request).then((cached) => cached || cache.match(OFFLINE_URL)).then(response => response || new Response('Offline', {status: 404, headers: {'Content-Type': 'text/html'}})),
       ),
     );
 }

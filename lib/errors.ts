@@ -1,10 +1,6 @@
 // ==========================================================
 // FEDPAWA — Gestion unifiée des erreurs frontend
-// Ton voulu (directive K Ray) : ni alarmant, ni mensonger.
-// - Jamais « erreur interne », jamais « équipe alertée ».
-// - Le client sait si l'erreur vient de lui ou de nous,
-//   et ce qu'il a à faire (réessayer / vérifier / contacter
-//   le support si ça persiste).
+// Ton voulu (directive K Ray) : explicite, utile, apaisant.
 // ==========================================================
 
 import { ApiError } from "./api";
@@ -18,10 +14,9 @@ export type PageContext =
 
 /**
  * Messages quand l'erreur vient du CLIENT (action : vérifier ses saisies).
- * 400 = requête mal formée ; 422 = validation Laravel.
  */
 const CLIENT_SIDE_MESSAGES: Record<PageContext, string> = {
-  auth: "Votre tentative de connexion a échoué. Vérifiez votre email et votre mot de passe, puis réessayez.",
+  auth: "Certaines informations saisies sont incorrectes. Vérifiez vos données.",
   souscription:
     "Certaines informations saisies sont incorrectes ou incomplètes. Vérifiez les champs signalés, puis réessayez.",
   "espace-client":
@@ -29,31 +24,32 @@ const CLIENT_SIDE_MESSAGES: Record<PageContext, string> = {
   "dashboard-admin":
     "Votre demande n'a pas pu être traitée. Vérifiez les informations saisies, puis réessayez.",
   default:
-    "Certaines informations saisies sont incorrectes ou incomplètes. Vérifiez-les, puis réessayez.",
+    "Certaines informations saisies sont incorrectes. Vérifiez-les, puis réessayez.",
 };
 
 /**
- * Messages quand l'erreur vient de NOUS (5xx) : réassurant, action claire,
- * sans jargon technique ni promesse non tenue (pas de « équipe alertée »).
+ * Messages quand l'erreur vient de NOUS (5xx)
  */
 const SERVER_SIDE_MESSAGE =
-  "Votre demande n'a pas pu être traitée pour le moment. Réessayez dans quelques minutes. Si le problème persiste, contactez notre support.";
+  "Une erreur temporaire est survenue sur nos serveurs. Réessayez dans quelques minutes. Si le problème persiste, contactez notre support.";
 
 const MESSAGES: Record<number, string | Record<PageContext, string>> = {
-  // Erreur réseau (API injoignable) : peut venir du client OU de nous —
-  // on donne honnêtement les deux vérifications.
-  0: "Votre requête n'a pas pu aboutir. Vérifiez votre connexion internet et réessayez. Si le problème persiste, contactez notre support.",
+  0: "Votre requête n'a pas pu aboutir. Vérifiez votre connexion internet.",
   400: CLIENT_SIDE_MESSAGES,
-  401: "Votre session a expiré. Veuillez vous reconnecter pour continuer.",
-  403: "Cette section n'est pas accessible avec votre compte actuel. Si vous pensez qu'il s'agit d'une erreur, contactez notre support.",
-  404: "La page demandée n'existe pas ou a été déplacée. Vérifiez l'adresse ou retournez à l'accueil.",
+  401: {
+      auth: "Email ou mot de passe incorrect.",
+      souscription: "Votre session a expiré. Veuillez vous reconnecter.",
+      "espace-client": "Votre session a expiré. Veuillez vous reconnecter.",
+      "dashboard-admin": "Votre session a expiré.",
+      default: "Votre session a expiré."
+  },
+  403: "Cette action n'est pas autorisée.",
+  404: "Page introuvable.",
+  409: "Un compte existe déjà avec cette adresse email.",
   422: CLIENT_SIDE_MESSAGES,
+  429: "Trop de tentatives échouées. Veuillez réessayer dans 30 minutes.",
 };
 
-/**
- * Traduit une ApiError en message utilisateur apaisant, adapté à la page.
- * 5xx (500, 502, 503, 504…) → message « vient de nous » unifié.
- */
 export function getFriendlyErrorMessage(
   error: unknown,
   context: PageContext = "default",
@@ -66,9 +62,8 @@ export function getFriendlyErrorMessage(
     if (mapping && typeof mapping === "object") {
       return mapping[context] ?? mapping.default;
     }
-    // Statut inconnu (ex. 409, 429) : neutre, orienté réessai.
-    return "Votre demande n'a pas abouti. Réessayez dans quelques instants. Si le problème persiste, contactez notre support.";
+    return "Votre demande n'a pas abouti. Réessayez dans quelques instants.";
   }
 
-  return "Une difficulté technique est survenue. Veuillez réessayer dans quelques instants. Si le problème persiste, contactez notre support.";
+  return "Une difficulté technique est survenue. Veuillez réessayer dans quelques instants.";
 }

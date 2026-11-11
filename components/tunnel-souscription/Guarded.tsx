@@ -8,28 +8,23 @@
 
 "use client";
 
+import { Suspense } from "react";
 import Abonnement from "./Abonnement";
 import VerificationGateModal from "@/components/verification/VerificationGateModal";
 import { useUserPageGuard } from "@/components/dashboard/useUserPageGuard";
 import type { Locale } from "@/lib/i18n";
 
-export default function TunnelGuarded({
-  locale,
-  service,
-  pack,
-}: {
-  locale: Locale;
-  service?: string;
-  pack?: string;
-}) {
+export default function TunnelGuarded({ locale, service, pack }) {
   const status = useUserPageGuard(locale);
 
   if (status !== "allowed") return null;
 
   return (
-    <>
-      <Abonnement locale={locale} service={service} pack={pack} />
-      <VerificationGateModal locale={locale} />
-    </>
+    <Suspense fallback={<div>Loading...</div>}>
+      <>
+        <Abonnement locale={locale} service={service} pack={pack} />
+        <VerificationGateModal locale={locale} />
+      </>
+    </Suspense>
   );
 }

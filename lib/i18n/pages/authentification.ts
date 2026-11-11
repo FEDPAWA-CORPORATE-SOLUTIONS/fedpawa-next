@@ -52,6 +52,21 @@ export const authFr: PageDict = {
   toastPwdMismatch: "Les mots de passe ne correspondent pas.",
   toastPwdWeak:
     "Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.",
+  // NEW: field error messages for login form
+  fieldEmailRequired: "L'email est requis.",
+  fieldEmailInvalid: "Veuillez entrer une adresse email valide.",
+  fieldPasswordRequired: "Le mot de passe est requis.",
+  // NEW: field error messages for signup form
+  fieldCivilityRequired: "La civilité est requise.",
+  fieldFullnameRequired: "Le nom complet est requis.",
+  fieldCompanyRequired: "Le nom de l'entreprise est requis.",
+  fieldLegalRequired: "La forme juridique est requise.",
+  fieldPhoneRequired: "Le téléphone est requis.",
+  fieldEmailSignupRequired: "L'email est requis.",
+  fieldPhoneSignupRequired: "Le téléphone est requis.",
+  fieldPasswordSignupRequired: "Le mot de passe est requis.",
+  fieldConfirmPasswordRequired: "La confirmation du mot de passe est requise.",
+  fieldPwdRegex: "Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.",
   toastServerKo: "Votre tentative n'a pas pu aboutir. Vérifiez votre connexion internet et réessayez. Si le problème persiste, contactez notre support.",
   showPwd: "Afficher le mot de passe",
 };
@@ -103,6 +118,21 @@ export const authEn: PageDict = {
   toastPwdMismatch: "Passwords do not match.",
   toastPwdWeak:
     "The password must contain at least 8 characters, one uppercase letter and one number.",
+  // NEW: field error messages for login form
+  fieldEmailRequired: "Email is required.",
+  fieldEmailInvalid: "Please enter a valid email address.",
+  fieldPasswordRequired: "Password is required.",
+  // NEW: field error messages for signup form
+  fieldCivilityRequired: "Civility is required.",
+  fieldFullnameRequired: "Full name is required.",
+  fieldCompanyRequired: "Company name is required.",
+  fieldLegalRequired: "Legal form is required.",
+  fieldPhoneRequired: "Phone is required.",
+  fieldEmailSignupRequired: "Email is required.",
+  fieldPhoneSignupRequired: "Phone is required.",
+  fieldPasswordSignupRequired: "Password is required.",
+  fieldConfirmPasswordRequired: "Confirm password is required.",
+  fieldPwdRegex: "Password must contain at least 8 characters, one uppercase letter and one number.",
   toastServerKo: "Your request could not be completed. Check your internet connection and try again. If the problem persists, contact our support team.",
   showPwd: "Show password",
 };

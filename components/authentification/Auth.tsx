@@ -62,6 +62,10 @@ export default function Auth({ locale = "fr" }: AuthProps) {
   // Inline message shown above the CTA button — replaces the toast.
   // "error" = red, "success" = green. Cleared when the user switches tabs.
   const [inlineMsg, setInlineMsg] = useState<InlineAuthMsg | null>(null);
+  // NEW: Erreurs champ par champ (affichées sous les inputs)
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  // NEW: Erreur serveur globale (apparaît en alerte principale)
+  const [serverError, setServerError] = useState<string | null>(null);
   // Login state
   const [login, setLogin] = useState({ email: "", motDePasse: "", remember: false });
   // Signup state
@@ -90,7 +94,11 @@ export default function Auth({ locale = "fr" }: AuthProps) {
     e.preventDefault();
     const email = login.email.trim();
     const mot_de_passe = login.motDePasse;
+    // Reset errors
+    setFieldErrors({});
+    setServerError(null);
     if (!email || !mot_de_passe) {
+      setFieldErrors((prev) => ({ ...prev, general: t.toastFillAll }));
       setInlineMsg({ message: t.toastFillAll, type: "error" });
       return;
     }
@@ -111,6 +119,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       // redirection pour que /auth/me (garde) reconnaisse la session.
       if (data.token) setToken(data.token);
       setInlineMsg({ message: t.toastLoginOk, type: "success" });
+      setFieldErrors({}); // clear any previous field errors
       const next =
         typeof window !== "undefined"
           ? new URLSearchParams(window.location.search).get("next")
@@ -128,9 +137,15 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       }, 800);
     } catch (err) {
       if (err instanceof ApiError && err.status > 0) {
-        setInlineMsg({ message: getFriendlyErrorMessage(err, "auth"), type: "error" });
+        // NEW: Handle backend errors with specific messages
+        setServerError(getFriendlyErrorMessage(err, "auth"));
+        // Try to parse field-specific errors from the response body
+        if (err.body) {
+          if (err.body.email) setFieldErrors((f) => ({ ...f, email: err.body.email }));
+          if (err.body.password) setFieldErrors((f) => ({ ...f, password: err.body.password }));
+        }
       } else {
-        setInlineMsg({ message: t.toastServerKo, type: "error" });
+        setServerError(t.toastServerKo);
       }
     } finally {
       setLoading(false);
@@ -138,10 +153,14 @@ export default function Auth({ locale = "fr" }: AuthProps) {
   }
 
   async function handleSignup(e: React.FormEvent) {
-    if (!signup.cgu) {
-      setInlineMsg({ message: t.toastCguMissing, type: "error" });
-      return;
-    }
+      e.preventDefault();
+      // Reset errors
+      setFieldErrors({});
+      setServerError(null);
+      if (!signup.cgu) {
+        setInlineMsg({ message: t.toastCguMissing, type: "error" });
+        return;
+      }
       if (signup.motDePasse !== signup.confirm) {
         setInlineMsg({ message: t.toastPwdMismatch, type: "error" });
         return;
@@ -174,14 +193,15 @@ export default function Auth({ locale = "fr" }: AuthProps) {
         setTab("login");
       } catch (err) {
         if (err instanceof ApiError && err.status > 0) {
-          setInlineMsg({ message: getFriendlyErrorMessage(err, "auth"), type: "error" });
+          // NEW: Handle backend errors with specific messages
+          setServerError(getFriendlyErrorMessage(err, "auth"));
         } else {
-          setInlineMsg({ message: t.toastServerKo, type: "error" });
+          setServerError(t.toastServerKo);
         }
       } finally {
         setLoading(false);
       }
-  }
+    }
 
   const pwdToggle = (id: string) => (
     <button
@@ -272,6 +292,9 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                   value={login.email}
                   onChange={(e) => setPwd("email", e.target.value)}
                 />
+                {fieldErrors.email && (
+                  <div className="form-error">{fieldErrors.email}</div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="login_password">{t.lblPassword}</label>
@@ -289,6 +312,9 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                   />
                   {pwdToggle("login_password")}
                 </div>
+                {fieldErrors.password && (
+                  <div className="form-error">{fieldErrors.password}</div>
+                )}
               </div>
               <div className="form-options">
                 <label className="checkbox-label">
@@ -304,28 +330,44 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                 </Link>
               </div>
               {inlineMsg && (
-                <div
-                  className={`auth-inline-msg auth-inline-msg-${inlineMsg.type}`}
-          style={{
-            background: inlineMsg.type === "success" ? "#d4edda" : "#f8d7da",
-            color: inlineMsg.type === "success" ? "#155724" : "#721c24",
-            padding: "12px 16px",
-            borderRadius: 6,
-            marginBottom: "16px",
-            fontWeight: 600,
-            border: `1px solid ${inlineMsg.type === "success" ? "#28a745" : "#dc3545"}`,
-          }}
-        >
-          {inlineMsg.message}
-        </div>
-      )}
-              <button
-                type="submit"
-                className="btn btn-primary btn-block"
-                disabled={loading}
-              >
-                {t.btnLogin}
-              </button>
+                              <div
+                                className={`auth-inline-msg auth-inline-msg-${inlineMsg.type}`}
+                                style={{
+                                  background: inlineMsg.type === "success" ? "#d4edda" : "#f8d7da",
+                                  color: inlineMsg.type === "success" ? "#155724" : "#721c24",
+                                  padding: "12px 16px",
+                                  borderRadius: 6,
+                                  marginBottom: "16px",
+                                  fontWeight: 600,
+                                  border: `1px solid ${inlineMsg.type === "success" ? "#28a745" : "#dc3545"}`,
+                                }}
+                              >
+                                {inlineMsg.message}
+                              </div>
+                            )}
+                            {serverError && (
+                              <div
+                                className="alert alert-error"
+                                style={{
+                                  background: "#f8d7da",
+                                  color: "#721c24",
+                                  padding: "12px 16px",
+                                  borderRadius: 6,
+                                  marginBottom: "16px",
+                                  border: "1px solid #dc3545",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {serverError}
+                              </div>
+                            )}
+                            <button
+                              type="submit"
+                              className="btn btn-primary btn-block"
+                              disabled={loading}
+                            >
+                              {t.btnLogin}
+                            </button>
             </form>
             <p className="form-switch">
               <span>{t.noAccount}</span>{" "}
@@ -415,6 +457,9 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                   value={signup.email}
                   onChange={(e) => setSignup((s) => ({ ...s, email: e.target.value }))}
                 />
+                {fieldErrors.email && (
+                  <div className="form-error">{fieldErrors.email}</div>
+                )}
               </div>
               <div className="form-group">
                 <label htmlFor="phone">{t.lblPhone}</label>
@@ -429,6 +474,9 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                   value={signup.telephone}
                   onChange={(e) => setSignup((s) => ({ ...s, telephone: e.target.value }))}
                 />
+                {fieldErrors.phone && (
+                  <div className="form-error">{fieldErrors.phone}</div>
+                )}
               </div>
               <div className="form-row">
                 <div className="form-group">
@@ -478,28 +526,44 @@ export default function Auth({ locale = "fr" }: AuthProps) {
                 <label htmlFor="cgu" dangerouslySetInnerHTML={{ __html: t.cguLabel }} />
               </div>
               {inlineMsg && (
-                <div
-                  className={`auth-inline-msg auth-inline-msg-${inlineMsg.type}`}
-                  style={{
-                    background: inlineMsg.type === "success" ? "#d4edda" : "#f8d7da",
-                    color: inlineMsg.type === "success" ? "#155724" : "#721c24",
-                    padding: "12px 16px",
-                    borderRadius: 6,
-                    marginBottom: "16px",
-                    fontWeight: 600,
-                    border: `1px solid ${inlineMsg.type === "success" ? "#28a745" : "#dc3545"}`,
-                  }}
-                >
-                  {inlineMsg.message}
-                </div>
-              )}
-              <button
-                type="submit"
-                className="btn btn-primary btn-block"
-                disabled={loading}
-              >
-                {t.btnSignup}
-              </button>
+                                <div
+                                  className={`auth-inline-msg auth-inline-msg-${inlineMsg.type}`}
+                                  style={{
+                                    background: inlineMsg.type === "success" ? "#d4edda" : "#f8d7da",
+                                    color: inlineMsg.type === "success" ? "#155724" : "#721c24",
+                                    padding: "12px 16px",
+                                    borderRadius: 6,
+                                    marginBottom: "16px",
+                                    fontWeight: 600,
+                                    border: `1px solid ${inlineMsg.type === "success" ? "#28a745" : "#dc3545"}`,
+                                  }}
+                                >
+                                  {inlineMsg.message}
+                                </div>
+                              )}
+                              {serverError && (
+                                <div
+                                  className="alert alert-error"
+                                  style={{
+                                    background: "#f8d7da",
+                                    color: "#721c24",
+                                    padding: "12px 16px",
+                                    borderRadius: 6,
+                                    marginBottom: "16px",
+                                    border: "1px solid #dc3545",
+                                    fontWeight: 600,
+                                  }}
+                                >
+                                  {serverError}
+                                </div>
+                              )}
+                              <button
+                                type="submit"
+                                className="btn btn-primary btn-block"
+                                disabled={loading}
+                              >
+                                {t.btnSignup}
+                              </button>
             </form>
             <p className="form-switch">
               <span>{t.hasAccount}</span>{" "}

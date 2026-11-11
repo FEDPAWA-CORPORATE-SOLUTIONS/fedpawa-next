@@ -29,7 +29,7 @@ const apiOrigin = (() => {
 const csp = [
   "default-src 'self'",
   // JSON-LD inline (+ 'unsafe-eval' en dev pour HMR uniquement).
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.tiny.cloud`,
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.tiny.cloud https://static.cloudflareinsights.com`,
   // Fonts Google + skin oxide TinyMCE + styles inline React.
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tiny.cloud",
   "font-src 'self' data: https://fonts.gstatic.com https://cdn.tiny.cloud",
