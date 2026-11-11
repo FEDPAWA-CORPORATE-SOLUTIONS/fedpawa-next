@@ -1,15 +1,15 @@
 // ============================================================
-// FEDPAWA — Composant ActiveSectionVariants
-// 4 variantes de présentation basées sur l'image de référence :
-//   v1 : Split Line (grand visuel à gauche, ligne verticale,
-//        3 marqueurs numérotés sur le côté courbé, texte à droite)
-//   v2 : Radial Orbit (grand visuel central, 3 cercles en arc)
-//   v3 : Stacked Timeline (cartes verticales empilées)
-//   v4 : Grid Focus (visuel en grand en haut, 3 cartes en grille)
-// Règle : clic sur un cercle = change l'image + le texte actif.
-//         Seul l'élément actif est mis en avant (texte plus grand/large).
-//         Molette souris = défiler un par un (ralenti par 3).
-//         Animation d'entrée rapide.
+// FEDPAWA — Composant ActiveSectionVariants (4 variantes distinctes)
+//   v1 : Split Line — Grand visuel à gauche, ligne verticale centrale,
+//        marqueurs numérotés sur la ligne, texte à droite de chaque marqueur.
+//   v2 : Radial Stack — Visuel central en haut (pleine largeur),
+//        3 cartes en ligne en dessous, carte active s'agrandit avec bordure couleur.
+//   v3 : Stacked Timeline — Cartes empilées verticalement,
+//        image à gauche et texte à droite (colonne sur mobile).
+//   v4 : Grid Focus — Visuel en grand en haut (largeur complète),
+//        grille 3 colonnes de cartes en dessous.
+// Règles communes : clic = change visuel + texte actif ; molette = défiler un par un (ralenti x3);
+//                  seul l'élément actif est mis en avant.
 // ==========================================================
 
 "use client";
@@ -40,7 +40,6 @@ export default function ActiveSectionVariants({
 }: ActiveSectionVariantsProps) {
   const [activeIndex, setActiveIndex] = useState(0);
   const wheelRef = useRef<number>(0);
-
   const item = items[activeIndex];
 
   const handleWheel = useCallback(
@@ -63,9 +62,9 @@ export default function ActiveSectionVariants({
     []
   );
 
-  // ========== VARIANTE 1 : Split Line Timeline ==========
-  // Grand carré à gauche (côté droit courbé), 3 cercles sur le côté courbé,
-  // texte à droite de chaque cercle.
+  // ========== VARIANTE 1 : Split Line ==========
+  // Grand visuel à gauche (70vh), ligne verticale centrale,
+  // 3 marqueurs numérotés sur la ligne, texte à droite de chaque marqueur.
   const renderV1 = () => (
     <div
       onWheel={handleWheel}
@@ -77,15 +76,15 @@ export default function ActiveSectionVariants({
         position: "relative",
       }}
     >
-      {/* Grand carré à gauche, côté droit courbé */}
+      {/* Grand carré à gauche */}
       <div
         style={{
           flex: 1,
           minHeight: 560,
           position: "relative",
           overflow: "hidden",
-          borderRadius: "0 90px 90px 0",
-          border: "1px solid #e5e5e5",
+          borderRadius: 0,
+          border: "none",
           background: "#f3f4f6",
         }}
       >
@@ -102,15 +101,15 @@ export default function ActiveSectionVariants({
         <div
           style={{
             position: "absolute",
-            bottom: 32,
-            left: 32,
+            bottom: 24,
+            left: 24,
             color: "#ffffff",
-            fontSize: "1.75rem",
+            fontSize: "2rem",
             fontWeight: 800,
             textShadow: "0 2px 8px rgba(0,0,0,0.5)",
             lineHeight: 1.3,
             pointerEvents: "none",
-            maxWidth: "75%",
+            maxWidth: "80%",
           }}
         >
           {item.title}
@@ -131,10 +130,10 @@ export default function ActiveSectionVariants({
             key={i}
             style={{
               position: "absolute",
-              left: "-4px",
+              left: "-6px",
               top: `${i * 33.33}%`,
-              width: 9,
-              height: 9,
+              width: 13,
+              height: 13,
               borderRadius: "50%",
               background: activeIndex === i ? items[i].color : "#d1d5db",
               border: `3px solid #ffffff`,
@@ -189,32 +188,50 @@ export default function ActiveSectionVariants({
                 {it.number}
               </div>
               <div style={{ minHeight: 80 }}>
-                <h3
-                  style={{
-                    fontSize: isActive ? "1.35rem" : "1.2rem",
-                    fontWeight: 800,
-                    color: isActive ? "#111827" : "#6b7280",
-                    margin: "0 0 0.5rem 0",
-                    lineHeight: 1.35,
-                    letterSpacing: "-0.01em",
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {it.title}
-                </h3>
-                <p
-                  style={{
-                    fontSize: isActive ? "1rem" : "0.95rem",
-                    lineHeight: 1.8,
-                    color: isActive ? "#111827" : "#9ca3af",
-                    margin: 0,
-                    maxWidth: isActive ? 520 : 420,
-                    fontWeight: isActive ? 600 : 400,
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {it.text}
-                </p>
+                {isActive ? (
+                  <>
+                    <h3
+                      style={{
+                        fontSize: "1.5rem",
+                        fontWeight: 800,
+                        color: "#111827",
+                        margin: "0 0 0.5rem 0",
+                        lineHeight: 1.35,
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {it.title}
+                    </h3>
+                    <p
+                      style={{
+                        fontSize: "1.05rem",
+                        lineHeight: 1.8,
+                        color: "#111827",
+                        margin: 0,
+                        maxWidth: 600,
+                        fontWeight: 600,
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {it.text}
+                    </p>
+                  </>
+                ) : (
+                  <div style={{ opacity: 0.5 }}>
+                    <h3
+                      style={{
+                        fontSize: "1rem",
+                        fontWeight: 800,
+                        color: "#6b7280",
+                        margin: "0 0 0.5rem 0",
+                        lineHeight: 1.35,
+                        transition: "all 0.3s ease",
+                      }}
+                    >
+                      {it.title}
+                    </h3>
+                  </div>
+                )}
               </div>
             </div>
           );
@@ -223,8 +240,9 @@ export default function ActiveSectionVariants({
     </div>
   );
 
-  // ========== VARIANTE 2 : Radial Orbit ==========
-  // Grand visuel central, 3 cercles en arc de cercle autour
+  // ========== VARIANTE 2 : Radial Stack ==========
+  // Visuel central en haut (pleine largeur),
+  // 3 cartes en ligne en dessous, carte active s'agrandit avec bordure couleur.
   const renderV2 = () => (
     <div
       onWheel={handleWheel}
@@ -232,21 +250,22 @@ export default function ActiveSectionVariants({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "3rem",
+        gap: "2rem",
         minHeight: "70vh",
         position: "relative",
       }}
     >
+      {/* Visuel central en haut */}
       <div
         style={{
-          width: "55vw",
-          maxWidth: 640,
-          height: 460,
-          borderRadius: 24,
+          width: "100%",
+          maxWidth: 900,
+          height: 380,
+          borderRadius: 0,
           overflow: "hidden",
-          border: "1px solid #e5e5e5",
+          border: "none",
           position: "relative",
-          boxShadow: "0 10px 30px rgba(10, 14, 24, 0.12)",
+          boxShadow: "0 8px 24px rgba(10, 14, 24, 0.1)",
         }}
       >
         <img
@@ -266,23 +285,24 @@ export default function ActiveSectionVariants({
             bottom: 24,
             left: 24,
             color: "#ffffff",
-            fontSize: "1.75rem",
+            fontSize: "2rem",
             fontWeight: 800,
             textShadow: "0 2px 8px rgba(0,0,0,0.5)",
-            maxWidth: "80%",
+            maxWidth: "85%",
           }}
         >
           {item.title}
         </div>
       </div>
 
+      {/* 3 cartes en ligne en dessous */}
       <div
         style={{
           display: "flex",
-          justifyContent: "center",
-          gap: "2.5rem",
-          alignItems: "center",
-          flexWrap: "wrap",
+          gap: "1rem",
+          width: "100%",
+          maxWidth: 900,
+          flexWrap: "nowrap",
         }}
       >
         {items.map((it, i) => {
@@ -291,60 +311,67 @@ export default function ActiveSectionVariants({
             <div
               key={it.number}
               style={{
+                flex: 1,
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
+                gap: "12px",
+                padding: isActive ? "1.5rem" : "1rem",
+                borderRadius: 0,
+                background: isActive ? "#ffffff" : "#f8fafc",
+                border: isActive ? `2px solid ${it.color}` : "none",
                 cursor: "pointer",
-                transition: "transform 0.3s ease",
+                transition: "all 0.35s ease",
+                transform: isActive ? "scale(1.05) translateY(-4px)" : "scale(1)",
+                boxShadow: isActive ? "0 8px 24px rgba(10, 14, 24, 0.15)" : "none",
+                minHeight: 260,
               }}
               onClick={handleClick(i)}
             >
               <div
                 style={{
-                  width: 64,
-                  height: 64,
-                  borderRadius: "50%",
-                  background: isActive ? it.color : "#f3f4f6",
-                  border: `3px solid ${isActive ? it.color : "#d1d5db"}`,
-                  color: isActive ? "#ffffff" : "#6b7280",
+                  width: 32,
+                  height: 32,
+                  borderRadius: 0,
+                  background: isActive ? it.color : "#e5e5e5",
+                  color: isActive ? "#ffffff" : "#9ca3af",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "1.25rem",
+                  fontSize: "1rem",
                   fontWeight: 800,
-                  boxShadow: isActive ? "0 6px 16px rgba(0,0,0,0.15)" : "0 2px 6px rgba(0,0,0,0.1)",
-                  transition: "all 0.35s ease",
                 }}
               >
                 {it.number}
               </div>
-              <div style={{ marginTop: "10px", textAlign: "center" }}>
-                <h3
-                  style={{
-                    fontSize: isActive ? "1.1rem" : "0.95rem",
-                    fontWeight: 800,
-                    color: isActive ? "#111827" : "#6b7280",
-                    margin: "0 0 0.5rem 0",
-                    lineHeight: 1.3,
-                    transition: "all 0.3s ease",
-                  }}
-                >
-                  {it.title}
-                </h3>
-                <span
-                  style={{
-                    fontSize: isActive ? "0.85rem" : "0.8rem",
-                    color: isActive ? "#111827" : "#9ca3af",
-                    lineHeight: 1.4,
-                    maxWidth: 140,
-                    display: "block",
-                    transition: "all 0.3s ease",
-                    fontWeight: isActive ? 600 : 400,
-                  }}
-                >
-                  {it.text}
-                </span>
-              </div>
+              <h3
+                style={{
+                  fontSize: isActive ? "1.1rem" : "0.95rem",
+                  fontWeight: 800,
+                  color: isActive ? "#111827" : "#4b5563",
+                  margin: "0 0 0.5rem 0",
+                  lineHeight: 1.4,
+                  transition: "all 0.3s ease",
+                }}
+              >
+                {it.title}
+              </h3>
+              <p
+                style={{
+                  fontSize: isActive ? "0.9rem" : "0.85rem",
+                  lineHeight: 1.6,
+                  color: isActive ? "#111827" : "#9ca3af",
+                  margin: 0,
+                  flex: 1,
+                  fontWeight: isActive ? 600 : 400,
+                  transition: "all 0.3s ease",
+                  overflow: "hidden",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 4,
+                  WebkitBoxOrient: "vertical",
+                }}
+              >
+                {it.text}
+              </p>
             </div>
           );
         })}
@@ -352,9 +379,8 @@ export default function ActiveSectionVariants({
     </div>
   );
 
-  // ========== VARIANTE 3 : Stacked Timeline (responsive, sans bordure arrondie, sans padding) ==========
-  // Cartes verticales empilées, image à gauche et texte à droite (colonne sur mobile).
-  // Titre unique en noir plus grand. Numéro intégré. Espacement image ↔ texte renforcé.
+  // ========== VARIANTE 3 : Stacked Timeline ==========
+  // Cartes empilées verticalement, image à gauche et texte à droite (colonne sur mobile).
   const renderV3 = () => {
     const [isMobile, setIsMobile] = useState(false);
     useEffect(() => {
@@ -475,7 +501,8 @@ export default function ActiveSectionVariants({
   };
 
   // ========== VARIANTE 4 : Grid Focus ==========
-  // Visuel en grand en haut, 3 cartes en grille en dessous
+  // Visuel en grand en haut (largeur complète),
+  // grille 3 colonnes de cartes en dessous.
   const renderV4 = () => (
     <div
       onWheel={handleWheel}
@@ -487,16 +514,17 @@ export default function ActiveSectionVariants({
         alignItems: "center",
       }}
     >
+      {/* Visuel en grand en haut */}
       <div
         style={{
           width: "100%",
-          maxWidth: 900,
-          height: 380,
-          borderRadius: 20,
+          maxWidth: 1150,
+          height: 340,
+          borderRadius: 0,
           overflow: "hidden",
-          border: "1px solid #e5e5e5",
+          border: "none",
           position: "relative",
-          boxShadow: "0 10px 30px rgba(10, 14, 24, 0.1)",
+          boxShadow: "0 8px 24px rgba(10, 14, 24, 0.1)",
         }}
       >
         <img
@@ -516,7 +544,7 @@ export default function ActiveSectionVariants({
             bottom: 24,
             left: 24,
             color: "#ffffff",
-            fontSize: "1.75rem",
+            fontSize: "2rem",
             fontWeight: 800,
             textShadow: "0 2px 8px rgba(0,0,0,0.5)",
             maxWidth: "80%",
@@ -526,13 +554,14 @@ export default function ActiveSectionVariants({
         </div>
       </div>
 
+      {/* Grille 3 colonnes de cartes */}
       <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "1.5rem",
+          gap: "1rem",
           width: "100%",
-          maxWidth: 900,
+          maxWidth: 1150,
         }}
       >
         {items.map((it, i) => {
@@ -544,10 +573,10 @@ export default function ActiveSectionVariants({
                 display: "flex",
                 flexDirection: "column",
                 gap: "10px",
-                padding: "1.5rem",
-                borderRadius: 14,
+                padding: isActive ? "1.5rem" : "1rem",
+                borderRadius: 0,
                 background: isActive ? "#ffffff" : "#f9fafb",
-                border: `1px solid ${isActive ? it.color : "#e5e5e5"}`,
+                border: isActive ? `2px solid ${it.color}` : "none",
                 cursor: "pointer",
                 transition: "all 0.35s ease",
                 transform: isActive ? "scale(1.03)" : "scale(1)",
@@ -557,16 +586,16 @@ export default function ActiveSectionVariants({
             >
               <div
                 style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: "50%",
+                  width: 28,
+                  height: 28,
+                  borderRadius: 0,
                   background: isActive ? it.color : "#ffffff",
                   border: `2px solid ${it.color}`,
                   color: isActive ? "#ffffff" : it.color,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "1rem",
+                  fontSize: "0.875rem",
                   fontWeight: 800,
                   marginBottom: "0.75rem",
                   transition: "all 0.3s ease",
@@ -576,7 +605,7 @@ export default function ActiveSectionVariants({
               </div>
               <h3
                 style={{
-                  fontSize: isActive ? "1.1rem" : "1rem",
+                  fontSize: isActive ? "1.05rem" : "0.9rem",
                   fontWeight: 800,
                   color: isActive ? "#111827" : "#4b5563",
                   margin: "0 0 0.5rem 0",
@@ -588,13 +617,16 @@ export default function ActiveSectionVariants({
               </h3>
               <p
                 style={{
-                  fontSize: isActive ? "0.9rem" : "0.85rem",
+                  fontSize: isActive ? "0.85rem" : "0.8rem",
                   lineHeight: 1.6,
                   color: isActive ? "#111827" : "#9ca3af",
                   margin: 0,
-                  maxWidth: 260,
                   fontWeight: isActive ? 600 : 400,
                   transition: "all 0.3s ease",
+                  overflow: "hidden",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: "vertical",
                 }}
               >
                 {it.text}

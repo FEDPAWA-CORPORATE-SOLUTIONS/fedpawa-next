@@ -1,6 +1,6 @@
 // ============================================================
 // FEDPAWA — Page /variations
-// 4 variantes de présentation basées sur l'image de référence
+// 4 variantes distinctes de présentation basées sur l'image de référence
 // ==========================================================
 
 "use client";
@@ -73,29 +73,29 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
         </div>
       </section>
 
-      {/* VARIANTE 1 : Split Line Timeline */}
+      {/* VARIANTE 1 : Split Line */}
       <section style={{ padding: "6rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.75rem" }}>
-              Variante 1 — Split Line Timeline
+              Variante 1 — Split Line
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.pillarsTitle}</h2>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={3} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={1} />
         </div>
       </section>
 
-      {/* VARIANTE 2 : Radial Orbit */}
+      {/* VARIANTE 2 : Radial Stack */}
       <section style={{ padding: "6rem 0", background: "#fafaf9" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.75rem" }}>
-              Variante 2 — Radial Orbit
+              Variante 2 — Radial Stack
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.expertiseTitle}</h2>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={savoirFaireItems} variant={3} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={savoirFaireItems} variant={2} />
         </div>
       </section>
 
@@ -121,7 +121,7 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
             </span>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.ctaTitle}</h2>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={3} />
+          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={4} />
         </div>
       </section>
 
