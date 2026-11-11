@@ -1,13 +1,8 @@
-// ==========================================================
+// ============================================================
 // FEDPAWA — Qui sommes-nous 2 (copie remaniée de About.tsx)
-// Différences vs original :
-//   - La section GALERIE (grid 12 images) est SUPPRIMÉE.
-//   - Les 12 images de la galerie sont redispersées dans les
-//     3 dernières sections (Nos Valeurs, Notre Savoir-Faire,
-//     Notre Différence) en rangées image | texte côte à côte,
-//     responsive (empilement sous ~600px).
-//   - Lightbox conservé au clic sur chaque image.
-// L'original (About.tsx + /qui-sommes-nous) reste inchangé.
+// 12 éléments de style "about-vision-box" (fond bleu, bordure or,
+// texte blanc) répartis sur 3 sections : Nos Valeurs, Savoir-Faire,
+// Notre Différence. Sans l'emoji 🎯 dans les titres.
 // ==========================================================
 
 "use client";
@@ -45,67 +40,76 @@ const GALLERY: {
   { img: "qui_12", cls: "", captionFr: "Téléphonie d'Entreprise", captionEn: "Business Phone Systems", altFr: "Système téléphonique d'entreprise", altEn: "Business phone systems" },
 ];
 
-/** Rangée image | texte côte à côte, alternée, responsive.
- *  Grid auto-fit : 2 colonnes ≥ ~600px de largeur utile, empilée en dessous. */
-function FeatureRow({
+/** Bloc de style "about-vision-box" reproduit exactement :
+ *  fond bleu #1A237E, bordure gauche or, padding 40px, texte blanc,
+ *  image en haut, titre h3 sans emoji, texte p en dessous.
+ */
+function AboutBoxElement({
   img,
-  caption,
-  alt,
-  reversed,
+  title,
+  text,
   onOpen,
-  children,
 }: {
   img: string;
-  caption: string;
-  alt: string;
-  reversed?: boolean;
+  title: string;
+  text: string;
   onOpen: (img: string) => void;
-  children: React.ReactNode;
 }) {
   return (
     <div
+      className="about-vision-box"
       style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-        gap: 32,
-        alignItems: "center",
-        marginBottom: 40,
+        cursor: "pointer",
+        transition: "all 0.3s ease",
+      }}
+      onClick={() => onOpen(img)}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 15px 40px rgba(26, 35, 126, 0.35)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 10px 30px rgba(26, 35, 126, 0.2)";
       }}
     >
-      <figure style={{ margin: 0, order: reversed ? 2 : 1 }}>
-        <div
-          style={{
-            borderRadius: 12,
-            overflow: "hidden",
-            cursor: "pointer",
-            boxShadow: "0 8px 24px rgba(10, 14, 24, 0.12)",
-          }}
-          onClick={() => onOpen(img)}
-        >
-          <picture>
-            <source type="image/webp" srcSet={`/assets/images/${img}.webp`} />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={`/assets/images/${img}.jpg`}
-              alt={alt}
-              loading="lazy"
-              style={{ width: "100%", height: 340, objectFit: "cover", display: "block" }}
-            />
-          </picture>
-        </div>
-        <figcaption
-          style={{
-            fontSize: 13,
-            color: "var(--color-text-muted)",
-            marginTop: 10,
-            textAlign: "center",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {caption}
-        </figcaption>
-      </figure>
-      <div style={{ order: reversed ? 1 : 2 }}>{children}</div>
+      <div className="about-vision-photo" style={{ marginBottom: "16px" }}>
+        <picture>
+          <source type="image/webp" srcSet={`/assets/images/${img}.webp`} />
+          <img
+            src={`/assets/images/${img}.jpg`}
+            alt={title}
+            loading="lazy"
+            style={{
+              width: "100%",
+              height: 200,
+              objectFit: "cover",
+              display: "block",
+              borderRadius: 8,
+            }}
+          />
+        </picture>
+      </div>
+      <h3
+        style={{
+          color: "#fff",
+          fontSize: "1.4rem",
+          margin: "0 0 12px 0",
+          lineHeight: 1.3,
+          fontWeight: 800,
+        }}
+      >
+        {title}
+      </h3>
+      <p
+        style={{
+          fontSize: "0.95rem",
+          color: "rgba(255,255,255,0.85)",
+          lineHeight: 1.7,
+          margin: 0,
+        }}
+      >
+        {text}
+      </p>
     </div>
   );
 }
@@ -122,7 +126,7 @@ export default function About2({ locale = "fr" }: About2Props) {
     return locale === "en" ? item.altEn : item.altFr;
   };
 
-  // Lightbox (gallery.js) : image haute résolution + overflow bloqué.
+  // Lightbox
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   useEffect(() => {
     document.body.style.overflow = lightboxSrc ? "hidden" : "";
@@ -131,7 +135,7 @@ export default function About2({ locale = "fr" }: About2Props) {
     };
   }, [lightboxSrc]);
 
-  // Compteurs animés (about.js) : IntersectionObserver + incrément 10ms.
+  // Compteurs animés
   const counters: { target: number; decimals: number; suffix: string }[] = [
     { target: 300, decimals: 0, suffix: t.stat1Suffix },
     { target: 17, decimals: 0, suffix: t.stat2Suffix },
@@ -151,7 +155,6 @@ export default function About2({ locale = "fr" }: About2Props) {
       (entries) => {
         if (!entries[0].isIntersecting || animated.current) return;
         animated.current = true;
-        // Réplique about.js : durée 2000ms, tick 10ms.
         const speed = 2000;
         counters.forEach((c, i) => {
           const increment = c.target / (speed / 10);
@@ -180,10 +183,9 @@ export default function About2({ locale = "fr" }: About2Props) {
     );
     observer.observe(el);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Modale Rendez-vous (about.js) : trigger data-modal-trigger + overlay.
+  // Modale Rendez-vous
   const [rdvOpen, setRdvOpen] = useState(false);
   const [rdvSent, setRdvSent] = useState(false);
   useEffect(() => {
@@ -195,6 +197,83 @@ export default function About2({ locale = "fr" }: About2Props) {
 
   const openLightbox = (img: string) => {
     setLightboxSrc(`/assets/images/${img}.jpg`);
+  };
+
+  // ========== DONNÉES DES 12 ÉLÉMENTS (4+4+4) ==========
+  const valeursElements = [
+    {
+      img: "qui_1",
+      title: t.pillar1Title,
+      text: t.pillar1Text,
+    },
+    {
+      img: "qui_7",
+      title: t.pillar2Title,
+      text: t.pillar2Text,
+    },
+    {
+      img: "qui_11",
+      title: t.pillar3Title,
+      text: t.pillar3Text,
+    },
+    {
+      img: "qui_8",
+      title: t.pillar4Title,
+      text: t.pillar4Text,
+    },
+  ];
+
+  const savoirFaireElements = [
+    {
+      img: "qui_10",
+      title: t.pole1Title,
+      text: `${t.pole1Obj} ${t.pole1Item1} ${t.pole1Item2} ${t.pole1Item3}`,
+    },
+    {
+      img: "qui_4",
+      title: t.pole2Title,
+      text: `${t.pole2Obj} ${t.pole2Item1} ${t.pole2Item2} ${t.pole2Item3}`,
+    },
+    {
+      img: "qui_5",
+      title: t.pole3Title,
+      text: `${t.pole3Obj} ${t.pole3Item1} ${t.pole3Item2} ${t.pole3Item3}`,
+    },
+    {
+      img: "qui_2",
+      title: t.pole4Title,
+      text: `${t.pole4Obj} ${t.pole4Item1} ${t.pole4Item2} ${t.pole4Item3}`,
+    },
+  ];
+
+  const differenceElements = [
+    {
+      img: "qui_3",
+      title: t.compareHeadTradition,
+      text: `${t.row1Tradition} ${t.row2Tradition}`,
+    },
+    {
+      img: "qui_9",
+      title: t.compareHeadFedpawa,
+      text: `${t.row1Fedpawa} ${t.row2Fedpawa}`,
+    },
+    {
+      img: "qui_12",
+      title: t.compareHeadCriteria,
+      text: `${t.row3Criteria} ${t.row4Criteria}`,
+    },
+    {
+      img: "qui_6",
+      title: t.visionTitle.replace("🎯 ", ""),
+      text: t.visionText,
+    },
+  ];
+
+  const gridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: 32,
+    marginBottom: 40,
   };
 
   return (
@@ -236,11 +315,7 @@ export default function About2({ locale = "fr" }: About2Props) {
             <div className="about-vision-box">
               <div className="about-vision-photo">
                 <picture>
-                  <source
-                    type="image/webp"
-                    srcSet="/assets/images/qui_6.webp"
-                  />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <source type="image/webp" srcSet="/assets/images/qui_6.webp" />
                   <img
                     src="/assets/images/qui_6.jpg"
                     alt={t.visionImgAlt}
@@ -248,26 +323,18 @@ export default function About2({ locale = "fr" }: About2Props) {
                   />
                 </picture>
               </div>
-              <h3>
-                <span>🎯</span> {t.visionTitle.replace("🎯 ", "")}
-              </h3>
+              <h3>{t.visionTitle.replace("🎯 ", "")}</h3>
               <p>{t.visionText}</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* NB : la GALERIE PHOTOS de l'original a été supprimée ici —
-          ses images sont redispersées dans les 3 sections ci-dessous. */}
-
-      {/* ============== CHIFFRES CLÉS (compteurs animés) ============== */}
+      {/* ============== CHIFFRES CLÉS ============== */}
       <section className="stats-section">
         <div className="container">
           <div className="section-header" style={{ marginBottom: 40 }}>
-            <span
-              className="section-kicker"
-              style={{ color: "var(--color-gold)", justifyContent: "center" }}
-            >
+            <span className="section-kicker" style={{ color: "var(--color-gold)", justifyContent: "center" }}>
               {t.statsKicker}
             </span>
             <h2 style={{ color: "#fff" }}>{t.statsTitle}</h2>
@@ -329,7 +396,7 @@ export default function About2({ locale = "fr" }: About2Props) {
         </div>
       </section>
 
-      {/* ============== NOS VALEURS — 4 PILIERS (remodelé : image | texte) ============== */}
+      {/* ============== NOS VALEURS — 4 PILIERS (style about-vision-box) ============== */}
       <section className="section-padding section-alt">
         <div className="container">
           <div className="section-header">
@@ -337,80 +404,30 @@ export default function About2({ locale = "fr" }: About2Props) {
             <h2>{t.pillarsTitle}</h2>
             <p>{t.pillarsIntro}</p>
           </div>
-
-          <FeatureRow img="qui_1" caption={cap("qui_1")} alt={alt("qui_1")} onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pillar1Title}</h3>
-            <p style={{ color: "var(--color-text-muted)" }}>{t.pillar1Text}</p>
-          </FeatureRow>
-
-          <FeatureRow img="qui_7" caption={cap("qui_7")} alt={alt("qui_7")} reversed onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pillar2Title}</h3>
-            <p style={{ color: "var(--color-text-muted)" }}>{t.pillar2Text}</p>
-          </FeatureRow>
-
-          <FeatureRow img="qui_11" caption={cap("qui_11")} alt={alt("qui_11")} onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pillar3Title}</h3>
-            <p style={{ color: "var(--color-text-muted)" }}>{t.pillar3Text}</p>
-          </FeatureRow>
-
-          <FeatureRow img="qui_8" caption={cap("qui_8")} alt={alt("qui_8")} reversed onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pillar4Title}</h3>
-            <p style={{ color: "var(--color-text-muted)" }}>{t.pillar4Text}</p>
-          </FeatureRow>
+          <div style={gridStyle}>
+            {valeursElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} onOpen={openLightbox} />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ============== NOTRE SAVOIR-FAIRE — PÔLES (remodelé : image | texte) ============== */}
+      {/* ============== NOTRE SAVOIR-FAIRE — 4 PÔLES (style about-vision-box) ============== */}
       <section className="section-padding">
         <div className="container">
           <div className="section-header">
             <span className="section-kicker">{t.expertiseKicker}</span>
             <h2>{t.expertiseTitle}</h2>
           </div>
-
-          <FeatureRow img="qui_10" caption={cap("qui_10")} alt={alt("qui_10")} onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pole1Title}</h3>
-            <span className="obj">{t.pole1Obj}</span>
-            <ul className="solution-list">
-              <li>{t.pole1Item1}</li>
-              <li>{t.pole1Item2}</li>
-              <li>{t.pole1Item3}</li>
-            </ul>
-          </FeatureRow>
-
-          <FeatureRow img="qui_4" caption={cap("qui_4")} alt={alt("qui_4")} reversed onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pole2Title}</h3>
-            <span className="obj">{t.pole2Obj}</span>
-            <ul className="solution-list">
-              <li>{t.pole2Item1}</li>
-              <li>{t.pole2Item2}</li>
-              <li>{t.pole2Item3}</li>
-            </ul>
-          </FeatureRow>
-
-          <FeatureRow img="qui_5" caption={cap("qui_5")} alt={alt("qui_5")} onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pole3Title}</h3>
-            <span className="obj">{t.pole3Obj}</span>
-            <ul className="solution-list">
-              <li>{t.pole3Item1}</li>
-              <li>{t.pole3Item2}</li>
-              <li>{t.pole3Item3}</li>
-            </ul>
-          </FeatureRow>
-
-          <FeatureRow img="qui_2" caption={cap("qui_2")} alt={alt("qui_2")} reversed onOpen={openLightbox}>
-            <h3 style={{ marginTop: 0 }}>{t.pole4Title}</h3>
-            <span className="obj">{t.pole4Obj}</span>
-            <ul className="solution-list">
-              <li>{t.pole4Item1}</li>
-              <li>{t.pole4Item2}</li>
-              <li>{t.pole4Item3}</li>
-            </ul>
-          </FeatureRow>
+          <div style={gridStyle}>
+            {savoirFaireElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} onOpen={openLightbox} />
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* ============== NOTRE DIFFÉRENCE (remodelé : table | images côte à côte) ============== */}
+      {/* ============== NOTRE DIFFÉRENCE — 4 ÉLÉMENTS (style about-vision-box) ============== */}
       <section className="comparison-section">
         <div className="container">
           <div className="section-header">
@@ -418,88 +435,10 @@ export default function About2({ locale = "fr" }: About2Props) {
             <h2>{t.compareTitle}</h2>
             <p>{t.compareIntro}</p>
           </div>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
-              gap: 32,
-              alignItems: "start",
-            }}
-          >
-            <table className="comparison-table" style={{ minWidth: 0 }}>
-              <thead>
-                <tr>
-                  <th className="col-criteria">{t.compareHeadCriteria}</th>
-                  <th className="col-tradition">{t.compareHeadTradition}</th>
-                  <th className="col-fedpawa">{t.compareHeadFedpawa}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="col-criteria">{t.row1Criteria}</td>
-                  <td>{t.row1Tradition}</td>
-                  <td className="col-fedpawa">{t.row1Fedpawa}</td>
-                </tr>
-                <tr>
-                  <td className="col-criteria">{t.row2Criteria}</td>
-                  <td>{t.row2Tradition}</td>
-                  <td className="col-fedpawa">{t.row2Fedpawa}</td>
-                </tr>
-                <tr>
-                  <td className="col-criteria">{t.row3Criteria}</td>
-                  <td>{t.row3Tradition}</td>
-                  <td className="col-fedpawa">{t.row3Fedpawa}</td>
-                </tr>
-                <tr>
-                  <td className="col-criteria">{t.row4Criteria}</td>
-                  <td>{t.row4Tradition}</td>
-                  <td className="col-fedpawa">{t.row4Fedpawa}</td>
-                </tr>
-              </tbody>
-            </table>
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-                gap: 16,
-              }}
-            >
-              {["qui_3", "qui_9", "qui_12"].map((img) => (
-                <figure key={img} style={{ margin: 0 }}>
-                  <div
-                    style={{
-                      borderRadius: 12,
-                      overflow: "hidden",
-                      cursor: "pointer",
-                      boxShadow: "0 8px 24px rgba(10, 14, 24, 0.12)",
-                    }}
-                    onClick={() => openLightbox(img)}
-                  >
-                    <picture>
-                      <source type="image/webp" srcSet={`/assets/images/${img}.webp`} />
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`/assets/images/${img}.jpg`}
-                        alt={alt(img)}
-                        loading="lazy"
-                        style={{ width: "100%", height: 180, objectFit: "cover", display: "block" }}
-                      />
-                    </picture>
-                  </div>
-                  <figcaption
-                    style={{
-                      fontSize: 13,
-                      color: "var(--color-text-muted)",
-                      marginTop: 10,
-                      textAlign: "center",
-                      letterSpacing: "0.02em",
-                    }}
-                  >
-                    {cap(img)}
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
+          <div style={gridStyle}>
+            {differenceElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} onOpen={openLightbox} />
+            ))}
           </div>
         </div>
       </section>
@@ -509,9 +448,7 @@ export default function About2({ locale = "fr" }: About2Props) {
         <div className="container">
           <h2>{t.ctaTitle}</h2>
           <p>{t.ctaText}</p>
-          <Link href={routes.contact} className="btn btn-gold">
-            {t.ctaButton}
-          </Link>
+          <Link href={routes.contact} className="btn btn-gold">{t.ctaButton}</Link>
         </div>
       </section>
 
@@ -529,7 +466,6 @@ export default function About2({ locale = "fr" }: About2Props) {
         }}
       >
         <span className="lightbox-close">&times;</span>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={
             lightboxSrc ??
@@ -563,7 +499,6 @@ export default function About2({ locale = "fr" }: About2Props) {
           </div>
           <form
             onSubmit={(e) => {
-              // Comportement source (about.js) : alert + fermeture.
               e.preventDefault();
               window.alert(t.modalSuccess);
               setRdvSent(true);
