@@ -1,13 +1,11 @@
 // ============================================================
 // FEDPAWA — Composant ActiveSectionRemix
-// 4 variantes de présentation du même contenu (3 items) :
-//   v1 : Split Line Timeline (grand visuel gauche + ligne centrale + marqueurs)
-//   v2 : Radial Orbit (grand visuel central + 3 cercles autour)
-//   v3 : Stacked Timeline (cartes verticales empilées avec image à gauche)
-//   v4 : Grid Focus (grille 2x2, visuel en haut, 3 cartes ci-dessous)
-// Règle : clic sur un élément = change le visuel actif + le bloc texte
-//         molette souris = défiler un par un
-//         animation d'entrée rapide au chargement de section
+// 4 variantes basées sur l'image de présentation :
+//   - Grand carré (80% hauteur section, 3 côtés droits + 1 côté courbé à droite)
+//   - 3 cercles sur le côté courbé, chacun lié à un bloc de texte
+//   Clic sur un cercle = change l'image du carré + le texte actif (texte plus grand/large)
+//   Molette souris = défiler un par un (ralenti par 3)
+//   Animation d'entrée rapide au chargement
 // ==========================================================
 
 "use client";
@@ -16,12 +14,11 @@ import { useCallback, useRef, useState } from "react";
 import { type Locale } from "@/lib/i18n";
 
 export interface RemixItem {
-  number: string;   // "01", "02", "03"
+  number: string;
   title: string;
   text: string;
-  image: string;    // nom de l'image sans extension
-  color: string;    // couleur du marqueur
-  caption?: string; // légende courte sous le chiffre (variante 2)
+  image: string;
+  color: string;
 }
 
 interface ActiveSectionRemixProps {
@@ -46,7 +43,7 @@ export default function ActiveSectionRemix({
     (e: React.WheelEvent<HTMLDivElement>) => {
       e.preventDefault();
       const now = Date.now();
-      if (now - wheelRef.current < 250) return;
+      if (now - wheelRef.current < 750) return; // ralenti par 3 (250 -> 750)
       wheelRef.current = now;
       if (e.deltaY > 0) {
         setActiveIndex((i) => (i + 1) % items.length);
@@ -63,8 +60,8 @@ export default function ActiveSectionRemix({
   );
 
   // ========== VARIANTE 1 : Split Line Timeline ==========
-  // Grand visuel à gauche (~50%), ligne verticale centrale,
-  // 3 marqueurs numérotés sur la ligne, titre+texte à droite.
+  // Grand carré à gauche (80% hauteur, côté droit courbé),
+  // ligne verticale, 3 marqueurs sur le côté courbé, texte actif à droite.
   const renderV1 = () => (
     <div
       onWheel={handleWheel}
@@ -72,18 +69,18 @@ export default function ActiveSectionRemix({
         display: "flex",
         alignItems: "center",
         gap: 0,
-        minHeight: "62vh",
+        minHeight: "70vh",
         position: "relative",
       }}
     >
-      {/* Grand visuel à gauche */}
+      {/* GRAND CARRÉ À GAUCHE : côté droit courbé, occupe 80% hauteur */}
       <div
         style={{
           flex: 1,
-          minHeight: 520,
+          minHeight: 560,
           position: "relative",
           overflow: "hidden",
-          borderRadius: 0,
+          borderRadius: "0 90px 90px 0",
           border: "1px solid #e5e5e5",
           background: "#f3f4f6",
         }}
@@ -102,8 +99,8 @@ export default function ActiveSectionRemix({
         <div
           style={{
             position: "absolute",
-            bottom: 30,
-            left: 30,
+            bottom: 32,
+            left: 32,
             color: "#ffffff",
             fontSize: "1.75rem",
             fontWeight: 800,
@@ -117,7 +114,7 @@ export default function ActiveSectionRemix({
         </div>
       </div>
 
-      {/* Ligne verticale centrale */}
+      {/* LIGNE VERTICALE CENTRALE + 3 CERCLES SUR LE CÔTÉ COURBÉ */}
       <div
         style={{
           width: 1,
@@ -145,7 +142,7 @@ export default function ActiveSectionRemix({
         ))}
       </div>
 
-      {/* Marqueurs + Texte à droite */}
+      {/* MARQUEURS + TEXTE À DROITE */}
       <div
         style={{
           flex: 1,
@@ -163,6 +160,7 @@ export default function ActiveSectionRemix({
               style={{ display: "flex", alignItems: "center", gap: "16px", cursor: "pointer" }}
               onClick={handleClick(i)}
             >
+              {/* Cercle numéroté */}
               <div
                 style={{
                   width: 44,
@@ -183,28 +181,29 @@ export default function ActiveSectionRemix({
               >
                 {it.number}
               </div>
-              <div>
+              <div style={{ minHeight: 80 }}>
                 <h3
                   style={{
-                    fontSize: "1.25rem",
-                    fontWeight: 700,
+                    fontSize: isActive ? "1.35rem" : "1.2rem",
+                    fontWeight: 800,
                     color: isActive ? "#111827" : "#6b7280",
                     margin: "0 0 0.5rem 0",
                     lineHeight: 1.35,
                     letterSpacing: "-0.01em",
-                    transition: "color 0.3s ease",
+                    transition: "all 0.3s ease",
                   }}
                 >
                   {it.title}
                 </h3>
                 <p
                   style={{
-                    fontSize: "0.95rem",
-                    lineHeight: 1.7,
-                    color: isActive ? "#4b5563" : "#9ca3af",
+                    fontSize: isActive ? "1rem" : "0.95rem",
+                    lineHeight: 1.8,
+                    color: isActive ? "#111827" : "#9ca3af",
                     margin: 0,
-                    maxWidth: 420,
-                    transition: "color 0.3s ease",
+                    maxWidth: isActive ? 520 : 420,
+                    transition: "all 0.3s ease",
+                    fontWeight: isActive ? 600 : 400,
                   }}
                 >
                   {it.text}
@@ -218,7 +217,7 @@ export default function ActiveSectionRemix({
   );
 
   // ========== VARIANTE 2 : Radial Orbit ==========
-  // Grand visuel central, 3 éléments en arc de cercle autour
+  // Grand visuel central, 3 cercles en arc de cercle autour
   const renderV2 = () => (
     <div
       onWheel={handleWheel}
@@ -227,7 +226,7 @@ export default function ActiveSectionRemix({
         flexDirection: "column",
         alignItems: "center",
         gap: "3rem",
-        minHeight: "62vh",
+        minHeight: "70vh",
         position: "relative",
       }}
     >
@@ -236,7 +235,7 @@ export default function ActiveSectionRemix({
         style={{
           width: "55vw",
           maxWidth: 640,
-          height: 420,
+          height: 460,
           borderRadius: 24,
           overflow: "hidden",
           border: "1px solid #e5e5e5",
@@ -293,10 +292,8 @@ export default function ActiveSectionRemix({
                 cursor: "pointer",
                 transition: "transform 0.3s ease",
               }}
-              onMouseEnter={() => {}}
               onClick={handleClick(i)}
             >
-              {/* Cercle */}
               <div
                 style={{
                   width: 64,
@@ -317,24 +314,26 @@ export default function ActiveSectionRemix({
                 {it.number}
               </div>
               <div style={{ marginTop: "10px", textAlign: "center" }}>
-                <span
+                <h3
                   style={{
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
-                    color: isActive ? it.color : "#6b7280",
-                    display: "block",
-                    marginBottom: "4px",
+                    fontSize: isActive ? "1.1rem" : "0.95rem",
+                    fontWeight: 800,
+                    color: isActive ? "#111827" : "#6b7280",
+                    margin: "0 0 0.5rem 0",
+                    lineHeight: 1.3,
+                    transition: "all 0.3s ease",
                   }}
                 >
-                  {it.caption || it.title}
-                </span>
+                  {it.title}
+                </h3>
                 <span
                   style={{
                     fontSize: "0.8rem",
-                    color: "#6b7280",
+                    color: isActive ? "#4b5563" : "#9ca3af",
                     lineHeight: 1.4,
                     maxWidth: 140,
                     display: "block",
+                    transition: "all 0.3s ease",
                   }}
                 >
                   {it.text}
@@ -356,7 +355,7 @@ export default function ActiveSectionRemix({
         display: "flex",
         flexDirection: "column",
         gap: "1.5rem",
-        minHeight: "62vh",
+        minHeight: "70vh",
         alignItems: "center",
       }}
     >
@@ -371,13 +370,13 @@ export default function ActiveSectionRemix({
               gap: "2rem",
               width: "100%",
               maxWidth: 900,
-              padding: isActive ? "1.5rem 2rem" : "1rem 1.5rem",
+              padding: isActive ? "2rem 2.5rem" : "1rem 1.5rem",
               borderRadius: 16,
               background: isActive ? "#ffffff" : "#f8fafc",
               border: `1px solid ${isActive ? item.color : "#e5e5e5"}`,
-              boxShadow: isActive ? "0 8px 24px rgba(10, 14, 24, 0.1)" : "none",
-              transform: isActive ? "scale(1)" : "scale(0.96)",
-              opacity: isActive ? 1 : 0.6,
+              boxShadow: isActive ? "0 10px 30px rgba(10, 14, 24, 0.12)" : "none",
+              transform: isActive ? "scale(1)" : "scale(0.94)",
+              opacity: isActive ? 1 : 0.5,
               transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
               cursor: "pointer",
             }}
@@ -386,8 +385,8 @@ export default function ActiveSectionRemix({
             {/* Image miniature à gauche */}
             <div
               style={{
-                width: 120,
-                height: 120,
+                width: 130,
+                height: 130,
                 borderRadius: 12,
                 overflow: "hidden",
                 border: `2px solid ${isActive ? it.color : "#e5e5e5"}`,
@@ -436,29 +435,30 @@ export default function ActiveSectionRemix({
                     letterSpacing: "0.05em",
                   }}
                 >
-                  {it.caption || it.title}
+                  {it.title}
                 </span>
               </div>
               <h3
                 style={{
-                  fontSize: "1.25rem",
-                  fontWeight: 700,
+                  fontSize: isActive ? "1.35rem" : "1.15rem",
+                  fontWeight: 800,
                   color: isActive ? "#111827" : "#4b5563",
                   margin: "0 0 0.5rem 0",
                   lineHeight: 1.4,
-                  transition: "color 0.3s ease",
+                  transition: "all 0.3s ease",
                 }}
               >
                 {it.title}
               </h3>
               <p
                 style={{
-                  fontSize: "0.95rem",
+                  fontSize: isActive ? "1rem" : "0.9rem",
                   lineHeight: 1.7,
-                  color: isActive ? "#4b5563" : "#9ca3af",
+                  color: isActive ? "#111827" : "#9ca3af",
                   margin: 0,
-                  maxWidth: 500,
-                  transition: "color 0.3s ease",
+                  maxWidth: isActive ? 560 : 500,
+                  fontWeight: isActive ? 600 : 400,
+                  transition: "all 0.3s ease",
                 }}
               >
                 {it.text}
@@ -479,7 +479,7 @@ export default function ActiveSectionRemix({
         display: "flex",
         flexDirection: "column",
         gap: "2rem",
-        minHeight: "62vh",
+        minHeight: "70vh",
         alignItems: "center",
       }}
     >
@@ -488,7 +488,7 @@ export default function ActiveSectionRemix({
         style={{
           width: "100%",
           maxWidth: 900,
-          height: 340,
+          height: 380,
           borderRadius: 20,
           overflow: "hidden",
           border: "1px solid #e5e5e5",
@@ -548,8 +548,8 @@ export default function ActiveSectionRemix({
                 border: `1px solid ${isActive ? it.color : "#e5e5e5"}`,
                 cursor: "pointer",
                 transition: "all 0.35s ease",
-                transform: isActive ? "scale(1.02)" : "scale(1)",
-                boxShadow: isActive ? "0 6px 18px rgba(10, 14, 24, 0.08)" : "none",
+                transform: isActive ? "scale(1.03)" : "scale(1)",
+                boxShadow: isActive ? "0 8px 24px rgba(10, 14, 24, 0.12)" : "none",
               }}
               onClick={handleClick(i)}
             >
@@ -574,24 +574,25 @@ export default function ActiveSectionRemix({
               </div>
               <h3
                 style={{
-                  fontSize: "1.05rem",
-                  fontWeight: 700,
+                  fontSize: isActive ? "1.1rem" : "1rem",
+                  fontWeight: 800,
                   color: isActive ? "#111827" : "#4b5563",
                   margin: "0 0 0.5rem 0",
                   lineHeight: 1.4,
-                  transition: "color 0.3s ease",
+                  transition: "all 0.3s ease",
                 }}
               >
                 {it.title}
               </h3>
               <p
                 style={{
-                  fontSize: "0.875rem",
+                  fontSize: isActive ? "0.9rem" : "0.85rem",
                   lineHeight: 1.6,
-                  color: isActive ? "#4b5563" : "#9ca3af",
+                  color: isActive ? "#111827" : "#9ca3af",
                   margin: 0,
-                  maxWidth: 240,
-                  transition: "color 0.3s ease",
+                  maxWidth: 260,
+                  fontWeight: isActive ? 600 : 400,
+                  transition: "all 0.3s ease",
                 }}
               >
                 {it.text}
@@ -603,7 +604,6 @@ export default function ActiveSectionRemix({
     </div>
   );
 
-  // Sélecteur de variante
   const renderVariant = () => {
     switch (variant) {
       case 1: return renderV1();
@@ -622,7 +622,6 @@ export default function ActiveSectionRemix({
       }}
     >
       <div className="container" style={{ maxWidth: 1150, margin: "0 auto", padding: "0 20px" }}>
-        {/* Grand titre centré au-dessus */}
         <div style={{ textAlign: "center", marginBottom: "3rem" }}>
           <span
             style={{
@@ -653,7 +652,6 @@ export default function ActiveSectionRemix({
 
         {renderVariant()}
 
-        {/* Indicateurs de progression en bas (sauf v2 qui a ses propres indicateurs implicites) */}
         {variant !== 2 && (
           <div
             style={{
