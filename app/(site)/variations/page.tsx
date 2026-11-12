@@ -1,6 +1,8 @@
 // ============================================================
-// FEDPAWA — Page /variations
-// 4 variantes distinctes de présentation basées sur l'image de référence
+// FEDPAWA — /variations
+// Variations du style "about-vision-box" (fond bleu #1A237E,
+// bordure gauche or, texte blanc, padding 40px).
+// Chaque variante modifie UN détail du style original.
 // ==========================================================
 
 "use client";
@@ -9,7 +11,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
-import ActiveSectionVariants from "@/components/qui-sommes-nous/ActiveSectionVariants";
+import ActiveSectionAboutVisionVariants from "@/components/qui-sommes-nous/ActiveSectionAboutVisionVariants";
 
 export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
   const t = getPageDictionary(locale, "qui-sommes-nous");
@@ -33,22 +35,13 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
 
   const openLightbox = (img: string) => setLightboxSrc(`/assets/images/${img}.jpg`);
 
+  // Même jeu de 4 éléments (Nos Valeurs) pour chaque variation,
+  // afin de comparer uniquement le style du bloc.
   const valeursItems = [
-    { number: "01", title: t.pillar1Title, text: t.pillar1Text, image: "qui_1", color: "#d4af37" },
-    { number: "02", title: t.pillar2Title, text: t.pillar2Text, image: "qui_7", color: "#111827" },
-    { number: "03", title: t.pillar3Title, text: t.pillar3Text, image: "qui_11", color: "#d4af37" },
-  ];
-
-  const savoirFaireItems = [
-    { number: "01", title: t.pole1Title, text: `${t.pole1Obj}. ${t.pole1Item1} ${t.pole1Item2} ${t.pole1Item3}`, image: "qui_10", color: "#111827" },
-    { number: "02", title: t.pole2Title, text: `${t.pole2Obj}. ${t.pole2Item1} ${t.pole2Item2} ${t.pole2Item3}`, image: "qui_4", color: "#d4af37" },
-    { number: "03", title: t.pole3Title, text: `${t.pole3Obj}. ${t.pole3Item1} ${t.pole3Item2} ${t.pole3Item3}`, image: "qui_5", color: "#111827" },
-  ];
-
-  const differenceItems = [
-    { number: "01", title: t.compareHeadTradition, text: `${t.row1Tradition} ${t.row2Tradition}`, image: "qui_3", color: "#6b7280" },
-    { number: "02", title: t.compareHeadFedpawa, text: `${t.row1Fedpawa} ${t.row2Fedpawa}`, image: "qui_9", color: "#d4af37" },
-    { number: "03", title: t.compareHeadCriteria, text: `${t.row3Criteria} ${t.row4Criteria}`, image: "qui_12", color: "#6b7280" },
+    { img: "qui_1", title: t.pillar1Title, text: t.pillar1Text },
+    { img: "qui_7", title: t.pillar2Title, text: t.pillar2Text },
+    { img: "qui_11", title: t.pillar3Title, text: t.pillar3Text },
+    { img: "qui_8", title: t.pillar4Title, text: t.pillar4Text },
   ];
 
   return (
@@ -73,58 +66,142 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
         </div>
       </section>
 
-      {/* VARIANTE 1 : Split Line */}
-      <section style={{ padding: "6rem 0", background: "#ffffff" }}>
+      {/* INTRODUCTION */}
+      <section style={{ padding: "4rem 0", background: "#fafaf9" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.75rem" }}>
-              Variante 1 — Split Line
-            </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.pillarsTitle}</h2>
+            <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>
+              Variations du style « About Vision Box »
+            </h2>
+            <p style={{ fontSize: "1rem", color: "#6b7280", maxWidth: 700, margin: "0 auto" }}>
+              Chaque variante présente le même contenu (4 éléments de « Nos Valeurs ») mais modifie un détail
+              du style original « about-vision-box » : bordure, fond, texte, shadow, coins, etc.
+            </p>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={1} />
         </div>
       </section>
 
-      {/* VARIANTE 2 : Radial Stack */}
-      <section style={{ padding: "6rem 0", background: "#fafaf9" }}>
+      {/* VARIANTE 1 : Original */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.75rem" }}>
-              Variante 2 — Radial Stack
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 1 — Original
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.expertiseTitle}</h2>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Bleu foncé, bordure gauche or, shadow
+            </h3>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={savoirFaireItems} variant={2} />
+          <ActiveSectionAboutVisionVariants
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            visionVariant={1}
+          />
         </div>
       </section>
 
-      {/* VARIANTE 3 : Stacked Timeline */}
-      <section style={{ padding: "6rem 0", background: "#ffffff" }}>
+      {/* VARIANTE 2 : Bordure complète */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.75rem" }}>
-              Variante 3 — Stacked Timeline
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 2 — Bordure complète
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.compareTitle}</h2>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Or tout autour au lieu de gauche seulement
+            </h3>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={differenceItems} variant={3} />
+          <ActiveSectionAboutVisionVariants
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            visionVariant={2}
+          />
         </div>
       </section>
 
-      {/* VARIANTE 4 : Grid Focus */}
-      <section style={{ padding: "6rem 0", background: "#fafaf9" }}>
+      {/* VARIANTE 3 : Inversé */}
+      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
-            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.75rem" }}>
-              Variante 4 — Grid Focus
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 3 — Inversé
             </span>
-            <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>{t.ctaTitle}</h2>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Fond blanc, texte noir, sans shadow
+            </h3>
           </div>
-          <ActiveSectionVariants locale={locale} sectionTitle="" items={valeursItems} variant={4} />
+          <ActiveSectionAboutVisionVariants
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            visionVariant={3}
+          />
         </div>
       </section>
 
+      {/* VARIANTE 4 : Bordure bas uniquement */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 4 — Bordure bas
+            </span>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Or en dessous uniquement
+            </h3>
+          </div>
+          <ActiveSectionAboutVisionVariants
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            visionVariant={4}
+          />
+        </div>
+      </section>
+
+      {/* VARIANTE 5 : Sans bordure */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 5 — Sans bordure
+            </span>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Bleu, shadow seulement, coins arrondis, padding réduit
+            </h3>
+          </div>
+          <ActiveSectionAboutVisionVariants
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            visionVariant={5}
+          />
+        </div>
+      </section>
+
+      {/* VARIANTE 6 : Double bordure */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 6 — Double bordure
+            </span>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Gauche + bas, padding réduit
+            </h3>
+          </div>
+          <ActiveSectionAboutVisionVariants
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            visionVariant={6}
+          />
+        </div>
+      </section>
+
+      {/* CTA */}
       <section className="cta-banner-section">
         <div className="container">
           <h2>{t.ctaTitle}</h2>
