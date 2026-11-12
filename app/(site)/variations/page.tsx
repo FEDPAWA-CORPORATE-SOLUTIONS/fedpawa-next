@@ -1,8 +1,8 @@
 // ============================================================
 // FEDPAWA — /variations
-// Variations du style "about-vision-box" (fond bleu #1A237E,
-// bordure gauche or, texte blanc, padding 40px).
-// Chaque variante modifie UN détail du style original.
+// 6 variantes de RESTRUCTURATION complète du composant
+// "about-vision-box" : chaque variante change la disposition,
+// les rapports de taille, la structure HTML et les animations.
 // ==========================================================
 
 "use client";
@@ -11,7 +11,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
-import ActiveSectionAboutVisionVariants from "@/components/qui-sommes-nous/ActiveSectionAboutVisionVariants";
+import ActiveSectionAboutVisionRestructured from "@/components/qui-sommes-nous/ActiveSectionAboutVisionRestructured";
 
 export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
   const t = getPageDictionary(locale, "qui-sommes-nous");
@@ -36,7 +36,7 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
   const openLightbox = (img: string) => setLightboxSrc(`/assets/images/${img}.jpg`);
 
   // Même jeu de 4 éléments (Nos Valeurs) pour chaque variation,
-  // afin de comparer uniquement le style du bloc.
+  // afin de comparer uniquement la structure du bloc.
   const valeursItems = [
     { img: "qui_1", title: t.pillar1Title, text: t.pillar1Text },
     { img: "qui_7", title: t.pillar2Title, text: t.pillar2Text },
@@ -71,11 +71,12 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <h2 style={{ fontSize: "2rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0", lineHeight: 1.25 }}>
-              Variations du style « About Vision Box »
+              Restructurations du composant « About Vision Box »
             </h2>
             <p style={{ fontSize: "1rem", color: "#6b7280", maxWidth: 700, margin: "0 auto" }}>
-              Chaque variante présente le même contenu (4 éléments de « Nos Valeurs ») mais modifie un détail
-              du style original « about-vision-box » : bordure, fond, texte, shadow, coins, etc.
+              Chaque variante restructure complètement la disposition : rapports de taille,
+              structure HTML, position de l'image et du texte, animations. Même contenu (4 éléments
+              de « Nos Valeurs »), structure différente.
             </p>
           </div>
         </div>
@@ -89,114 +90,114 @@ export default function VariationsPage({ locale = "fr" }: { locale?: Locale }) {
               Variation 1 — Original
             </span>
             <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
-              Bleu foncé, bordure gauche or, shadow
+              Image en haut, titre et texte en dessous, bloc bleu avec bordure gauche or
             </h3>
           </div>
-          <ActiveSectionAboutVisionVariants
+          <ActiveSectionAboutVisionRestructured
             locale={locale}
             sectionTitle=""
             items={valeursItems}
-            visionVariant={1}
+            variant={1}
           />
         </div>
       </section>
 
-      {/* VARIANTE 2 : Bordure complète */}
+      {/* VARIANTE 2 : Côte à côte */}
       <section style={{ padding: "5rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
-              Variation 2 — Bordure complète
+              Variation 2 — Côte à côte
             </span>
             <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
-              Or tout autour au lieu de gauche seulement
+              Image 40% à gauche | Texte 60% à droite
             </h3>
           </div>
-          <ActiveSectionAboutVisionVariants
+          <ActiveSectionAboutVisionRestructured
             locale={locale}
             sectionTitle=""
             items={valeursItems}
-            visionVariant={2}
+            variant={2}
           />
         </div>
       </section>
 
-      {/* VARIANTE 3 : Inversé */}
-      <section style={{ padding: "5rem 0", background: "#fafaf9" }}>
-        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
-              Variation 3 — Inversé
-            </span>
-            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
-              Fond blanc, texte noir, sans shadow
-            </h3>
-          </div>
-          <ActiveSectionAboutVisionVariants
-            locale={locale}
-            sectionTitle=""
-            items={valeursItems}
-            visionVariant={3}
-          />
-        </div>
-      </section>
-
-      {/* VARIANTE 4 : Bordure bas uniquement */}
+      {/* VARIANTE 3 : Image cercle */}
       <section style={{ padding: "5rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
-              Variation 4 — Bordure bas
+              Variation 3 — Image cercle
             </span>
             <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
-              Or en dessous uniquement
+              Photo ronde au centre, titre et texte en dessous
             </h3>
           </div>
-          <ActiveSectionAboutVisionVariants
+          <ActiveSectionAboutVisionRestructured
             locale={locale}
             sectionTitle=""
             items={valeursItems}
-            visionVariant={4}
+            variant={3}
           />
         </div>
       </section>
 
-      {/* VARIANTE 5 : Sans bordure */}
+      {/* VARIANTE 4 : Image en fond + overlay */}
       <section style={{ padding: "5rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
-              Variation 5 — Sans bordure
+              Variation 4 — Image en fond
             </span>
             <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
-              Bleu, shadow seulement, coins arrondis, padding réduit
+              Image pleine avec texte en overlay (dégradé en bas)
             </h3>
           </div>
-          <ActiveSectionAboutVisionVariants
+          <ActiveSectionAboutVisionRestructured
             locale={locale}
             sectionTitle=""
             items={valeursItems}
-            visionVariant={5}
+            variant={4}
           />
         </div>
       </section>
 
-      {/* VARIANTE 6 : Double bordure */}
+      {/* VARIANTE 5 : Deux colonnes asymétriques */}
       <section style={{ padding: "5rem 0", background: "#ffffff" }}>
         <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "2rem" }}>
             <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
-              Variation 6 — Double bordure
+              Variation 5 — Colonnes asymétriques
             </span>
             <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
-              Gauche + bas, padding réduit
+              Image 60% à gauche | Texte 40% à droite avec fond coloré
             </h3>
           </div>
-          <ActiveSectionAboutVisionVariants
+          <ActiveSectionAboutVisionRestructured
             locale={locale}
             sectionTitle=""
             items={valeursItems}
-            visionVariant={6}
+            variant={5}
+          />
+        </div>
+      </section>
+
+      {/* VARIANTE 6 : Carte journal */}
+      <section style={{ padding: "5rem 0", background: "#ffffff" }}>
+        <div className="container" style={{ maxWidth: 1150, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+            <span style={{ display: "inline-block", fontSize: "0.875rem", fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase", color: "#d4af37", marginBottom: "0.5rem" }}>
+              Variation 6 — Carte journal
+            </span>
+            <h3 style={{ fontSize: "1.5rem", fontWeight: 800, color: "#111827", margin: "0 0 1rem 0" }}>
+              Petite image en haut, titre en gros, texte en dessous
+            </h3>
+          </div>
+          <ActiveSectionAboutVisionRestructured
+            locale={locale}
+            sectionTitle=""
+            items={valeursItems}
+            variant={6}
           />
         </div>
       </section>
