@@ -843,6 +843,8 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
 
   const [rejectDrafts, setRejectDrafts] = useState<Record<number, string>>({});
   const [rejectingId, setRejectingId] = useState<number | null>(null);
+  const [completerDrafts, setCompleterDrafts] = useState<Record<number, string>>({});
+  const [completingId, setCompletingId] = useState<number | null>(null);
 
   const openReject = (id: number) => {
     setRejectingId(id);
@@ -865,6 +867,30 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
       reload();
     } catch {
       toast("Erreur lors du rejet.", "error");
+    }
+  };
+
+  const openCompleter = (id: number) => {
+    setCompletingId(id);
+    setCompleterDrafts({ ...completerDrafts, [id]: "" });
+  };
+
+  const cancelCompleter = (id: number) => {
+    setCompletingId(null);
+    setCompleterDrafts({ ...completerDrafts, [id]: "" });
+  };
+
+  const confirmCompleter = async (id: number) => {
+    const elements = completerDrafts[id]?.trim();
+    if (!elements) return;
+    try {
+      await apiAuthPost("/api/v1/admin/kyc/a-completer", { id, elements_manquants: elements });
+      toast("Dossier marqué comme à compléter. Client notifié.", "success");
+      setCompletingId(null);
+      setCompleterDrafts({});
+      reload();
+    } catch {
+      toast("Erreur lors du marquage.", "error");
     }
   };
 
@@ -924,7 +950,7 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
           <div className="kyc-actions">
             {rejectingId === k.id ? (
               <div className="kyc-reject-form">
-                <label htmlFor={`reject-motif-${k.id}`}>Motif du rejet :</label>
+                <label htmlFor={`reject-motif-${k.id ?? 0}`}>Motif du rejet :</label>
                 <textarea
                   id={`reject-motif-${k.id ?? 0}`}
                   value={rejectDrafts[k.id ?? 0] ?? ""}
@@ -953,6 +979,40 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
                   </button>
                 </div>
               </div>
+            ) : completingId === k.id ? (
+              <div className="kyc-reject-form">
+                <label htmlFor={`completer-elements-${k.id ?? 0}`}>Éléments manquants :</label>
+                <textarea
+                  id={`completer-elements-${k.id ?? 0}`}
+                  value={completerDrafts[k.id ?? 0] ?? ""}
+                  onChange={(e) =>
+                    setCompleterDrafts({
+                      ...completerDrafts,
+                      [k.id ?? 0]: e.target.value,
+                    })
+                  }
+                  placeholder="Quels documents ou informations manquent ?…"
+                  rows={3}
+                  className="kyc-reject-textarea"
+                />
+                <div className="kyc-reject-buttons">
+                  <button
+                    className="btn btn-cancel"
+                    type="button"
+                    onClick={() => cancelCompleter(k.id ?? 0)}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    className="btn btn-reject-confirm"
+                    type="button"
+                    onClick={() => confirmCompleter(k.id ?? 0)}
+                    disabled={!(completerDrafts[k.id ?? 0]?.trim())}
+                  >
+                    Confirmer « À compléter »
+                  </button>
+                </div>
+              </div>
             ) : (
               <>
                 <button
@@ -961,6 +1021,13 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
                   onClick={() => openReject(k.id ?? 0)}
                 >
                   Rejeter (avec motif)
+                </button>
+                <button
+                  className="btn btn-completer"
+                  type="button"
+                  onClick={() => openCompleter(k.id ?? 0)}
+                >
+                  À compléter
                 </button>
                 <button
                   className="btn btn-approve"
