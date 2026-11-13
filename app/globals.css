@@ -1880,3 +1880,125 @@ img, table { max-width: 100%; }
   .fp-verif-gate-box { padding: 28px 20px; }
   .fp-verif-page-card { padding: 36px 22px; }
 }
+
+/* ===== HEADER CUSTOMIZATIONS ===== */
+
+/* Mobile: hide the ME profile button on small screens */
+@media (max-width: 991px) {
+  .me-btn-mobile-hidden {
+    display: none !important;
+  }
+}
+
+/* Desktop: outlined circle profile button style */
+.profile-outlined-circle {
+  width: 40px;
+  height: 40px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  background: transparent;
+  color: currentColor;
+  font-size: 0;
+  line-height: 0;
+  overflow: visible;
+  padding: 0;
+}
+
+.profile-outlined-circle svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: 0 auto;
+}
+
+.profile-outlined-circle span {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  font-size: 10px;
+  color: currentColor;
+}
+
+/* Mobile menu: expand nav-actions by 25% when menu is open */
+body.nav-open .nav-actions-expanded {
+  transform: scale(1.25);
+  transform-origin: right top;
+}
+
+/* Accordion indentation for mobile menus */
+.mobile-accordion ul {
+  padding-left: 16px;
+  list-style: none;
+}
+
+.mobile-accordion ul li {
+  padding-left: 8px;
+}
+
+/* ===== BOUTONS HAUT DROITE - TAILLES ===== */
+
+/* Augmenter la taille du bouton fermer de 50 % */
+.mobile-close-btn.enlarged {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
+}
+
+/* Augmenter la taille des toggles de thème et de langue de 25 % */
+.mobile-mode-toggle.enlarged,
+.mobile-lang-toggle.enlarged {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 18px !important;
+}
+
+/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
+
+/* Bouton fermer : +50% */
+.mobile-close-btn {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
+}
+
+/* Toggle thème et langue : +25% */
+.mobile-mode-toggle,
+.mobile-lang-toggle {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 18px !important;
+}
+
+/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
+
+/* Bouton fermer : +50% */
+.mobile-close-btn.enlarged {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
+}
+
+/* Toggle thème et langue : +25% */
+.mobile-mode-toggle.enlarged,
+.mobile-lang-toggle.enlarged {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 18px !important;
+}
+
+/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
+
+/* Bouton fermer : +50% */
+.mobile-close-btn.enlarged {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
+}
+
+/* Toggle thème et langue : +25% */
+.mobile-mode-toggle.enlarged,
+.mobile-lang-toggle.enlarged {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 18px !important;
+}
