@@ -841,13 +841,27 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
     }
   };
 
-  const reject = async (id?: number) => {
-    if (!id) return;
-    const motif = window.prompt("Motif du rejet :");
-    if (motif === null) return;
+  const [rejectDrafts, setRejectDrafts] = useState<Record<number, string>>({});
+  const [rejectingId, setRejectingId] = useState<number | null>(null);
+
+  const openReject = (id: number) => {
+    setRejectingId(id);
+    setRejectDrafts({ ...rejectDrafts, [id]: "" });
+  };
+
+  const cancelReject = (id: number) => {
+    setRejectingId(null);
+    setRejectDrafts({ ...rejectDrafts, [id]: "" });
+  };
+
+  const confirmReject = async (id: number) => {
+    const motif = rejectDrafts[id]?.trim();
+    if (!motif) return;
     try {
       await apiAuthPost("/api/v1/admin/kyc/reject", { id, motif });
       toast("Dossier rejeté. Client notifié.", "success");
+      setRejectingId(null);
+      setRejectDrafts({});
       reload();
     } catch {
       toast("Erreur lors du rejet.", "error");
@@ -908,8 +922,55 @@ function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath
             </div>
           </div>
           <div className="kyc-actions">
-            <button className="btn btn-reject" type="button" onClick={() => reject(k.id)}>Rejeter (avec motif)</button>
-            <button className="btn btn-approve" type="button" onClick={() => approve(k.id)}>Approuver le dossier</button>
+            {rejectingId === k.id ? (
+              <div className="kyc-reject-form">
+                <label htmlFor={`reject-motif-${k.id}`}>Motif du rejet :</label>
+                <textarea
+                  id={`reject-motif-${k.id ?? 0}`}
+                  value={rejectDrafts[k.id ?? 0] ?? ""}
+                  onChange={(e) =>
+                    setRejectDrafts({ ...rejectDrafts, [k.id ?? 0]: e.target.value })
+                  }
+                  placeholder="Expliquez pourquoi le document est rejeté…"
+                  rows={3}
+                  className="kyc-reject-textarea"
+                />
+                <div className="kyc-reject-buttons">
+                  <button
+                    className="btn btn-cancel"
+                    type="button"
+                    onClick={() => cancelReject(k.id ?? 0)}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    className="btn btn-reject-confirm"
+                    type="button"
+                    onClick={() => confirmReject(k.id ?? 0)}
+                    disabled={!(rejectDrafts[k.id ?? 0]?.trim())}
+                  >
+                    Confirmer le rejet
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <button
+                  className="btn btn-reject"
+                  type="button"
+                  onClick={() => openReject(k.id ?? 0)}
+                >
+                  Rejeter (avec motif)
+                </button>
+                <button
+                  className="btn btn-approve"
+                  type="button"
+                  onClick={() => approve(k.id)}
+                >
+                  Approuver le dossier
+                </button>
+              </>
+            )}
           </div>
         </div>
       ))}

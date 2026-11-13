@@ -2002,3 +2002,20 @@ body.nav-open .nav-actions-expanded {
   height: 40px !important;
   font-size: 18px !important;
 }
+
+/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
+
+/* Bouton fermer : +50% */
+.mobile-close-btn.enlarged {
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
+}
+
+/* Toggle thème et langue : +25% */
+.mobile-mode-toggle.enlarged,
+.mobile-lang-toggle.enlarged {
+  width: 40px !important;
+  height: 40px !important;
+  font-size: 18px !important;
+}
