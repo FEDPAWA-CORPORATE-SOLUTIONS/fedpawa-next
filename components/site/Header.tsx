@@ -6,7 +6,7 @@
 
 import Link from "next/link";
 import NavLinks from "./NavLinks";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getDictionary, type Locale } from "@/lib/i18n";
 import { mirrorHref, routesFor } from "@/lib/routes";
@@ -71,6 +71,27 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
     document.documentElement.setAttribute("data-mode", mode);
     setConnected(Boolean(getToken()));
   }, [getToken()]);
+
+  // Menu profil desktop : fermeture clic-extérieur + Escape
+  // (même pattern que PublicationsBell — cohérence d'interaction).
+  const profileRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!desktopProfileOpen) return;
+    const onKeydown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setDesktopProfileOpen(false);
+    };
+    const onClickOutside = (e: MouseEvent) => {
+      if (!profileRef.current?.contains(e.target as Node)) {
+        setDesktopProfileOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKeydown);
+    document.addEventListener("click", onClickOutside);
+    return () => {
+      document.removeEventListener("keydown", onKeydown);
+      document.removeEventListener("click", onClickOutside);
+    };
+  }, [desktopProfileOpen]);
 
   // Fermeture du menu mobile au resize >= desktop (comportement fedpawa-ui.js).
   useEffect(() => {
@@ -199,15 +220,30 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               Cloche notifications (vague E) si connecté, avant le CTA login. */}
           <div className="nav-actions" id="navActions">
             {connected && (
-              <div className="profile-dropdown">
-                <button className="profile-btn" onClick={() => setDesktopProfileOpen(!desktopProfileOpen)}>
-                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+              <div className="profile-dropdown" ref={profileRef}>
+                <button
+                  type="button"
+                  className="nav-profile-btn"
+                  style={{ color: "white" }}
+                  aria-label="Menu du compte"
+                  aria-haspopup="true"
+                  aria-expanded={desktopProfileOpen}
+                  onClick={() => setDesktopProfileOpen((v) => !v)}
+                >
+                  {/* Icône « user circled » — équivalent react-icons
+                      LuCircleUser (lucide circle-user) : outlined + circled,
+                      même traitement stroke que la cloche de notifications. */}
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="10" r="3" />
+                    <path d="M7 20.66V19a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v1.66" />
+                  </svg>
                 </button>
                 {desktopProfileOpen && (
-                  <ul className="dropdown-menu" style={{ position: "absolute", right: 0, background: "white", color: "black", listStyle: "none", padding: "10px", zIndex: 10 }}>
-                    <li><Link href={routes.espaceClient} onClick={() => setDesktopProfileOpen(false)}>Espace Client</Link></li>
-                    <li><Link href="/parametres" onClick={() => setDesktopProfileOpen(false)}>Paramètres</Link></li>
-                    <li><button onClick={handleLogout}>Déconnexion</button></li>
+                  <ul className="profile-menu" role="menu">
+                    <li role="none"><Link role="menuitem" href={routes.espaceClient} onClick={() => setDesktopProfileOpen(false)}>Espace Client</Link></li>
+                    <li role="none"><Link role="menuitem" href="/parametres" onClick={() => setDesktopProfileOpen(false)}>Paramètres</Link></li>
+                    <li role="none"><button type="button" role="menuitem" className="profile-menu-logout" onClick={handleLogout}>Déconnexion</button></li>
                   </ul>
                 )}
               </div>
@@ -215,9 +251,10 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             {connected && <PublicationsBell locale={locale} variant="desktop" />}
             {connected && (
               <button
-                className="me-btn"
+                className="me-btn me-btn-mobile-hidden"
                 onClick={() => setMeModalOpen(true)}
                 aria-label="Voir mes informations de connexion"
+                title="Mes informations de connexion"
               >
                 👤 ME
               </button>
