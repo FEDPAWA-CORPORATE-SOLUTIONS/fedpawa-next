@@ -36,6 +36,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   const [desktopProfileOpen, setDesktopProfileOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
+  const [meModalOpen, setMeModalOpen] = useState(false);
   // Mode sombre/clair : data-mode sur <html> + localStorage "fedpawa-mode"
   // (parité main.js source : défaut dark, lecture au montage client).
   const [darkMode, setDarkMode] = useState(true);
@@ -212,6 +213,15 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               </div>
             )}
             {connected && <PublicationsBell locale={locale} variant="desktop" />}
+            {connected && (
+              <button
+                className="me-btn"
+                onClick={() => setMeModalOpen(true)}
+                aria-label="Voir mes informations de connexion"
+              >
+                👤 ME
+              </button>
+            )}
             {!connected && (
               <Link className="nav-login" href={routes.auth}>
                 {locale === "en" ? "Sign in" : "Se Connecter"}

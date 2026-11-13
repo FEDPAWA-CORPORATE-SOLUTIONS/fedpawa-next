@@ -17,7 +17,7 @@ IMAGE_NEW="fedpawa-next:prod"
 TAG_ROLLBACK="fedpawa-next:prod-pre-deploy-$(date -u +%Y%m%dT%H%M%SZ)"
 CONTAINER="fedpawa-next"
 PORT="127.0.0.1:3000:3000"
-SRC="/root/fedpawa-next"
+SRC="/root/FEDPAWA-CODEBASE/fedpawa-next"
 API_URL="https://www.fedpawa.com"
 
 echo "== 1/6 Sauvegarde de l'image prod actuelle (rollback) =="

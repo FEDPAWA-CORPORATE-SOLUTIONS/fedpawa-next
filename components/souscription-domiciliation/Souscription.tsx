@@ -137,6 +137,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState<SouscriptionState>(INITIAL);
   const [errors, setErrors] = useState<string[]>([]);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [smartModal, setSmartModal] = useState<"closed" | "open" | "blocked">("closed");
   const [showPayModal, setShowPayModal] = useState(false);
@@ -308,32 +309,38 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   // ---------- Validation par étape (validateStep) ----------
   function validateStep(n: number): string[] {
     const errs: string[] = [];
-    const required =
-      (s: string) => !s.trim() && errs.push(t.errRequired);
+    const fieldErrs: Record<string, string[]> = {};
+    const required = (s: string, fieldName: string) => {
+      if (!s.trim()) {
+        errs.push(t.errRequired);
+        if (!fieldErrs[fieldName]) fieldErrs[fieldName] = [];
+        fieldErrs[fieldName].push(t.errRequired);
+      }
+    };
     if (n === 1) {
-      required(form.denomination);
+      required(form.denomination, "denomination");
       if (!form.formeJuridique) errs.push(t.errRequired);
-      if (isAutre) required(form.formeAutre);
+      if (isAutre) required(form.formeAutre, "formeAutre");
       if (!enCreation) {
-        required(form.rccm);
-        required(form.niu);
+        required(form.rccm, "rccm_dom");
+        required(form.niu, "niu_dom");
       }
       if (!form.secteur) errs.push(t.errRequired);
-      required(form.description);
+      required(form.description, "description");
     } else if (n === 2) {
       if (!form.civilite) errs.push(t.errRequired);
-      required(form.nomComplet);
+      required(form.nomComplet, "nom_complet");
       if (!form.fonction) errs.push(t.errRequired);
-      required(form.nationalite);
+      required(form.nationalite, "nationalite");
       if (!form.typePiece) errs.push(t.errRequired);
-      required(form.numPiece);
+      required(form.numPiece, "num_piece");
     } else if (n === 3) {
-      required(form.email);
+      required(form.email, "email");
       if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errs.push(t.errEmail);
-      required(form.telephone);
+      required(form.telephone, "telephone");
       if (form.telephone && !/^\+?[0-9\s]{9,16}$/.test(form.telephone)) errs.push(t.errPhone);
-      required(form.adresse);
-      required(form.ville);
+      required(form.adresse, "adresse");
+      required(form.ville, "ville");
       if (!form.pays) errs.push(t.errRequired);
     } else if (n === 4) {
       if (!form.pack) errs.push(t.errPackMissing);
@@ -343,6 +350,8 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         if (!form.files.statuts) errs.push(t.errStatuts);
       }
     }
+    // Set field errors state
+    setFieldErrors(fieldErrs);
     return [...new Set(errs)];
   }
 

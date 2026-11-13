@@ -17,6 +17,7 @@ import { useAuthGuard } from "@/components/dashboard/useAuthGuard";
 import { DashboardUIProvider, useToast } from "@/components/dashboard/UI";
 import VerificationBanner from "@/components/verification/VerificationBanner";
 import { ApiError } from "@/lib/api";
+import { normalizeError, resolveFormError } from "@/lib/form-errors";
 import {
   fetchNotificationPreferences,
   updateNotificationPreferences,
@@ -133,12 +134,12 @@ function ParametresNotifications() {
         setPrefs(updated);
         toast("Préférence enregistrée.", "success");
       } catch (err) {
-        setPrefs(previous); // rollback
-        toast(
-          err instanceof Error ? err.message : "Enregistrement impossible.",
-          "error",
-        );
-      } finally {
+      setPrefs(previous); // rollback
+      const normalized = normalizeError(err);
+      const serverMsg = normalized.serverMessage;
+      const toastMsg = serverMsg || (err instanceof Error ? err.message : "Enregistrement impossible.");
+      toast(toastMsg, "error");
+    } finally {
         setSaving(null);
       }
     },
