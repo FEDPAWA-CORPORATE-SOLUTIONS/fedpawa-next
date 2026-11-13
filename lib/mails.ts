@@ -66,6 +66,49 @@ export interface MailsCount {
   demo?: boolean;
 }
 
+// ---------- Types : mails envoyés (admin sortant) ----------
+
+export interface MailEnvoye {
+  id: number;
+  expediteur: string;
+  destinataire: string;
+  copie?: string[];
+  sujet: string;
+  statut: 'en_attente' | 'envoye' | 'echec';
+  est_envoye: boolean;
+  est_echec: boolean;
+  erreur?: string | null;
+  envoye_le?: string | null;
+  cree_le?: string | null;
+}
+
+export interface MailsEnvoyesPage {
+  data: MailEnvoye[];
+  meta: {
+    page: number;
+    par_page: number;
+    total: number;
+    derniere_page: number;
+  };
+  demo?: boolean;
+}
+
+// ---------- Payloads d'envoi ----------
+
+export interface AdminSendMailPayload {
+  destinataire: string;
+  copie?: string[];
+  sujet: string;
+  corps_html?: string;
+  corps_texte?: string;
+}
+
+export interface AdminReplyMailPayload {
+  corps_html?: string;
+  corps_texte?: string;
+  sujet?: string;
+}
+
 export const MAILS_PAR_PAGE = 10;
 
 // ---------- Repli démo uniquement sur 404 / réseau (0) ----------
@@ -135,6 +178,80 @@ export function adminMarquerMailLu(id: number): Promise<{ lu: boolean; demo?: bo
 export function adminMarquerToutLu(): Promise<{ lu: boolean; demo?: boolean }> {
   return apiAuthPost<{ lu: boolean }>(`/api/v1/admin/mails/tout-lu`).catch((e) => {
     if (isNotDeployed(e)) return { lu: true, demo: true };
+    throw e;
+  });
+}
+
+// ---------- Envoi de nouveaux mails (admin sortant) ----------
+
+/** POST /admin/mails — envoyer un nouveau mail (admin). Repli démo si 404. */
+export function adminSendMail(
+  payload: AdminSendMailPayload,
+): Promise<{ message: string; mail: { id: number; destinataire: string; sujet: string; statut: string; envoye_le?: string } }> {
+  return apiAuthPost(`/api/v1/admin/mails`, payload).catch((e) => {
+    if (isNotDeployed(e)) {
+      // Repli démo : simule un envoi réussi
+      return {
+        message: 'E-mail envoyé (données de démonstration)',
+        mail: {
+          id: Date.now(),
+          destinataire: payload.destinataire,
+          sujet: payload.sujet,
+          statut: 'envoye',
+          envoye_le: new Date().toISOString(),
+        },
+      };
+    }
+    throw e;
+  });
+}
+
+/** POST /admin/mails/{id}/replier — répondre à un mail reçu. Repli démo si 404. */
+export function adminReplyMail(
+  id: number,
+  payload: AdminReplyMailPayload,
+): Promise<{ message: string; mail: { id: number; destinataire: string; sujet: string; statut: string; envoye_le?: string } }> {
+  return apiAuthPost(`/api/v1/admin/mails/${id}/replier`, payload).catch((e) => {
+    if (isNotDeployed(e)) {
+      return {
+        message: 'Réponse envoyée (données de démonstration)',
+        mail: {
+          id: Date.now(),
+          destinataire: '',
+          sujet: payload.sujet ?? '',
+          statut: 'envoye',
+          envoye_le: new Date().toISOString(),
+        },
+      };
+    }
+    throw e;
+  });
+}
+
+/** GET /admin/mails/envoyes — liste des mails envoyés (admin). Repli démo si 404. */
+export function adminFetchEnvoyes(
+  q: {
+    page?: number;
+    par_page?: number;
+    recherche?: string;
+    statut?: 'en_attente' | 'envoye' | 'echec';
+  } = {},
+): Promise<MailsEnvoyesPage> {
+  const params = new URLSearchParams();
+  if (q.page) params.set('page', String(q.page));
+  if (q.par_page) params.set('par_page', String(q.par_page));
+  if (q.recherche) params.set('recherche', q.recherche);
+  if (q.statut) params.set('statut', q.statut);
+  return apiAuthGet<MailsEnvoyesPage>(
+    `/api/v1/admin/mails/envoyes?${params.toString()}`,
+  ).catch((e) => {
+    if (isNotDeployed(e)) {
+      return {
+        data: [],
+        meta: { page: 1, par_page: q.par_page ?? 10, total: 0, derniere_page: 1 },
+        demo: true,
+      };
+    }
     throw e;
   });
 }
