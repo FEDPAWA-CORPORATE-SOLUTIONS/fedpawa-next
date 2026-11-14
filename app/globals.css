@@ -108,7 +108,7 @@ html[data-theme="navy"][data-mode="dark"] .brand-mark::after { border-color: rgb
 
 .mobile-nav { position: fixed; top: 0; right: 0; width: min(360px, 90vw); max-height: 90vh; background: var(--color-surface-dark); padding: 24px 30px 30px; transform: translateX(100%) translateY(100%); visibility: hidden; overflow: hidden; z-index: 110; transition: transform 0.4s cubic-bezier(0.231, 0.553, 0.353, 1.0), visibility 0.4s; }
 .mobile-nav.open { transform: translateX(0) translateY(0); visibility: visible; }
-.mobile-nav .mobile-nav-toggles { position: absolute; top: 24px; right: 24px; display: flex; gap: 12px; z-index: 10; }
+.mobile-nav .mobile-nav-toggles { position: absolute; top: 24px; right: 24px; display: flex; gap: 0; z-index: 10; }
 .mobile-nav nav { display: flex; flex-direction: column; gap: 6px; }
 .mobile-nav a { color: #d8d4ce; padding: 12px 0; font-size: 0.95rem; font-weight: 500; letter-spacing: 0.06em; border-bottom: 1px solid rgba(255,255,255,0.08); text-transform: uppercase; }
 .mobile-nav a:hover, .mobile-nav a.mobile-cta { color: #fff; background: var(--color-primary); padding-left: 16px; border-bottom-color: transparent; }
@@ -2101,22 +2101,22 @@ body.nav-open .nav-actions-expanded {
 
 /* ===== BOUTONS HAUT DROITE - TAILLES ===== */
 
-/* Bouton fermer : 2,5x sa taille normale (120x120px) + marge gauche
-   = 2x sa largeur (240px) pour l'espacer des toggles langue/thème. */
+/* Bouton fermer : 72x72px + espace à droite pour séparer du groupe toggles */
 .mobile-close-btn,
 .mobile-close-btn.enlarged {
-  width: 120px !important;
-  height: 120px !important;
-  font-size: 60px !important;
-  margin-left: 240px !important;
+  width: 72px !important;
+  height: 72px !important;
+  font-size: 36px !important;
+  margin-right: 24px !important;
 }
 
-/* Toggle thème et langue : +50% (60x60px) */
+/* Toggle thème et langue : 72x72px — groupés côte à côte, sans espace entre eux */
 .mobile-mode-toggle,
 .mobile-mode-toggle.enlarged,
 .mobile-lang-toggle,
 .mobile-lang-toggle.enlarged {
-  width: 60px !important;
-  height: 60px !important;
-  font-size: 27px !important;
+  width: 72px !important;
+  height: 72px !important;
+  font-size: 36px !important;
+  margin: 0 !important;
 }

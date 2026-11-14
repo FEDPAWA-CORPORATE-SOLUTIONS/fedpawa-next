@@ -325,6 +325,15 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
           <div className="mobile-nav-toggles">
             {/* Icône de notification retirée : plus de cloche ni de bouton
                 push dans les toggles mobile (par demande utilisateur). */}
+            {/* Fermer en premier, puis les deux toggles groupés sans espace entre eux */}
+            <button
+              className="mobile-close-btn"
+              aria-label="Fermer le menu"
+              title="Fermer le menu"
+              onClick={() => setMobileOpen(false)}
+            >
+              ×
+            </button>
             <button
               className="mode-toggle mobile-mode-toggle"
               id="mobileModeToggle"
@@ -363,14 +372,6 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               }}
             >
               {locale === "en" ? "FR" : "EN"}
-            </button>
-            <button
-              className="mobile-close-btn"
-              aria-label="Fermer le menu"
-              title="Fermer le menu"
-              onClick={() => setMobileOpen(false)}
-            >
-              ×
             </button>
           </div>
         </nav>
