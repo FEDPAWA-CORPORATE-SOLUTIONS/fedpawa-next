@@ -322,7 +322,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             </Link>
           )}
 
-          <div className="mobile-nav-toggles">
+          <div className="mobile-nav-toggles" style={{ position: 'absolute', top: 16, right: 16, zIndex: 10, display: 'flex', gap: 0 }}>
             {/* Icône de notification retirée : plus de cloche ni de bouton
                 push dans les toggles mobile (par demande utilisateur). */}
             {/* Toggles groupés à gauche, bouton fermer à droite (espace = 1x largeur icône fermer) */}
