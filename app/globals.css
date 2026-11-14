@@ -251,11 +251,119 @@ html[data-mode="dark"] .sun-icon { display: none; }
 .nav-espace-client:hover { background: var(--color-primary-hover); }
 
 @media (max-width: 991px) {
-  /* F4: le profil reste accessible sur mobile (compact) — on le réduit au lieu de le cacher */
+  /* Profil desktop-only sur mobile : tout son contenu (espace client,
+     paramètres, déconnexion, notifications) vit déjà dans le menu mobile. */
   .nav-settings-btn { display: none !important; }
-  .nav-profile-btn, .nav-espace-client { display: grid !important; width: 38px; height: 38px; }
+  .nav-profile-btn, .nav-espace-client { display: none !important; }
+  .nav-actions .profile-dropdown { display: none !important; }
   .nav-espace-client { display: none !important; } /* doublon du menu profil — reste masqué */
 }
+
+/* ---- Page Notifications (espace client) ---- */
+.notif-page { padding: 40px 0 80px; }
+.notif-page-unread-pill {
+  display: inline-grid;
+  place-items: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  margin-left: 12px;
+  border-radius: 999px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 0.8rem;
+  vertical-align: middle;
+}
+.notif-page-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 24px 0 18px;
+}
+.notif-page-chip {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-muted);
+  font-family: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.notif-page-chip:hover { color: var(--color-heading); border-color: var(--color-heading); }
+.notif-page-chip.active { background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary); }
+.notif-page-markall {
+  margin-left: auto;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  font-family: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.notif-page-markall:hover { text-decoration: underline; }
+.notif-page-markall:disabled { color: var(--color-text-muted); cursor: default; text-decoration: none; }
+.notif-page-list { display: flex; flex-direction: column; gap: 10px; }
+.notif-page-empty { text-align: center; color: var(--color-text-muted); padding: 40px 0; }
+.notif-page-item {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  width: 100%;
+  text-align: left;
+  padding: 16px 18px;
+  background: var(--color-bg-main);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  color: var(--color-heading);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+.notif-page-item:hover { border-color: var(--color-primary); transform: translateY(-1px); }
+.notif-page-item.unread { border-left: 3px solid var(--color-primary); background: var(--color-bg-alt); }
+.notif-page-item-icon {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  color: var(--color-primary);
+}
+.notif-page-item-icon svg { width: 18px; height: 18px; }
+.notif-page-item-copy { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.notif-page-item-head { display: flex; align-items: center; gap: 8px; }
+.notif-page-item-type {
+  font-size: 0.64rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+.notif-page-item-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #c0392b;
+  border-radius: 999px;
+  padding: 2px 8px;
+}
+.notif-page-item-copy strong { font-size: 0.92rem; line-height: 1.4; word-break: break-word; }
+.notif-page-item-body { font-size: 0.84rem; color: var(--color-text-muted); line-height: 1.6; word-break: break-word; }
+.notif-page-item-copy small { font-size: 0.72rem; color: var(--color-text-muted); }
+.notif-page-more { display: flex; justify-content: center; margin-top: 24px; }
 
 .mobile-nav-toggles .mobile-mode-toggle,
 .mobile-nav-toggles .mobile-lang-toggle { color: #d8d4ce; border-color: rgba(255,255,255,0.25); }

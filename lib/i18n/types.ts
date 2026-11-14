@@ -23,6 +23,7 @@ export type PageSlug =
   | "oapi"
   | "contrats"
   | "publications"
+  | "notifications"
   | "admin_publications"
   | "admin_mails";
 

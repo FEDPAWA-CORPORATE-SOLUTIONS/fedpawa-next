@@ -8,11 +8,11 @@ import Link from "next/link";
 import NavLinks from "./NavLinks";
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { getDictionary, type Locale } from "@/lib/i18n";
+import { getDictionary, getPageDictionary, type Locale } from "@/lib/i18n";
 import { mirrorHref, routesFor } from "@/lib/routes";
 import { getToken, logout } from "@/lib/auth";
 import { usePwaNotifications } from "@/components/pwa/PwaProvider";
-import PublicationsBell from "@/components/publications/PublicationsBell";
+import NotificationsBellLink from "@/components/notifications/NotificationsBellLink";
 
 export interface HeaderProps {
   locale?: Locale;
@@ -36,7 +36,6 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   const [desktopProfileOpen, setDesktopProfileOpen] = useState(false);
   const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const [mobileProfileOpen, setMobileProfileOpen] = useState(false);
-  const [meModalOpen, setMeModalOpen] = useState(false);
   // Mode sombre/clair : data-mode sur <html> + localStorage "fedpawa-mode"
   // (parité main.js source : défaut dark, lecture au montage client).
   const [darkMode, setDarkMode] = useState(true);
@@ -248,17 +247,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
                 )}
               </div>
             )}
-            {connected && <PublicationsBell locale={locale} variant="desktop" />}
-            {connected && (
-              <button
-                className="me-btn me-btn-mobile-hidden"
-                onClick={() => setMeModalOpen(true)}
-                aria-label="Voir mes informations de connexion"
-                title="Mes informations de connexion"
-              >
-                👤 ME
-              </button>
-            )}
+            {connected && <NotificationsBellLink locale={locale} />}
             {!connected && (
               <Link className="nav-login" href={routes.auth}>
                 {locale === "en" ? "Sign in" : "Se Connecter"}
@@ -306,22 +295,23 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             </div>
           )}
 
-          {/* CTA mobile : login si déconnecté, déconnexion sinon (F4 source) */}
+          {/* Notifications mobile : item texte (parité desktop — la cloche
+              est desktop-only ; le menu mobile liste la page comme un lien). */}
+          {connected && (
+            <Link href={routes.notifications} onClick={() => setMobileOpen(false)}>
+              {getPageDictionary(locale, "notifications").navLabel}
+            </Link>
+          )}
+
+          {/* CTA mobile : login si déconnecté, déconnexion sinon (F4 source).
+              Déconnexion = grande zone rouge large (>= 85 %), pas un texte lié. */}
           {connected ? (
             <button
               type="button"
-              className="mobile-cta"
-              style={{
-                background: "none",
-                border: "none",
-                color: "#ffd98a",
-                cursor: "pointer",
-                font: "inherit",
-                textAlign: "left",
-              }}
+              className="logout-button"
               onClick={handleLogout}
             >
-              🚪 {locale === "en" ? "Log out" : "Se déconnecter"}
+              {locale === "en" ? "Log out" : "Se déconnecter"}
             </button>
           ) : (
             <Link
@@ -331,11 +321,6 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
             >
               {locale === "en" ? "Sign in" : "Se Connecter"}
             </Link>
-          )}
-
-          {/* Cloche notifications mobile (vague E) — item du menu, si connecté. */}
-          {connected && (
-            <PublicationsBell locale={locale} variant="mobile" />
           )}
 
           <div className="mobile-nav-toggles">

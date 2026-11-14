@@ -156,6 +156,7 @@ export const frPages: PageSlugs = {
   oapi: {},
   contrats: {},
   publications: {},
+  notifications: {},
   admin_publications: {},
   admin_mails: {},
 };

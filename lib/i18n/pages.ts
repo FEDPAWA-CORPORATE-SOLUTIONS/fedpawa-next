@@ -21,6 +21,7 @@ import { contratsFr, contratsEn } from "./pages/contrats";
 import { publicationsFr, publicationsEn } from "./pages/publications";
 import { adminPublicationsFr, adminPublicationsEn } from "./pages/publications";
 import { adminMailsFr, adminMailsEn } from "./pages/admin-mails";
+import { notificationsFr, notificationsEn } from "./pages/notifications";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -39,6 +40,7 @@ export const frPageDicts: PageSlugs = {
   oapi: oapiFr,
   contrats: contratsFr,
   publications: publicationsFr,
+  notifications: notificationsFr,
   admin_publications: adminPublicationsFr,
   admin_mails: adminMailsFr,
 };
@@ -60,6 +62,7 @@ export const enPageDicts: PageSlugs = {
   oapi: oapiEn,
   contrats: contratsEn,
   publications: publicationsEn,
+  notifications: notificationsEn,
   admin_publications: adminPublicationsEn,
   admin_mails: adminMailsEn,
 };
