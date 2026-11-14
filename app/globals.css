@@ -2101,85 +2101,22 @@ body.nav-open .nav-actions-expanded {
 
 /* ===== BOUTONS HAUT DROITE - TAILLES ===== */
 
-/* Augmenter la taille du bouton fermer de 50 % */
+/* Bouton fermer : 2,5x sa taille normale (120x120px) + marge gauche
+   = 2x sa largeur (240px) pour l'espacer des toggles langue/thème. */
+.mobile-close-btn,
 .mobile-close-btn.enlarged {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 24px !important;
+  width: 120px !important;
+  height: 120px !important;
+  font-size: 60px !important;
+  margin-left: 240px !important;
 }
 
-/* Augmenter la taille des toggles de thème et de langue de 25 % */
-.mobile-mode-toggle.enlarged,
-.mobile-lang-toggle.enlarged {
-  width: 40px !important;
-  height: 40px !important;
-  font-size: 18px !important;
-}
-
-/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
-
-/* Bouton fermer : +50% */
-.mobile-close-btn {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 24px !important;
-}
-
-/* Toggle thème et langue : +25% */
+/* Toggle thème et langue : +50% (60x60px) */
 .mobile-mode-toggle,
-.mobile-lang-toggle {
-  width: 40px !important;
-  height: 40px !important;
-  font-size: 18px !important;
-}
-
-/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
-
-/* Bouton fermer : +50% */
-.mobile-close-btn.enlarged {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 24px !important;
-}
-
-/* Toggle thème et langue : +25% */
 .mobile-mode-toggle.enlarged,
+.mobile-lang-toggle,
 .mobile-lang-toggle.enlarged {
-  width: 40px !important;
-  height: 40px !important;
-  font-size: 18px !important;
-}
-
-/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
-
-/* Bouton fermer : +50% */
-.mobile-close-btn.enlarged {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 24px !important;
-}
-
-/* Toggle thème et langue : +25% */
-.mobile-mode-toggle.enlarged,
-.mobile-lang-toggle.enlarged {
-  width: 40px !important;
-  height: 40px !important;
-  font-size: 18px !important;
-}
-
-/* ===== BOUTONS HAUT DROITE - AGRANDISSEMENT ===== */
-
-/* Bouton fermer : +50% */
-.mobile-close-btn.enlarged {
-  width: 48px !important;
-  height: 48px !important;
-  font-size: 24px !important;
-}
-
-/* Toggle thème et langue : +25% */
-.mobile-mode-toggle.enlarged,
-.mobile-lang-toggle.enlarged {
-  width: 40px !important;
-  height: 40px !important;
-  font-size: 18px !important;
+  width: 60px !important;
+  height: 60px !important;
+  font-size: 27px !important;
 }

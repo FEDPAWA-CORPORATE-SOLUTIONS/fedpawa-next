@@ -247,7 +247,6 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
                 )}
               </div>
             )}
-            {connected && <NotificationsBellLink locale={locale} />}
             {!connected && (
               <Link className="nav-login" href={routes.auth}>
                 {locale === "en" ? "Sign in" : "Se Connecter"}
@@ -324,33 +323,8 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
           )}
 
           <div className="mobile-nav-toggles">
-            {/* PWA — « Activer les notifications » sous le lang-toggle
-                (style .lang-toggle existant ; masqué si permission
-                != default ou refus persistant). */}
-            {pwa.canAsk && (
-              <button
-                type="button"
-                className="lang-toggle mobile-lang-toggle mobile-push-toggle"
-                id="mobilePushToggle"
-                aria-label={pwa.texts.ariaLabel}
-                title={pwa.texts.activate}
-                disabled={pwa.busy}
-                onClick={() => {
-                  void pwa.enableNotifications();
-                }}
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  style={{ width: 16, height: 16 }}
-                >
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                </svg>
-              </button>
-            )}
+            {/* Icône de notification retirée : plus de cloche ni de bouton
+                push dans les toggles mobile (par demande utilisateur). */}
             <button
               className="mode-toggle mobile-mode-toggle"
               id="mobileModeToggle"

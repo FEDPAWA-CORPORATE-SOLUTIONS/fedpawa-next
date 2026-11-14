@@ -30,3 +30,26 @@
     text-align: center !important;
     font-weight: bold !important;
 }
+
+/* Toggles thème et langue : 60x60px (+50%) */
+.mobile-nav-toggles .mobile-mode-toggle,
+.mobile-nav-toggles .mobile-lang-toggle {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    font-size: 27px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Bouton fermer : 120x120px (2,5x) + marge gauche 240px (2x largeur) */
+.mobile-nav-toggles .mobile-close-btn {
+    width: 120px !important;
+    height: 120px !important;
+    min-width: 120px !important;
+    min-height: 120px !important;
+    font-size: 60px !important;
+    margin-left: 240px !important;
+    padding: 0 !important;
+}
