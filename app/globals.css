@@ -2101,22 +2101,22 @@ body.nav-open .nav-actions-expanded {
 
 /* ===== BOUTONS HAUT DROITE - TAILLES ===== */
 
-/* Bouton fermer : 72x72px + espace à droite pour séparer du groupe toggles */
+/* Bouton fermer : 48x48px (72 / 1,5) + espace à gauche = 1x largeur (48px) */
 .mobile-close-btn,
 .mobile-close-btn.enlarged {
-  width: 72px !important;
-  height: 72px !important;
-  font-size: 36px !important;
-  margin-right: 24px !important;
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
+  margin-left: 48px !important;
 }
 
-/* Toggle thème et langue : 72x72px — groupés côte à côte, sans espace entre eux */
+/* Toggle thème et langue : 48x48px (72 / 1,5) — groupés côte à côte, sans espace entre eux */
 .mobile-mode-toggle,
 .mobile-mode-toggle.enlarged,
 .mobile-lang-toggle,
 .mobile-lang-toggle.enlarged {
-  width: 72px !important;
-  height: 72px !important;
-  font-size: 36px !important;
+  width: 48px !important;
+  height: 48px !important;
+  font-size: 24px !important;
   margin: 0 !important;
 }

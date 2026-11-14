@@ -31,25 +31,25 @@
     font-weight: bold !important;
 }
 
-/* Toggles thème et langue : 72x72px — groupés côte à côte, sans espace entre eux */
+/* Toggles thème et langue : 48x48px (72 / 1,5) — groupés côte à côte, sans espace entre eux */
 .mobile-nav-toggles .mobile-mode-toggle,
 .mobile-nav-toggles .mobile-lang-toggle {
-    width: 72px !important;
-    height: 72px !important;
-    min-width: 72px !important;
-    min-height: 72px !important;
-    font-size: 36px !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    font-size: 24px !important;
     padding: 0 !important;
     margin: 0 !important;
 }
 
-/* Bouton fermer : 72x72px + espace à droite pour séparer du groupe toggles */
+/* Bouton fermer : 48x48px (72 / 1,5) + espace à gauche = 1x largeur (48px) */
 .mobile-nav-toggles .mobile-close-btn {
-    width: 72px !important;
-    height: 72px !important;
-    min-width: 72px !important;
-    min-height: 72px !important;
-    font-size: 36px !important;
-    margin-right: 24px !important;
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    min-height: 48px !important;
+    font-size: 24px !important;
+    margin-left: 48px !important;
     padding: 0 !important;
  }
