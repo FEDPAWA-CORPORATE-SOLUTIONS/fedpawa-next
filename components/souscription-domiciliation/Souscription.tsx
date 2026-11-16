@@ -1602,8 +1602,8 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
           style={{
             position: "fixed",
             inset: 0,
-            background: "rgba(8,12,24,0.45)",
-            zIndex: 9500,
+            background: "rgba(8,12,24,0.55)",
+            zIndex: 9999,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -1618,9 +1618,9 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
             style={{
               background: "var(--color-bg-main)",
               borderRadius: 14,
-              maxWidth: 420,
+              maxWidth: 520,
               width: "100%",
-              padding: 24,
+              padding: 28,
               boxShadow: "0 20px 60px rgba(0,0,0,0.3)",
               border: "1px solid var(--color-border)",
             }}
