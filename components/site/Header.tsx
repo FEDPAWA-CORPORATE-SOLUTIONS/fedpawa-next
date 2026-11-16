@@ -241,7 +241,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
                 {desktopProfileOpen && (
                   <ul className="profile-menu" role="menu">
                     <li role="none"><Link role="menuitem" href={routes.espaceClient} onClick={() => setDesktopProfileOpen(false)}>Espace Client</Link></li>
-                    <li role="none"><Link role="menuitem" href="/parametres" onClick={() => setDesktopProfileOpen(false)}>Paramètres</Link></li>
+                    <li role="none"><Link role="menuitem" href="/espace-client/parametres" onClick={() => setDesktopProfileOpen(false)}>Paramètres</Link></li>
                     <li role="none"><button type="button" role="menuitem" className="profile-menu-logout" onClick={handleLogout}>Déconnexion</button></li>
                   </ul>
                 )}
