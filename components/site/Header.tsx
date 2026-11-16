@@ -287,7 +287,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               {mobileProfileOpen && (
                 <ul>
                   <li><Link href={routes.espaceClient} onClick={() => setMobileOpen(false)}>Espace Client</Link></li>
-                  <li><Link href="/parametres" onClick={() => setMobileOpen(false)}>Paramètres</Link></li>
+                  <li><Link href="/espace-client/parametres" onClick={() => setMobileOpen(false)}>Paramètres</Link></li>
                   <li><button onClick={handleLogout}>Déconnexion</button></li>
                 </ul>
               )}
