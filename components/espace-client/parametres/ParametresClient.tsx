@@ -265,7 +265,7 @@ function ParametresNotifications() {
               <div className="fp-settings-row">
                 <span className="fp-status fp-status-off" role="status">
                   {pushIndisponible
-                    ? "Notifications push indisponibles dans ce contexte (HTTP non sécurisé) — elles sont actives sur https://app.fedpawa.com (HTTPS)."
+                    ? "Notifications push indisponibles dans ce contexte (HTTP non sécurisé) — elles sont actives sur https://www.fedpawa.com (HTTPS)."
                     : permission === "denied"
                       ? "Notifications bloquées par le navigateur (à autoriser dans les réglages du navigateur)."
                       : "Notifications non activées sur cet appareil."}

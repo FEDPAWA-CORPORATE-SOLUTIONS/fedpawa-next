@@ -47,6 +47,6 @@ le tableau de bord prend le MAX par groupe, jamais la somme.
 ## Côté serveur (hors dépôt frontend)
 
 - `/root/fedpawa-analytics/collecteur.py` — service 127.0.0.1:8020, publié par
-  Caddy sur `/collect` (app.fedpawa.com et app-test.fedpawa.com) ;
+  Caddy sur `/collect` (www.fedpawa.com et app-test.fedpawa.com) ;
 - rétention, purge, rate limit, validation : voir
   `/root/fedpawa-analytics/REGISTRE-CONFORMITE.md`.

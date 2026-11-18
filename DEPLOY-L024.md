@@ -52,9 +52,9 @@ DEPLOY-L024.md
 
 Commande exacte :
 ```
-docker build --build-arg NEXT_PUBLIC_API_URL=https://app.fedpawa.com -t fedpawa-next:prod /root/fedpawa-next
+docker build --build-arg NEXT_PUBLIC_API_URL=https://www.fedpawa.com -t fedpawa-next:prod /root/fedpawa-next
 ```
-Observation préalable (20:50 UTC) : `getent hosts app.fedpawa.com` → exit 2 (non résolu) ; `curl -s -o /dev/null -w '%{http_code}' https://app.fedpawa.com/` → code 000, exit 6 (could not resolve host). Le DNS de `app.fedpawa.com` n'est pas encore posé sur cet hôte au moment du run. Si le build échoue sur un téléchargement vers `https://app.fedpawa.com`, la clause de repli s'applique (`NODE_TLS_REJECT_UNAUTHORIZED=0` en build-arg + `ENV` limité à l'étape de build).
+Observation préalable (20:50 UTC) : `getent hosts www.fedpawa.com` → exit 2 (non résolu) ; `curl -s -o /dev/null -w '%{http_code}' https://www.fedpawa.com/` → code 000, exit 6 (could not resolve host). Le DNS de `www.fedpawa.com` n'est pas encore posé sur cet hôte au moment du run. Si le build échoue sur un téléchargement vers `https://www.fedpawa.com`, la clause de repli s'applique (`NODE_TLS_REJECT_UNAUTHORIZED=0` en build-arg + `ENV` limité à l'étape de build).
 
 Journal brut intégral du build : `$TMPDIR/build-L024.log`. Sortie brute (extrait) :
 
@@ -92,7 +92,7 @@ Successfully built 3d79faa93a78
 Successfully tagged fedpawa-next:prod
 BUILD_EXIT=0
 ```
-Aucun échec de téléchargement vers `https://app.fedpawa.com` durant le build (pages statiques, aucun fetch build-time vers l'API) → la clause `NODE_TLS_REJECT_UNAUTHORIZED=0` n'a PAS été nécessaire ; le Dockerfile est resté inchangé.
+Aucun échec de téléchargement vers `https://www.fedpawa.com` durant le build (pages statiques, aucun fetch build-time vers l'API) → la clause `NODE_TLS_REJECT_UNAUTHORIZED=0` n'a PAS été nécessaire ; le Dockerfile est resté inchangé.
 
 ## Étape 5 — Lancement du conteneur
 
@@ -116,7 +116,7 @@ LISTEN 0 4096  127.0.0.1:3000  0.0.0.0:*
 === docker inspect (fin) ===
 fedpawa-next | fedpawa-next:prod | Up About a minute | 127.0.0.1:3000->3000/tcp
 RestartPolicy = unless-stopped
-Env image = "NEXT_PUBLIC_API_URL=https://app.fedpawa.com"
+Env image = "NEXT_PUBLIC_API_URL=https://www.fedpawa.com"
 ```
 
 ## Étape 6 — Vérifications HTTP (sorties brutes)
@@ -151,6 +151,6 @@ Sonde API : 20:50:08 tentative 2/20 -> HTTP 401 sur http://127.0.0.1:8000/api/us
 
 ## Notes / risques
 
-- `app.fedpawa.com` ne résolvait pas sur l'hôte au moment du run (getent exit 2) — **sans impact** : les 42 pages sont prérendues statiquement, aucun fetch build-time vers l'API ; la clause `NODE_TLS_REJECT_UNAUTHORIZED=0` n'a pas été utilisée, le Dockerfile est conforme au mandat à la lettre.
+- `www.fedpawa.com` ne résolvait pas sur l'hôte au moment du run (getent exit 2) — **sans impact** : les 42 pages sont prérendues statiquement, aucun fetch build-time vers l'API ; la clause `NODE_TLS_REJECT_UNAUTHORIZED=0` n'a pas été utilisée, le Dockerfile est conforme au mandat à la lettre.
 - Aucun fichier hors de `/root/fedpawa-next` n'a été modifié ; `app/`, `components/`, `lib/`, `public/`, `package.json` intacts. Fichiers créés : `Dockerfile`, `.dockerignore`, `DEPLOY-L024.md`.
-- Caddy (configuré par l'orchestrateur en parallèle) devra proxifier `app.fedpawa.com` vers `127.0.0.1:3000`.
+- Caddy (configuré par l'orchestrateur en parallèle) devra proxifier `www.fedpawa.com` vers `127.0.0.1:3000`.

@@ -54,7 +54,7 @@ echo "== 5/6 Vérifications post-deploy (voir CHECKLIST-DEPLOI-PROD.md) =="
 sleep 3
 docker ps --format '{{.Names}} {{.Image}} {{.Status}} {{.Ports}}' | grep "$CONTAINER" || true
 for p in / /espace-client /espace-client/parametres /verification-email /manifest.webmanifest /sw.js /icons/icon-192x192.png /icons/icon-512x512.png /offline.html; do
-  curl -s -o /dev/null -w "GET $p -> %{http_code}\n" "https://app.fedpawa.com$p"
+  curl -s -o /dev/null -w "GET $p -> %{http_code}\n" "https://www.fedpawa.com$p"
 done
 
 echo "== 6/6 Terminé. Rollback si régression : voir CHECKLIST-DEPLOI-PROD.md § Rollback =="

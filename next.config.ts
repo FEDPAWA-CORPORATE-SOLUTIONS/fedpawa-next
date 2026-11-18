@@ -56,6 +56,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    agentUpgrade: "security",
+  },
   // Proxy API local UNIQUEMENT pour l'e2e hors ligne (worker A) :
   // actif seulement si E2E_PROXY_API=1 au build — jamais en prod/test
   // (où NEXT_PUBLIC_API_URL pointe déjà vers l'API, même origine via Caddy
@@ -63,7 +66,7 @@ const nextConfig: NextConfig = {
   // http://localhost:PORT (contexte sécurisé) avec /api/v1 en same-origin.
   async rewrites() {
     if (process.env.E2E_PROXY_API === "1") {
-      const target = (process.env.E2E_API_TARGET ?? "https://app.fedpawa.com").replace(/\/+$/, "");
+      const target = (process.env.E2E_API_TARGET ?? "https://www.fedpawa.com").replace(/\/+$/, "");
       return [{ source: "/api/v1/:path*", destination: `${target}/api/v1/:path*` }];
     }
     return [];
