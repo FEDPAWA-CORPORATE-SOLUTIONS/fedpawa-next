@@ -25,7 +25,12 @@ export type PageSlug =
   | "publications"
   | "notifications"
   | "admin_publications"
-  | "admin_mails";
+  | "admin_mails"
+  | "souscriptionCreation"
+  | "souscriptionConseilFiscal"
+  | "souscriptionContrats"
+  | "souscriptionOapi"
+  | "notification_popup";
 
 /** Contenu propre à une page (clés libres, valeurs texte). */
 export type PageDict = Record<string, string>;

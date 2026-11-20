@@ -22,6 +22,11 @@ import { publicationsFr, publicationsEn } from "./pages/publications";
 import { adminPublicationsFr, adminPublicationsEn } from "./pages/publications";
 import { adminMailsFr, adminMailsEn } from "./pages/admin-mails";
 import { notificationsFr, notificationsEn } from "./pages/notifications";
+import { notificationPopupFr, notificationPopupEn } from "./pages/notification_popup";
+import { souscriptionCreationFr, souscriptionCreationEn } from "./pages/souscription-creation-entreprise";
+import { souscriptionConseilFiscalFr, souscriptionConseilFiscalEn } from "./pages/souscription-conseil-fiscal";
+import { souscriptionContratsFr, souscriptionContratsEn } from "./pages/souscription-contrats";
+import { souscriptionOapiFr, souscriptionOapiEn } from "./pages/souscription-oapi";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -43,6 +48,12 @@ export const frPageDicts: PageSlugs = {
   notifications: notificationsFr,
   admin_publications: adminPublicationsFr,
   admin_mails: adminMailsFr,
+  notification_popup: notificationPopupFr,
+  souscriptionCreation: souscriptionCreationFr,
+  "souscription-creation-entreprise": souscriptionCreationFr,
+  souscriptionConseilFiscal: souscriptionConseilFiscalFr,
+  souscriptionContrats: souscriptionContratsFr,
+  souscriptionOapi: souscriptionOapiFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
@@ -65,4 +76,10 @@ export const enPageDicts: PageSlugs = {
   notifications: notificationsEn,
   admin_publications: adminPublicationsEn,
   admin_mails: adminMailsEn,
+  notification_popup: notificationPopupEn,
+  souscriptionCreation: souscriptionCreationEn,
+  "souscription-creation-entreprise": souscriptionCreationEn,
+  souscriptionConseilFiscal: souscriptionConseilFiscalEn,
+  souscriptionContrats: souscriptionContratsEn,
+  souscriptionOapi: souscriptionOapiEn,
 };

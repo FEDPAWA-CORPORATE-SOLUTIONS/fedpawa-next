@@ -66,15 +66,31 @@ export async function apiFetch<T = unknown>(
   init: ApiInit = {},
 ): Promise<T> {
   const { body, ...rest } = init;
+  const method = (init.method || "GET").toUpperCase();
   let response: Response;
+
+  // Notifier le début du chargement (côté client uniquement)
+  if (
+    typeof window !== "undefined" &&
+    (window as any).__fedpawaStartLoading
+  ) {
+    (window as any).__fedpawaStartLoading(method);
+  }
+
   try {
     response = await fetch(buildUrl(path), {
-      credentials: 'include',
+      credentials: "include",
       ...rest,
       headers: buildHeaders(init),
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
+    if (
+      typeof window !== "undefined" &&
+      (window as any).__fedpawaStopLoading
+    ) {
+      (window as any).__fedpawaStopLoading(method);
+    }
     throw new ApiError(0, "Erreur réseau : API inaccessible.");
   }
 
@@ -84,7 +100,22 @@ export async function apiFetch<T = unknown>(
       | null;
     const message =
       parsed?.message ?? `Erreur API (${response.status} ${response.statusText}).`;
+
+    if (
+      typeof window !== "undefined" &&
+      (window as any).__fedpawaStopLoading
+    ) {
+      (window as any).__fedpawaStopLoading(method);
+    }
+
     throw new ApiError(response.status, message, parsed ?? null);
+  }
+
+  if (
+    typeof window !== "undefined" &&
+    (window as any).__fedpawaStopLoading
+  ) {
+    (window as any).__fedpawaStopLoading(method);
   }
 
   return (await parseBody(response)) as T;

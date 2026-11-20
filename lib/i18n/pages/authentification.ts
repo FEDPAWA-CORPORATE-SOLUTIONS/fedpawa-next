@@ -34,7 +34,7 @@ export const authFr: PageDict = {
   lblConfirm: "Confirmer",
   pwdHint: "Min. 8 caractères, 1 majuscule, 1 chiffre.",
   cguLabel:
-    "J'accepte les <a href=\"cgu.php\" target=\"_blank\" rel=\"noopener\">Conditions Générales d'Utilisation (CGU)</a> et la <a href=\"politique-confidentialite.php\" target=\"_blank\" rel=\"noopener\">politique de confidentialité</a> de FEDPAWA.",
+    "J'accepte les <a href=\"/cgu\" target=\"_blank\" rel=\"noopener\">Conditions Générales d'Utilisation (CGU)</a> et la <a href=\"/politique-confidentialite\" target=\"_blank\" rel=\"noopener\">politique de confidentialité</a> de FEDPAWA.",
   legalCgu: "CGU / CGV",
   legalPrivacy: "Politique de Confidentialité",
   btnSignup: "Créer mon compte",
@@ -100,7 +100,7 @@ export const authEn: PageDict = {
   lblConfirm: "Confirm Password",
   pwdHint: "Min. 8 chars, 1 uppercase, 1 number.",
   cguLabel:
-    "I accept the <a href=\"cgu.php\" target=\"_blank\" rel=\"noopener\">Terms of Service</a> and <a href=\"politique-confidentialite.php\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a> of FEDPAWA.",
+    "I accept the <a href=\"/cgu\" target=\"_blank\" rel=\"noopener\">Terms of Service</a> and <a href=\"/politique-confidentialite\" target=\"_blank\" rel=\"noopener\">Privacy Policy</a> of FEDPAWA.",
   legalCgu: "Terms & Conditions",
   legalPrivacy: "Privacy Policy",
   btnSignup: "Create Account",

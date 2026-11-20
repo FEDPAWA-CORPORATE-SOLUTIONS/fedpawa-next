@@ -21,6 +21,7 @@ import { getToken } from "@/lib/auth";
 import { apiErrorCode, verifTexts, verifyEmailToken } from "@/lib/verification";
 import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 import { routesFor } from "@/lib/routes";
+import ButtonLoader from "@/components/ui/ButtonLoader";
 import type { Locale } from "@/lib/i18n";
 
 type PageState =
@@ -102,14 +103,16 @@ export default function VerificationEmail({ locale = "fr" }: { locale?: Locale }
 
   const renderResendBlock = () =>
     canResend ? (
-      <button
-        type="button"
-        className="btn btn-primary"
-        onClick={handleResend}
-        disabled={resending}
-      >
-        {t.btnResend}
-      </button>
+      <ButtonLoader isLoading={resending} delayMs={150}>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handleResend}
+          disabled={resending}
+        >
+          {t.btnResend}
+        </button>
+      </ButtonLoader>
     ) : (
       <Link href={loginHref} className="btn btn-primary">
         {t.btnLoginToResend}

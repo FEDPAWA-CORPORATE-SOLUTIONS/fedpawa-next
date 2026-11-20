@@ -30,6 +30,8 @@ export default function VerificationGateModal({ locale = "fr" }: { locale?: Loca
     resending,
     resendFeedback,
     clearResendFeedback,
+    verifyFeedback,
+    clearVerifyFeedback,
   } = useEmailVerification();
 
   const visible = status === "unverified" || (gateOpen && status !== "anonymous" && status !== "verified");
@@ -64,6 +66,7 @@ export default function VerificationGateModal({ locale = "fr" }: { locale?: Loca
   };
 
   const handleChecked = async () => {
+    clearVerifyFeedback();
     // Re-lit /auth/me : si email_verified passe à true, le provider
     // repasse en "verified" et cette modal disparaît d'elle-même.
     await refresh();
@@ -90,6 +93,11 @@ export default function VerificationGateModal({ locale = "fr" }: { locale?: Loca
         {feedbackText && (
           <p className={"fp-verif-gate-feedback fp-verif-" + resendFeedback?.type}>
             {feedbackText}
+          </p>
+        )}
+        {verifyFeedback && (
+          <p className={"fp-verif-gate-feedback fp-verif-" + verifyFeedback.type}>
+            {verifyFeedback.text}
           </p>
         )}
         <div className="fp-verif-gate-actions">

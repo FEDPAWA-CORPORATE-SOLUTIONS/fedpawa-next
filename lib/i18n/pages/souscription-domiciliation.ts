@@ -124,7 +124,7 @@ export const souscriptionFr: PageDict = {
 
   // Section 6
   s6Title: "Validation et Sécurité Juridique",
-  chkCgv: "<strong>Conditions Générales :</strong> J'accepte expressément les <a href=\"cgu.php\" target=\"_blank\" rel=\"noopener\"><strong>Conditions Générales de Vente</strong></a>, la <a href=\"politique-confidentialite.php\" target=\"_blank\" rel=\"noopener\"><strong>Politique de Confidentialité</strong></a> et la Charte KYC de FEDPAWA CORPORATE SOLUTIONS SARL.",
+  chkCgv: "<strong>Conditions Générales :</strong> J'accepte expressément les <a href=\"/cgu\" target=\"_blank\" rel=\"noopener\"><strong>Conditions Générales de Vente</strong></a>, la <a href=\"/politique-confidentialite\" target=\"_blank\" rel=\"noopener\"><strong>Politique de Confidentialité</strong></a> et la Charte KYC de FEDPAWA CORPORATE SOLUTIONS SARL.",
   chkCadre: "<strong>Cadre Contractuel :</strong> Je reconnais que la prestation de domiciliation est régie par une <strong>Convention de mise à disposition d'infrastructures et de services</strong>, excluant expressément le statut des baux commerciaux au sens du Droit Uniforme OHADA.",
   chkExactitude: "<strong>Exactitude des informations :</strong> Je certifie sur l'honneur que les informations et documents fournis sont exacts, authentiques et sincères.",
   btnValidate: "👉 VALIDER ET GÉNÉRER MON CONTRAT DE DOMICILIATION",
@@ -364,7 +364,7 @@ export const souscriptionEn: PageDict = {
 
   // Section 6
   s6Title: "Validation et Sécurité Juridique",
-  chkCgv: "<strong>Conditions Générales :</strong> J'accepte expressément les <a href=\"cgu.php\" target=\"_blank\" rel=\"noopener\"><strong>Conditions Générales de Vente</strong></a>, la <a href=\"politique-confidentialite.php\" target=\"_blank\" rel=\"noopener\"><strong>Politique de Confidentialité</strong></a> et la Charte KYC de FEDPAWA CORPORATE SOLUTIONS SARL.",
+  chkCgv: "<strong>Conditions Générales :</strong> J'accepte expressément les <a href=\"/cgu\" target=\"_blank\" rel=\"noopener\"><strong>Conditions Générales de Vente</strong></a>, la <a href=\"/politique-confidentialite\" target=\"_blank\" rel=\"noopener\"><strong>Politique de Confidentialité</strong></a> et la Charte KYC de FEDPAWA CORPORATE SOLUTIONS SARL.",
   chkCadre: "<strong>Cadre Contractuel :</strong> Je reconnais que la prestation de domiciliation est régie par une <strong>Convention de mise à disposition d'infrastructures et de services</strong>, excluant expressément le statut des baux commerciaux au sens du Droit Uniforme OHADA.",
   chkExactitude: "<strong>Exactitude des informations :</strong> Je certifie sur l'honneur que les informations et documents fournis sont exacts, authentiques et sincères.",
   btnValidate: "👉 VALIDER ET GÉNÉRER MON CONTRAT DE DOMICILIATION",

@@ -64,7 +64,7 @@ export const cguFr: PageDict = {
   s8Item2: "<strong>Modifications :</strong> FEDPAWA peut faire évoluer les présentes CGU/CGV ; la version applicable est celle en vigueur à la date de la commande. Les clients sont informés de toute modification substantielle par e-mail ou dans l'espace client, avec préavis raisonnable.",
   s8Item3: "<strong>Droit applicable :</strong> les présentes conditions sont régies par le droit camerounais et, pour les matières qu'elle unifie, par le droit OHADA (Actes Uniformes), la signature électronique étant régie par la loi n° 2010/012 du 21 décembre 2010.",
   s8Item4: "<strong>Compétence :</strong> après tentative de résolution amiable (réclamation écrite à contact@fedpawacorporatesolutions.com, réponse sous 30 jours), tout litige relève de la compétence exclusive des <strong>tribunaux de Douala</strong>.",
-  s8Item5: "La protection de vos données personnelles est détaillée dans la <a href=\"politique-confidentialite.php\" style=\"text-decoration: underline;\">Politique de Confidentialité</a>.",
+  s8Item5: "La protection de vos données personnelles est détaillée dans la <a href=\"/politique-confidentialite\" style=\"text-decoration: underline;\">Politique de Confidentialité</a>.",
 };
 
 export const cguEn: PageDict = {
@@ -124,7 +124,7 @@ export const cguEn: PageDict = {
   s8Item2: "<strong>Amendments:</strong> FEDPAWA may update these Terms; the applicable version is the one in force at the order date. Clients are informed of any material change by e-mail or in the client area, with reasonable notice.",
   s8Item3: "<strong>Governing law:</strong> these terms are governed by Cameroonian law and, for the matters it unifies, by OHADA law (Uniform Acts), electronic signature being governed by Law No. 2010/012 of 21 December 2010.",
   s8Item4: "<strong>Jurisdiction:</strong> after an attempt at amicable resolution (written complaint to contact@fedpawacorporatesolutions.com, reply within 30 days), any dispute falls under the exclusive jurisdiction of the <strong>courts of Douala</strong>.",
-  s8Item5: "The protection of your personal data is detailed in the <a href=\"politique-confidentialite.php\" style=\"text-decoration: underline;\">Privacy Policy</a>.",
+  s8Item5: "The protection of your personal data is detailed in the <a href=\"/politique-confidentialite\" style=\"text-decoration: underline;\">Privacy Policy</a>.",
 };
 
 // ---------------- POLITIQUE DE CONFIDENTIALITÉ ----------------
@@ -206,7 +206,7 @@ export const privacyFr: PageDict = {
   s10Item2: "<strong>Téléphone :</strong> +237 691 70 48 02 (lundi–vendredi 8h00–18h00, samedi 9h00–14h00).",
   s10Item3: "<strong>Courrier :</strong> FEDPAWA CORPORATE SOLUTIONS SARL, Immeuble Pharmacie de Logpom, Logpom, Douala, Cameroun.",
   s10Item4: "En cas de désaccord persistant, vous pouvez saisir les autorités camerounaises compétentes en matière de protection des données.",
-  s10Item5: "Les présentes dispositions s'interprètent conformément au droit camerounais et aux <a href=\"cgu.php\" style=\"text-decoration: underline;\">Conditions Générales d'Utilisation et de Vente</a>.",
+  s10Item5: "Les présentes dispositions s'interprètent conformément au droit camerounais et aux <a href=\"/cgu\" style=\"text-decoration: underline;\">Conditions Générales d'Utilisation et de Vente</a>.",
 };
 
 export const privacyEn: PageDict = {
@@ -287,5 +287,5 @@ export const privacyEn: PageDict = {
   s10Item2: "<strong>Phone:</strong> +237 691 70 48 02 (Monday–Friday 8:00–18:00, Saturday 9:00–14:00).",
   s10Item3: "<strong>Post:</strong> FEDPAWA CORPORATE SOLUTIONS SARL, Pharmacie de Logpom Building, Logpom, Douala, Cameroon.",
   s10Item4: "If disagreement persists, you may refer the matter to the competent Cameroonian data protection authorities.",
-  s10Item5: "These provisions are interpreted in accordance with Cameroonian law and the <a href=\"cgu.php\" style=\"text-decoration: underline;\">Terms of Service and Sale</a>.",
+  s10Item5: "These provisions are interpreted in accordance with Cameroonian law and the <a href=\"/cgu\" style=\"text-decoration: underline;\">Terms of Service and Sale</a>.",
 };

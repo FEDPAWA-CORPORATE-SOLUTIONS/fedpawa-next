@@ -19,6 +19,7 @@ import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
 import { getFriendlyErrorMessage } from "@/lib/errors";
 import { setToken } from "@/lib/auth";
+import { useGlobalLoader } from "@/components/ui/GlobalLoaderContext";
 import { routesFor, isSafeNextPath } from "@/lib/routes";
 
 export interface AuthProps {
@@ -54,6 +55,7 @@ const EYE_OFF = (
 
 export default function Auth({ locale = "fr" }: AuthProps) {
   const t = getPageDictionary(locale, "authentification");
+  const { startLoading: globalStartLoading, stopLoading: globalStopLoading } = useGlobalLoader();
   const routes = routesFor(locale);
 
   const [tab, setTab] = useState<Tab>("login");
@@ -103,6 +105,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       return;
     }
     setLoading(true);
+    globalStartLoading();
     try {
       const data = await apiPost<{
         message?: string;
@@ -149,6 +152,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       }
     } finally {
       setLoading(false);
+      globalStopLoading();
     }
   }
 
@@ -170,6 +174,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
         return;
       }
       setLoading(true);
+      globalStartLoading();
       try {
         await apiPost("/api/v1/auth/register", {
           nom: signup.nom.trim(),
@@ -585,12 +590,6 @@ export default function Auth({ locale = "fr" }: AuthProps) {
       {/* ============== TOAST ============== */}
       
 
-      {/* ============== GLOBAL LOADER ============== */}
-      {loading && (
-        <div className="global-loader active">
-          <div className="spinner" />
-        </div>
-      )}
     </div>
   );
 }

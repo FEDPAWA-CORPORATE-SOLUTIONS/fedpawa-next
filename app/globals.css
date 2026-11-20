@@ -1,12 +1,7 @@
 /* ==========================================================
-   FEDPAWA — globals.css
-   Concaténation TEL QUEL des 4 fichiers CSS source (zéro Tailwind) :
-   1. assets/css/style.css       (design system & tokens)
-   2. assets/css/components.css   (composants)
-   3. assets/css/pages.css       (pages)
-   4. assets/css/dashboard.css   (dashboards & auth)
-   Chemins d'images relatifs conservés : ../images/ → /assets/images/ (public/)
+   Style commun des formulaires de souscription
    ========================================================== */
+@import url("../components/ui/souscription-common.css");
 
 /* ===== SOURCE: assets/css/style.css ===== */
 /* ==========================================================
@@ -2207,5 +2202,15 @@ html[data-mode="dark"] .global-loader-message {
   border-radius: 50%;
   margin: 0 auto 16px;
   animation: spin 1s linear infinite;
+}
+
+/* ===== PageSkeletonLoader — circle spinner animation ===== */
+@keyframes pageSkeletonSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ===== ButtonLoader — petit cercle spinner sur bouton ===== */
+@keyframes buttonLoaderSpin {
+  to { transform: rotate(360deg); }
 }
 

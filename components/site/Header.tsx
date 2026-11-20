@@ -10,7 +10,7 @@ import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getDictionary, getPageDictionary, type Locale } from "@/lib/i18n";
 import { mirrorHref, routesFor } from "@/lib/routes";
-import { getToken, logout } from "@/lib/auth";
+import { getToken, logout, fetchMe, type UserRole } from "@/lib/auth";
 import { usePwaNotifications } from "@/components/pwa/PwaProvider";
 import NotificationsBellLink from "@/components/notifications/NotificationsBellLink";
 
@@ -47,7 +47,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
   // l'utilisateur est authentifié (token stocké en localStorage).
   const pwa = usePwaNotifications();
   // --- LOGIQUE PROFIL ---
-  const profileType = "client"; // défini par défaut ; peut être mis à jour depuis /api/v1/auth/me
+  const [profileType, setProfileType] = useState<UserRole>("client"); // défini par défaut ; mis à jour depuis /api/v1/auth/me
 
   // Options admin : visibles seulement si profileType est "admin"
   // Options client : visibles par défaut
@@ -69,6 +69,24 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
     setDarkMode(mode === "dark");
     document.documentElement.setAttribute("data-mode", mode);
     setConnected(Boolean(getToken()));
+  }, [getToken()]);
+
+  // Rôle utilisateur (client/admin) depuis /api/v1/auth/me — décide de la cible
+  // du lien "Mon compte" (espace client vs dashboard admin).
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!getToken()) return;
+      try {
+        const me = await fetchMe();
+        if (mounted && me.authenticated && me.role) {
+          setProfileType(me.role);
+        }
+      } catch {
+        /* dégradation : reste sur "client" par défaut */
+      }
+    })();
+    return () => { mounted = false; };
   }, [getToken()]);
 
   // Menu profil desktop : fermeture clic-extérieur + Escape
@@ -240,7 +258,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
                 </button>
                 {desktopProfileOpen && (
                   <ul className="profile-menu" role="menu">
-                    <li role="none"><Link role="menuitem" href={routes.espaceClient} onClick={() => setDesktopProfileOpen(false)}>Espace Client</Link></li>
+                    <li role="none"><Link role="menuitem" href={profileType === "admin" ? routes.adminDashboard : routes.espaceClient} onClick={() => setDesktopProfileOpen(false)}>{profileType === "admin" ? "Dashboard Admin" : "Espace Client"}</Link></li>
                     <li role="none"><Link role="menuitem" href="/espace-client/parametres" onClick={() => setDesktopProfileOpen(false)}>Paramètres</Link></li>
                     <li role="none"><button type="button" role="menuitem" className="profile-menu-logout" onClick={handleLogout}>Déconnexion</button></li>
                   </ul>
@@ -286,7 +304,7 @@ export default function Header({ locale = "fr", active = "" }: HeaderProps) {
               <button onClick={() => setMobileProfileOpen(!mobileProfileOpen)}>Mon compte ▾</button>
               {mobileProfileOpen && (
                 <ul>
-                  <li><Link href={routes.espaceClient} onClick={() => setMobileOpen(false)}>Espace Client</Link></li>
+                  <li><Link href={profileType === "admin" ? routes.adminDashboard : routes.espaceClient} onClick={() => setMobileOpen(false)}>{profileType === "admin" ? "Dashboard Admin" : "Espace Client"}</Link></li>
                   <li><Link href="/espace-client/parametres" onClick={() => setMobileOpen(false)}>Paramètres</Link></li>
                   <li><button onClick={handleLogout}>Déconnexion</button></li>
                 </ul>

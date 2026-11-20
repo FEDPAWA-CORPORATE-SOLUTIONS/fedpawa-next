@@ -16,7 +16,7 @@ const FORM_FIELDS = {
   recouvrement: ["montant", "nbDebiteurs", "nature", "historique"],
 };
 
-export default function Abonnement() {
+export default function Abonnement({ locale, service, pack }: { locale?: string; service?: string; pack?: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const serviceFromUrl = searchParams.get("service") as string | null;
@@ -53,40 +53,8 @@ export default function Abonnement() {
   const prevStep = () => setCurrentStep(prev => Math.max(0, prev - 1));
 
   // Auth & Email modal
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  useEffect(() => {
-    const isVerified = false; // placeholder vérification backend
-    if (!isVerified) setShowEmailModal(true);
-  }, []);
-
-  const handleEmailNoThanks = () => {
-    const svc = selectedService || 'domiciliation';
-    router.push(`/${svc}`);
-    setShowEmailModal(false);
-  };
-  const handleEmailVerify = () => setShowEmailModal(false);
-
   return (
     <div style={{padding:'2rem', maxWidth:'800px', margin:'auto'}}>
-      {showEmailModal && (
-        <div style={{
-          position:'fixed', top:0, left:0, right:0, bottom:0,
-          background:'rgba(0,0,0,0.5)', display:'flex', justifyContent:'center',
-          alignItems:'center', zIndex:9999
-        }}>
-          <div style={{
-            background:'#fff', padding:'2rem', borderRadius:'8px',
-            maxWidth:'480px', textAlign:'center', boxShadow:'0 10px 30px rgba(0,0,0,0.3)'
-          }}>
-            <p><strong>Vérification de votre e-mail</strong></p>
-            <p>Un e-mail de vérification a été envoyé.</p>
-            <div style={{marginTop:'1.5rem',display:'flex',gap:'1rem'}}>
-              <button className="btn btn-primary" onClick={handleEmailVerify}>Vérifier</button>
-              <button className="btn btn-outline" onClick={handleEmailNoThanks}>Non merci</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modal de restauration de progression */}
       {showRestoreModal && (

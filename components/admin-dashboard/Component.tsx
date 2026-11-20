@@ -27,8 +27,11 @@ import type {
   ApiAdminPaiement,
   ApiAdminSubscription,
   ApiMailMessage,
+  ApiContactMessage,
   ApiTicket,
+  ApiThrottle,
 } from "@/lib/dashboard-types";
+import TabKyc from "@/components/admin-dashboard/TabKyc";
 import {
   fmtDate,
   fmtFCFA,
@@ -39,6 +42,7 @@ import {
   Modal,
   useToast,
 } from "@/components/dashboard/UI";
+import ButtonLoader from "@/components/ui/ButtonLoader";
 import ContractTemplateEditor from "@/components/admin-dashboard/ContractTemplateEditor";
 
 type TabId =
@@ -66,7 +70,7 @@ const NAV_ITEMS: { tab: TabId; label: string; svg: React.ReactNode }[] = [
   { tab: "courriers", label: "Courriers", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg> },
   { tab: "contrats", label: "Contrats", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg> },
   { tab: "kyc", label: "Validation KYC", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12l2 2 4-4" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg> },
-  { tab: "tickets", label: "Tickets Support", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> },
+  { tab: "tickets", label: "Support Client", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> },
   { tab: "messages", label: "Messagerie", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
   { tab: "stats", label: "Stats & Paramètres", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg> },
 ];
@@ -262,6 +266,9 @@ function ErrorLine({ message }: { message: string }) {
 
 function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
   const { lists, overview, loading, error, kycPending } = useAdminData();
+  const contactNouveau = (lists?.contact_messages ?? []).filter(
+    (m) => m.statut === "nouveau",
+  ).length;
 
   if (loading) return <LoadingLine />;
   if (error) return <ErrorLine message={error} />;
@@ -327,7 +334,17 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
             </div>
           </div>
         )}
-        {kycPending === 0 && ticketsOpen === 0 && msgsClients === 0 && (
+        {contactNouveau > 0 && (
+          <div className="alert-card warn">
+            <div className="alert-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg></div>
+            <div className="alert-content">
+              <h4>{contactNouveau} message(s) de contact non lu(s)</h4>
+              <p>Consultez-les dans l'onglet Support Client.</p>
+              <a href="#" className="alert-action" onClick={(e) => { e.preventDefault(); onSwitch("tickets"); }}>Voir →</a>
+            </div>
+          </div>
+        )}
+        {kycPending === 0 && ticketsOpen === 0 && msgsClients === 0 && contactNouveau === 0 && (
           <p style={{ color: "var(--color-text-muted)" }}>Aucune action requise. Tout est à jour.</p>
         )}
       </div>
@@ -374,22 +391,30 @@ function TabClients() {
             </div>
             <div className="db-table-wrap">
               <table className="db-table">
-                <thead><tr><th>ID</th><th>Nom / Représentant</th><th>Raison Sociale</th><th>Email</th><th>Statut</th><th>Actions</th></tr></thead>
-                <tbody>
-                  {filtered.length === 0 ? (
-                    <EmptyRow cols={6} msg="Aucun client enregistré" />
-                  ) : (
-                    filtered.map((c) => (
-                      <tr key={c.id}>
-                        <td>CL-{String(c.id).padStart(3, "0")}</td>
-                        <td>{c.nom ?? "—"}</td>
-                        <td>{c.entreprise || "—"}</td>
-                        <td>{c.email ?? "—"}</td>
-                        <td><StatutBadge statut={c.statut ?? "actif"} /></td>
-                        <td>—</td>
-                      </tr>
-                    ))
-                  )}
+                <thead><tr><th>ID</th><th>Nom / Représentant</th><th>Raison Sociale</th><th>Email</th><th>Statut</th><th>Détails complets</th></tr></thead>
+                                <tbody>
+                                  {filtered.length === 0 ? (
+                                    <EmptyRow cols={6} msg="Aucun client enregistré" />
+                                  ) : (
+                                    filtered.map((c) => (
+                                      <tr key={c.id}>
+                                        <td>CL-{String(c.id).padStart(3, "0")}</td>
+                                        <td>{c.nom ?? "—"}</td>
+                                        <td>{c.entreprise || "—"}</td>
+                                        <td>{c.email ?? "—"}</td>
+                                        <td><StatutBadge statut={c.statut ?? "actif"} /></td>
+                                        <td>
+                                          <a
+                                            href={`/client/details?id=${c.id}`}
+                                            className="btn btn-outline btn-sm"
+                                            style={{ padding: "4px 10px", fontSize: "0.75rem" }}
+                                          >
+                                            Voir les détails
+                                          </a>
+                                        </td>
+                                      </tr>
+                                    )))
+                                  }
                 </tbody>
               </table>
             </div>
@@ -638,10 +663,12 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
   const [otp, setOtp] = useState("");
   const [otpError, setOtpError] = useState("");
   const [otpBusy, setOtpBusy] = useState(false);
+  const [templateOtRequesting, setTemplateOtRequesting] = useState(false);
   const [editorOpen, setEditorOpen] = useState(false);
   const [templateContent, setTemplateContent] = useState("");
 
   const requestTemplateOtp = async () => {
+    setTemplateOtRequesting(true);
     try {
       const res = await apiAuthPost<{ sent?: boolean; email?: string; error?: string }>(
         "/api/v1/admin/template/otp-request",
@@ -657,6 +684,8 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
       }
     } catch (e) {
       toast("Erreur réseau lors de l'envoi du code.", "error");
+    } finally {
+      setTemplateOtRequesting(false);
     }
   };
 
@@ -759,9 +788,11 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
       <div className="db-section" id="template-editor-section">
         <div className="db-section-header"><h2>Modèle de contrat</h2></div>
         <p className="l012-editor-hint">Le modèle ci-dessous sert à générer les contrats PDF des clients. Toute modification exige une vérification de sécurité : un code à 6 chiffres est envoyé à votre adresse e-mail d'administration.</p>
-        <button className="btn btn-primary" id="btn-edit-template" type="button" onClick={requestTemplateOtp}>
-          Modifier le contrat
-        </button>
+        <ButtonLoader isLoading={templateOtRequesting} delayMs={150}>
+          <button className="btn btn-primary" id="btn-edit-template" type="button" onClick={requestTemplateOtp}>
+            Modifier le contrat
+          </button>
+        </ButtonLoader>
       </div>
 
       {/* Modal OTP (L012) */}
@@ -794,9 +825,11 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
               <button type="button" className="btn btn-outline" id="l012-otp-cancel" onClick={() => setOtpModalOpen(false)}>
                 Annuler
               </button>
-              <button type="button" className="btn btn-primary" id="l012-otp-submit" onClick={submitTemplateOtp} disabled={otpBusy}>
-                {otpBusy ? "Vérification…" : "Valider"}
-              </button>
+              <ButtonLoader isLoading={otpBusy} delayMs={150}>
+                <button type="button" className="btn btn-primary" id="l012-otp-submit" onClick={submitTemplateOtp} disabled={otpBusy}>
+                  {otpBusy ? "Vérification…" : "Valider"}
+                </button>
+              </ButtonLoader>
             </div>
           </div>
         </Modal>
@@ -813,266 +846,6 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
             />
           </div>
         </Modal>
-      )}
-    </div>
-  );
-}
-
-// ==========================================================
-// KYC : queue pending + dossiers traités
-// ==========================================================
-
-function TabKyc({ documentViewerPath = "/admin-document" }: { documentViewerPath?: string }) {
-  const { lists, loading, error, reload } = useAdminData();
-  const { toast } = useToast();
-  const all: ApiAdminKyc[] = lists?.kyc ?? [];
-  const pending = all.filter((k) => k.statuts === "en_cours" || k.statuts === "en_attente");
-  const done = all.filter((k) => k.statuts === "approuvé" || k.statuts === "rejeté");
-
-  const approve = async (id?: number) => {
-    if (!id) return;
-    if (!window.confirm("Approuver ce dossier KYC ?")) return;
-    try {
-      await apiAuthPost("/api/v1/admin/kyc/approve", { id });
-      toast("Dossier approuvé. Client notifié.", "success");
-      reload();
-    } catch {
-      toast("Erreur lors de l'approbation.", "error");
-    }
-  };
-
-  const [rejectDrafts, setRejectDrafts] = useState<Record<number, string>>({});
-  const [rejectingId, setRejectingId] = useState<number | null>(null);
-  const [completerDrafts, setCompleterDrafts] = useState<Record<number, string>>({});
-  const [completingId, setCompletingId] = useState<number | null>(null);
-
-  const openReject = (id: number) => {
-    setRejectingId(id);
-    setRejectDrafts({ ...rejectDrafts, [id]: "" });
-  };
-
-  const cancelReject = (id: number) => {
-    setRejectingId(null);
-    setRejectDrafts({ ...rejectDrafts, [id]: "" });
-  };
-
-  const confirmReject = async (id: number) => {
-    const motif = rejectDrafts[id]?.trim();
-    if (!motif) return;
-    try {
-      await apiAuthPost("/api/v1/admin/kyc/reject", { id, motif });
-      toast("Dossier rejeté. Client notifié.", "success");
-      setRejectingId(null);
-      setRejectDrafts({});
-      reload();
-    } catch {
-      toast("Erreur lors du rejet.", "error");
-    }
-  };
-
-  const openCompleter = (id: number) => {
-    setCompletingId(id);
-    setCompleterDrafts({ ...completerDrafts, [id]: "" });
-  };
-
-  const cancelCompleter = (id: number) => {
-    setCompletingId(null);
-    setCompleterDrafts({ ...completerDrafts, [id]: "" });
-  };
-
-  const confirmCompleter = async (id: number) => {
-    const elements = completerDrafts[id]?.trim();
-    if (!elements) return;
-    try {
-      await apiAuthPost("/api/v1/admin/kyc/a-completer", { id, elements_manquants: elements });
-      toast("Dossier marqué comme à compléter. Client notifié.", "success");
-      setCompletingId(null);
-      setCompleterDrafts({});
-      reload();
-    } catch {
-      toast("Erreur lors du marquage.", "error");
-    }
-  };
-
-  return (
-    <div className="db-tab-content active" id="tab-kyc">
-      <div className="db-welcome">
-        <div>
-          <h1>Validation KYC (Conformité)</h1>
-          <p>
-            {pending.length === 0 && done.length === 0
-              ? "Aucun dossier KYC soumis pour le moment."
-              : "Examinez et validez les pièces d'identité soumises par les clients."}
-          </p>
-        </div>
-      </div>
-      {loading ? <LoadingLine /> : null}
-      {error ? <ErrorLine message={error} /> : null}
-      {!loading && !error && pending.map((k) => (
-        <div className="kyc-review-card" key={k.id}>
-          <div className="kyc-review-header">
-            <div>
-              <h3 style={{ marginBottom: 4 }}>
-                {k.client_nom ?? "—"}{k.entreprise ? ` — ${k.entreprise}` : ""}
-              </h3>
-              <p style={{ fontSize: "0.85rem", color: "var(--color-text-muted)" }}>
-                Soumis le {fmtDate(k.date_soumission)}
-              </p>
-            </div>
-            <span className="badge badge-warning">{k.statuts}</span>
-          </div>
-          <div className="kyc-docs-grid">
-            <div className="kyc-doc">
-              {k.doc_exists_identite ? (
-                <a href={`/api/v1/document?type=kyc&id=${k.id}&file=piece_identite`} target="_blank" rel="noopener">
-                  <img src={`/api/v1/document?type=kyc&id=${k.id}&file=piece_identite`} alt="Pièce d'identité" />
-                </a>
-              ) : (
-                <a className="kyc-doc-na">
-                  <img src={`/api/v1/document?type=kyc&id=${k.id}&file=piece_identite`} alt="Pièce d'identité" />
-                </a>
-              )}
-              <p>Pièce d'identité</p>
-            </div>
-            <div className="kyc-doc">
-              {k.doc_exists_justificatif ? (
-                <a href={`/api/v1/document?type=kyc&id=${k.id}&file=justificatif_domicile`} target="_blank" rel="noopener">
-                  <img src={`/api/v1/document?type=kyc&id=${k.id}&file=justificatif_domicile`} alt="Justificatif" />
-                </a>
-              ) : (
-                <a className="kyc-doc-na">
-                  <img src={`/api/v1/document?type=kyc&id=${k.id}&file=justificatif_domicile`} alt="Justificatif" />
-                </a>
-              )}
-              <p>Justificatif de domicile</p>
-            </div>
-          </div>
-          <div className="kyc-actions">
-            {rejectingId === k.id ? (
-              <div className="kyc-reject-form">
-                <label htmlFor={`reject-motif-${k.id ?? 0}`}>Motif du rejet :</label>
-                <textarea
-                  id={`reject-motif-${k.id ?? 0}`}
-                  value={rejectDrafts[k.id ?? 0] ?? ""}
-                  onChange={(e) =>
-                    setRejectDrafts({ ...rejectDrafts, [k.id ?? 0]: e.target.value })
-                  }
-                  placeholder="Expliquez pourquoi le document est rejeté…"
-                  rows={3}
-                  className="kyc-reject-textarea"
-                />
-                <div className="kyc-reject-buttons">
-                  <button
-                    className="btn btn-cancel"
-                    type="button"
-                    onClick={() => cancelReject(k.id ?? 0)}
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    className="btn btn-reject-confirm"
-                    type="button"
-                    onClick={() => confirmReject(k.id ?? 0)}
-                    disabled={!(rejectDrafts[k.id ?? 0]?.trim())}
-                  >
-                    Confirmer le rejet
-                  </button>
-                </div>
-              </div>
-            ) : completingId === k.id ? (
-              <div className="kyc-reject-form">
-                <label htmlFor={`completer-elements-${k.id ?? 0}`}>Éléments manquants :</label>
-                <textarea
-                  id={`completer-elements-${k.id ?? 0}`}
-                  value={completerDrafts[k.id ?? 0] ?? ""}
-                  onChange={(e) =>
-                    setCompleterDrafts({
-                      ...completerDrafts,
-                      [k.id ?? 0]: e.target.value,
-                    })
-                  }
-                  placeholder="Quels documents ou informations manquent ?…"
-                  rows={3}
-                  className="kyc-reject-textarea"
-                />
-                <div className="kyc-reject-buttons">
-                  <button
-                    className="btn btn-cancel"
-                    type="button"
-                    onClick={() => cancelCompleter(k.id ?? 0)}
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    className="btn btn-reject-confirm"
-                    type="button"
-                    onClick={() => confirmCompleter(k.id ?? 0)}
-                    disabled={!(completerDrafts[k.id ?? 0]?.trim())}
-                  >
-                    Confirmer « À compléter »
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <>
-                <button
-                  className="btn btn-reject"
-                  type="button"
-                  onClick={() => openReject(k.id ?? 0)}
-                >
-                  Rejeter (avec motif)
-                </button>
-                <button
-                  className="btn btn-completer"
-                  type="button"
-                  onClick={() => openCompleter(k.id ?? 0)}
-                >
-                  À compléter
-                </button>
-                <button
-                  className="btn btn-approve"
-                  type="button"
-                  onClick={() => approve(k.id)}
-                >
-                  Approuver le dossier
-                </button>
-              </>
-            )}
-          </div>
-        </div>
-      ))}
-      {!loading && !error && done.length > 0 && (
-        <div className="db-section">
-          <div className="db-section-header"><h2>Dossiers traités</h2></div>
-          <div className="db-table-wrap">
-            <table className="db-table">
-              <thead><tr><th>Client</th><th>Statut</th><th>Date</th><th>Pièces</th></tr></thead>
-              <tbody>
-                {done.map((k) => (
-                  <tr key={k.id}>
-                    <td>{k.client_nom ?? "—"}</td>
-                    <td><StatutBadge statut={k.statuts} /></td>
-                    <td>{fmtDate(k.date_soumission)}</td>
-                    <td>
-                      {k.doc_exists_identite ? (
-                        <a
-                          href={`${documentViewerPath}?type=kyc&id=${k.id}&file=piece_identite`}
-                          target="_blank"
-                          rel="noopener"
-                          className="action-link"
-                        >
-                          Voir
-                        </a>
-                      ) : (
-                        "—"
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
       )}
     </div>
   );
@@ -1145,6 +918,34 @@ function TabTickets() {
             </table>
           </div>
         )}
+        {/* Messages de contact reçus depuis la page de contact (Support Client) */}
+        {(!loading && !error) && (
+          <div className="db-section" style={{ marginTop: 24 }}>
+            <div className="db-section-header"><h2>Messages de contact (page Contact)</h2></div>
+            <div className="db-table-wrap">
+              <table className="db-table">
+                <thead><tr><th>ID</th><th>Nom</th><th>E-mail</th><th>Sujet</th><th>Message</th><th>Réception</th><th>Statut</th></tr></thead>
+                <tbody>
+                  {((lists?.contact_messages ?? []) as ApiContactMessage[]).length === 0 ? (
+                    <EmptyRow cols={7} msg="Aucun message de contact" />
+                  ) : (
+                    (lists?.contact_messages ?? []).map((m) => (
+                      <tr key={m.id}>
+                        <td>#{m.id}</td>
+                        <td>{m.nom ?? "—"}</td>
+                        <td>{m.email ?? "—"}</td>
+                        <td>{m.sujet ?? "—"}</td>
+                        <td style={{ maxWidth: 300 }}>{(m.message ?? "—").slice(0, 120)}{(m.message ?? "").length > 120 ? "…" : ""}</td>
+                        <td>{fmtDate(m.date_reception)}</td>
+                        <td><StatutBadge statut={m.statut} /></td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1155,20 +956,41 @@ function TabTickets() {
 // ==========================================================
 
 function TabMessages() {
-  const { lists, loading, error, reload } = useAdminData();
+  const { lists, loading, error, reload, overview } = useAdminData();
   const { toast } = useToast();
   const messages: ApiMailMessage[] = lists?.messages ?? [];
+  const throttled: ApiThrottle[] = overview?.throttled ?? [];
+  const [replyingMessageId, setReplyingMessageId] = useState<number | null>(null);
+  const [resettingThrottleId, setResettingThrottleId] = useState<string | null>(null);
 
-  const replyToClient = async (clientId: number | null | undefined) => {
+  const resetThrottle = async (email: string, userType: string) => {
+    if (!window.confirm(`Réinitialiser les tentatives de connexion pour ${email} ?`)) return;
+    const key = `${email}:${userType}`;
+    setResettingThrottleId(key);
+    try {
+      await apiAuthPost("/api/v1/admin/throttle/reset", { email, user_type: userType });
+      toast("Tentatives réinitialisées.", "success");
+      reload();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Échec de la réinitialisation.", "error");
+    } finally {
+      setResettingThrottleId(null);
+    }
+  };
+
+  const replyToClient = async (clientId: number | null | undefined, messageId: number) => {
     if (!clientId) return;
     const content = window.prompt("Réponse à ce client :");
     if (!content) return;
+    setReplyingMessageId(messageId);
     try {
       await apiAuthPost("/api/v1/mail/reply", { client_id: Number(clientId), content });
       toast("Réponse envoyée.", "success");
       reload();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Échec de l'envoi.", "error");
+    } finally {
+      setReplyingMessageId(null);
     }
   };
 
@@ -1194,14 +1016,19 @@ function TabMessages() {
                       <td>{fmtDate(m.created_at)}</td>
                       <td>
                         {m.sender_type === "client" ? (
-                          <button
-                            className="btn btn-outline"
-                            style={{ padding: "4px 12px", fontSize: "0.75rem" }}
-                            type="button"
-                            onClick={() => replyToClient(m.sender_id)}
+                          <ButtonLoader
+                            isLoading={replyingMessageId === m.id}
+                            delayMs={150}
                           >
-                            Répondre
-                          </button>
+                            <button
+                              className="btn btn-outline"
+                              style={{ padding: "4px 12px", fontSize: "0.75rem" }}
+                              type="button"
+                              onClick={() => replyToClient(m.sender_id, m.id ?? 0)}
+                            >
+                              Répondre
+                            </button>
+                          </ButtonLoader>
                         ) : (
                           "—"
                         )}
@@ -1211,6 +1038,46 @@ function TabMessages() {
                 )}
               </tbody>
             </table>
+          </div>
+        )}
+        {/* Comptes verrouillés (tentatives de connexion) */}
+        {(!loading && !error) && throttled.length > 0 && (
+          <div className="db-section" style={{ marginTop: 24 }}>
+            <div className="db-section-header"><h2>Comptes verrouillés (tentatives de connexion)</h2></div>
+            <p className="db-hint" style={{ marginBottom: 12 }}>
+              Ces comptes ont atteint le nombre maximal de tentatives échouées et sont temporairement bloqués. L'administrateur peut réinitialiser leurs tentatives.
+            </p>
+            <div className="db-table-wrap">
+              <table className="db-table">
+                <thead><tr><th>Identifiant</th><th>Type</th><th>Tentatives</th><th>Verrouillé jusqu'à</th><th>IP</th><th>Action</th></tr></thead>
+                <tbody>
+                  {throttled.map((t) => (
+                    <tr key={t.identifier + t.user_type}>
+                      <td>{t.identifier ?? "—"}</td>
+                      <td>{t.user_type ?? "—"}</td>
+                      <td>{t.attempts ?? 0}</td>
+                      <td>{t.locked_until ?? "—"}</td>
+                      <td>{t.ip ?? "—"}</td>
+                      <td>
+                        <ButtonLoader
+                          isLoading={resettingThrottleId === `${t.identifier}:${t.user_type}`}
+                          delayMs={150}
+                        >
+                          <button
+                            type="button"
+                            className="btn btn-outline"
+                            style={{ padding: "4px 12px", fontSize: "0.75rem" }}
+                            onClick={() => resetThrottle(t.identifier ?? "", t.user_type ?? "")}
+                          >
+                            Réinitialiser
+                          </button>
+                        </ButtonLoader>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

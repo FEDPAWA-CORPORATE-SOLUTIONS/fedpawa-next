@@ -53,6 +53,9 @@ export interface EmailVerificationContextValue {
   resending: boolean;
   resendFeedback: ResendFeedback | null;
   clearResendFeedback: () => void;
+  /** Feedback après clic sur « J'ai vérifié mon e-mail ». */
+  verifyFeedback: ResendFeedback | null;
+  clearVerifyFeedback: () => void;
 }
 
 const EmailVerificationContext = createContext<EmailVerificationContextValue>({
@@ -67,6 +70,8 @@ const EmailVerificationContext = createContext<EmailVerificationContextValue>({
   resending: false,
   resendFeedback: null,
   clearResendFeedback: () => {},
+  verifyFeedback: null,
+  clearVerifyFeedback: () => {},
 });
 
 export function useEmailVerification(): EmailVerificationContextValue {
@@ -84,6 +89,7 @@ export default function EmailVerificationProvider({
   const [refreshing, setRefreshing] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendFeedback, setResendFeedback] = useState<ResendFeedback | null>(null);
+const [verifyFeedback, setVerifyFeedback] = useState<ResendFeedback | null>(null);
   const mounted = useRef(true);
 
   const refresh = useCallback(async (): Promise<VerificationStatus> => {
@@ -96,10 +102,19 @@ export default function EmailVerificationProvider({
         setStatus(next);
         // Statut confirmé vérifié → la modal forcée (403) se ferme.
         if (next === "verified") setGateOpen(false);
+        // Feedback utilisateur après vérification manuelle (bouton « J'ai vérifié mon e-mail »).
+        if (next === "verified") {
+          setVerifyFeedback({ type: "success", text: "E-mail vérifié avec succès. La modal va se fermer." });
+        } else if (next === "unverified") {
+          setVerifyFeedback({ type: "error", text: "L'adresse e-mail n'est toujours pas vérifiée. Consultez votre boîte de réception et cliquez sur le lien de confirmation." });
+        }
       }
       return next;
     } catch {
       // API injoignable : on garde l'état courant (dégradation gracieuse).
+      if (mounted.current) {
+        setVerifyFeedback({ type: "error", text: "Impossible de contacter le serveur pour vérifier votre e-mail. Réessayez plus tard." });
+      }
       return status;
     } finally {
       if (mounted.current) setRefreshing(false);
@@ -155,6 +170,7 @@ export default function EmailVerificationProvider({
   }, []);
 
   const clearResendFeedback = useCallback(() => setResendFeedback(null), []);
+  const clearVerifyFeedback = useCallback(() => setVerifyFeedback(null), []);
 
   const value: EmailVerificationContextValue = {
     status,
@@ -168,6 +184,8 @@ export default function EmailVerificationProvider({
     resending,
     resendFeedback,
     clearResendFeedback,
+    verifyFeedback,
+    clearVerifyFeedback,
   };
 
   return (

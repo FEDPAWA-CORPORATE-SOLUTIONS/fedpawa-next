@@ -19,6 +19,7 @@ import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiPost, ApiError } from "@/lib/api";
 import { routesFor } from "@/lib/routes";
+import ButtonLoader from "@/components/ui/ButtonLoader";
 
 export interface ForgotProps {
   locale?: Locale;
@@ -139,6 +140,7 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
   async function handleResend(e: React.MouseEvent) {
     e.preventDefault();
     setCanResend(false);
+    setLoading(true);
     try {
       const data = await apiPost<{ mail_service?: string; error?: string }>(
         "/api/v1/auth/password/forgot",
@@ -155,6 +157,8 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
     } catch (err) {
       catchErr(err, t.toastResendKo);
       setCanResend(true);
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -354,14 +358,16 @@ export default function Forgot({ locale = "fr" }: ForgotProps) {
                 <strong style={{ color: "var(--color-danger)" }}>{timerText()}</strong>
                 <br />
                 {canResend && (
-                  <a
-                    href="#"
-                    id="resendLink"
-                    style={{ color: "var(--color-primary)", fontWeight: 600 }}
-                    onClick={handleResend}
-                  >
-                    {t.otpResend}
-                  </a>
+                  <ButtonLoader isLoading={loading} delayMs={150}>
+                    <a
+                      href="#"
+                      id="resendLink"
+                      style={{ color: "var(--color-primary)", fontWeight: 600 }}
+                      onClick={handleResend}
+                    >
+                      {t.otpResend}
+                    </a>
+                  </ButtonLoader>
                 )}
               </p>
               <button type="submit" className="btn btn-primary btn-block" disabled={loading}>

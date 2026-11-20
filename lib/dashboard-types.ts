@@ -82,6 +82,31 @@ export interface ApiTicket {
   reponse_at?: string | null;
 }
 
+// ---------- Messages du formulaire de contact public (GET /api/v1/admin/lists -> contact_messages) ----------
+
+export interface ApiContactMessage {
+  id: number;
+  nom?: string | null;
+  email?: string | null;
+  telephone?: string | null;
+  sujet?: string | null;
+  message?: string | null;
+  statut?: string | null;
+  date_reception?: string | null;
+}
+
+// ---------- Comptes verrouillés (throttle) — GET /api/v1/admin/overview -> throttled ----------
+
+export interface ApiThrottle {
+  identifier?: string | null;
+  user_type?: string | null;
+  ip?: string | null;
+  attempts?: number | null;
+  locked_until?: string | null;
+  last_attempt_at?: string | null;
+  minutes_remaining?: number;
+}
+
 // ---------- GET /api/v1/mail/thread (MailController::thread) ----------
 
 export interface ApiMailMessage {
@@ -164,6 +189,37 @@ export interface ApiAdminKyc extends ApiKyc {
   doc_exists_justificatif?: boolean;
 }
 
+// ---------- KYC par document (nouveau flux admin) ----------
+
+export interface ApiKycClient {
+  client_id: number;
+  nom?: string | null;
+  entreprise?: string | null;
+  email?: string | null;
+  role?: string | null;
+  kyc_id: number;
+  statuts?: string | null;
+  date_soumission?: string | null;
+  piece_identite_statut?: string | null;
+  justificatif_domicile_statut?: string | null;
+  piece_identite_motif?: string | null;
+  justificatif_domicile_motif?: string | null;
+}
+
+export interface ApiKycDocument {
+  type: string;
+  label: string;
+  chemin?: string | null;
+  statut?: string | null;
+  motif?: string | null;
+}
+
+export interface ApiKycClientDetails {
+  client: { id?: number; nom?: string | null; entreprise?: string | null; email?: string | null; role?: string | null; };
+  kyc: { id?: number; statuts?: string | null; date_soumission?: string | null; };
+  documents: ApiKycDocument[];
+}
+
 /** GET /api/v1/admin/lists (contrôleurs admin BE) */
 export interface AdminLists {
   clients?: ApiAdminClient[];
@@ -174,6 +230,7 @@ export interface AdminLists {
   kyc?: ApiAdminKyc[];
   tickets?: ApiTicket[];
   messages?: ApiMailMessage[];
+  contact_messages?: ApiContactMessage[];
 }
 
 /** GET /api/v1/admin/overview (KPI) */

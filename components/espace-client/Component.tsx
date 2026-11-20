@@ -50,6 +50,7 @@ import {
 import { DashboardUIProvider, useToast } from "@/components/dashboard/UI";
 import { routesFor } from "@/lib/routes";
 import type { Locale } from "@/lib/i18n";
+import ContractSigningList from "@/components/espace-client/signature/ContractSigningList";
 
 // ---------- Catalogue packs (tunnel.js = source de vérité) ----------
 const PACK2SERVICE: Record<string, string> = {
@@ -695,42 +696,15 @@ function TabFactures() {
 // ==========================================================
 
 function TabContrats() {
-  const { data, loading, error } = useDashboardData(0);
-  const contrats = data?.contrats ?? [];
-
   return (
     <div className="db-tab-content active" id="tab-contrats">
-      <div className="db-welcome"><div><h1>Mes Contrats</h1><p>Téléchargez vos actes juridiques signés électroniquement.</p></div></div>
-      <div className="db-section">
-        {loading ? <LoadingLine /> : null}
-        {error ? <ErrorLine message={error} /> : null}
-        {!loading && !error && (
-          <div className="db-table-wrap">
-            <table className="db-table">
-              <thead><tr><th>Type de Contrat</th><th>Date de Signature</th><th>Méthode de validation</th><th>Action</th></tr></thead>
-              <tbody>
-                {contrats.length === 0 ? (
-                  <tr><td colSpan={4} style={{ textAlign: "center", padding: "28px 12px", color: "var(--color-text-muted)", fontSize: "0.92rem" }}>Aucun contrat pour le moment. Vos actes signés électroniquement apparaîtront ici.</td></tr>
-                ) : (
-                  contrats.map((c) => (
-                    <tr key={c.id}>
-                      <td>{c.type ?? "—"}</td>
-                      <td>{fmtDate(c.date_signature)}</td>
-                      <td>Signature électronique (Doc@uthANTIC)</td>
-                      <td>
-                        <DownloadDocButton
-                          path={`/api/v1/document?type=contrat&id=${c.id}`}
-                          label="Télécharger (PDF)"
-                        />
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
+      <div className="db-welcome">
+        <div>
+          <h1>Mes Contrats</h1>
+          <p>Téléchargez vos actes juridiques signés électroniquement.</p>
+        </div>
       </div>
+      <ContractSigningList adminView={false} />
     </div>
   );
 }

@@ -234,7 +234,7 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
 
   if (!screen) {
     return (
-      <div className="fp-modal-overlay" style={{ overlayStyle }}>
+      <div className="fp-modal-overlay open" style={{ overlayStyle }}>
         <div className="fp-modal">{L.payProcessing}</div>
       </div>
     );
@@ -244,7 +244,7 @@ export default function PayModal({ config, onClose }: { config: PayModalConfig; 
     "sub" in screen ? ((screen as { sub?: Record<string, unknown> }).sub ?? {}) : {};
 
   return (
-    <div className="fp-modal-overlay" style={{ overlayStyle }} onClick={(e) => e.target === e.currentTarget && onClose()}>
+    <div className="fp-modal-overlay open" style={{ overlayStyle }} onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="fp-modal pay-momo-modal" style={modalStyle} onClick={(e) => e.stopPropagation()}>
         {/* ---------- LOGIN ---------- */}
         {screen.kind === "login" && (
@@ -543,6 +543,7 @@ const overlayStyle: React.CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
   padding: 20,
+  opacity: 1,
 };
 
 const modalStyle: React.CSSProperties = {

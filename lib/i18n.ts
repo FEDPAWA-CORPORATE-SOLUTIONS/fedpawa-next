@@ -159,6 +159,7 @@ export const frPages: PageSlugs = {
   notifications: {},
   admin_publications: {},
   admin_mails: {},
+  notification_popup: {},
 };
 
 /** Dictionnaires EN par page — vides en vague A (remplis par vagues B/C/D). */
