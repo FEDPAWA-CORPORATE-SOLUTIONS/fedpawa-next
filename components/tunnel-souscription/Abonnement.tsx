@@ -33,8 +33,14 @@ export default function Abonnement({ locale, service, pack }: { locale?: string;
   useEffect(() => {
     const saved = localStorage.getItem('abonnement_data');
     if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Object.keys(parsed).length > 0) {
+      let parsed = null;
+      try {
+        parsed = JSON.parse(saved);
+      } catch {
+        // Données corrompues : on ignore le brouillon
+        localStorage.removeItem('abonnement_data');
+      }
+      if (parsed && Object.keys(parsed).length > 0) {
         setRestoreData(parsed);
         setShowRestoreModal(true);
       }
@@ -158,7 +164,7 @@ export default function Abonnement({ locale, service, pack }: { locale?: string;
               <input type="checkbox" checked={formData.chkCadre} onChange={e=>updateData({chkCadre:e.target.checked})}/> J'accepte le Cadre Contractuel
             </label>
           </div>
-          <button className="btn btn-primary btn-block" onClick={()=>{/* submit */}} disabled={!formData.chkCgv||!formData.chkCadre}>
+          <button className="btn btn-primary btn-block" onClick={()=>{/* TODO: implémenter l'appel de paiement vers l'API */}} disabled={!formData.chkCgv||!formData.chkCadre}>
             Payer {formData.total||0} FCFA
           </button>
           <button className="btn btn-outline" onClick={()=>prevStep()}>Modifier</button>

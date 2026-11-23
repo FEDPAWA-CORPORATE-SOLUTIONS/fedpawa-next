@@ -522,7 +522,14 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         onDrop={(e) => {
           e.preventDefault();
           setDragOver(null);
-          if (e.dataTransfer.files.length) set("files", { ...form.files, [id]: e.dataTransfer.files[0] });
+          if (e.dataTransfer.files.length) {
+            const f = e.dataTransfer.files[0];
+            if (f.size > 10 * 1024 * 1024) {
+              // Trop volumineux : refusé côté client
+              return;
+            }
+            set("files", { ...form.files, [id]: f });
+          }
         }}
         style={{ cursor: "pointer" }}
       >
@@ -543,7 +550,11 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
           hidden
           accept={accept}
           onChange={(e) => {
-            if (e.target.files?.length) set("files", { ...form.files, [id]: e.target.files[0] });
+            if (e.target.files?.length) {
+              const f = e.target.files[0];
+              if (f.size > 10 * 1024 * 1024) return;
+              set("files", { ...form.files, [id]: f });
+            }
           }}
         />
       </div>
@@ -1335,7 +1346,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
                     {/* SECTION 6 : VALIDATION (dans la même étape 5, comme la source) */}
                     <section className="form-section">
                       <h2 className="form-section-title">
-                        <span className="form-section-num">6</span> {t.s6Title}
+                        <span className="form-section-num">5</span> {t.s6Title}
                       </h2>
                       <div className="form-group validation-group">
                         <label className="checkbox-line validation-line">
@@ -1402,7 +1413,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
                   >
                     <section className="form-section">
                       <h2 className="form-section-title">
-                        <span className="form-section-num">7</span> {t.s7Title}
+                        <span className="form-section-num">6</span> {t.s7Title}
                       </h2>
                       <p className="section-intro">{t.s7Intro}</p>
 

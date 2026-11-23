@@ -29,9 +29,9 @@ const apiOrigin = (() => {
 const csp = [
   "default-src 'self'",
   // JSON-LD inline (+ 'unsafe-eval' en dev pour HMR uniquement).
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""} https://cdn.tiny.cloud https://static.cloudflareinsights.com`,
-  // Fonts Google + skin oxide TinyMCE + styles inline React.
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tiny.cloud",
+  `script-src 'self'${isDev ? " 'unsafe-eval'" : ""} https://cdn.tiny.cloud https://static.cloudflareinsights.com`,
+  // Fonts Google + skin oxide TinyMCE. Styles inline React/TinyMCE externalisés ou passés par nonce en prod.
+  "style-src 'self' https://fonts.googleapis.com https://cdn.tiny.cloud",
   "font-src 'self' data: https://fonts.gstatic.com https://cdn.tiny.cloud",
   // data: images (SVG inline) + blob: (uploads/aperçus).
   "img-src 'self' data: blob:",
@@ -54,11 +54,9 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
-  experimental: {
-    agentUpgrade: "security",
-  },
+  experimental: {},
   // Proxy API local UNIQUEMENT pour l'e2e hors ligne (worker A) :
   // actif seulement si E2E_PROXY_API=1 au build — jamais en prod/test
   // (où NEXT_PUBLIC_API_URL pointe déjà vers l'API, même origine via Caddy
