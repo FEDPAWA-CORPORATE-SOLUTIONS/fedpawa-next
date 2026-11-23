@@ -1,0 +1,116 @@
+{
+  "serviceId": "conseil-fiscal",
+  "serviceName": "Conseil Juridique et Fiscal",
+  "endpoint": "/api/v1/souscription/conseil-fiscal",
+  "priceFixedFCFA": 35000,
+  "priceLabel": "Forfait Régime Simplifié",
+  "contract": false,
+  "hideStepper": false,
+  "totalSteps": 6,
+  "formTitle": "Souscription Conseil Juridique et Fiscal",
+  "formSubtitle": "Sécurisez votre entreprise avec FEDPAWA",
+  "steps": [
+    {
+      "id": 1,
+      "title": "Situation de l'entreprise",
+      "description": "Définissez le régime fiscal et l'activité de votre entreprise.",
+      "fields": [
+        { "name": "regimeFiscal", "label": "Régime fiscal", "type": "select", "placeholder": "Sélectionner le régime fiscal", "required": true, "errorRequired": "Le régime fiscal est requis", "options": [ "Régime Simplifié", "Régime du Réel / Corporate" ] },
+        { "name": "caEstime", "label": "Chiffre d'affaires estimé (FCFA)", "type": "number", "placeholder": "Exemple : 15 000 000", "required": true, "errorRequired": "Le chiffre d'affaires estimé est requis" },
+        { "name": "secteur", "label": "Secteur d'activité principal", "type": "select", "placeholder": "Sélectionner le secteur", "required": true, "errorRequired": "Le secteur est requis", "options": [ "Commerce et distribution", "Services aux entreprises / Conseil", "Bâtiment et travaux publics (BTP)", "Agroalimentaire & Agriculture", "Technologie, Numérique & E-commerce", "Santé, Pharmacie & Bien-être", "Éducation, Formation & Coaching", "Transport, Logistique & Import-Export", "Finance, Assurance & Immobilier", "Autre" ] },
+        { "name": "description", "label": "Description synthétique des activités", "type": "textarea", "placeholder": "Décrivez brièvement l'objet social de votre entreprise.", "required": true, "errorRequired": "La description est requise", "rows": 4 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Activité",
+      "description": "Précisez la taille de votre entreprise et vos obligations déclaratives.",
+      "fields": [
+        { "name": "nbSalaries", "label": "Nombre de salariés", "type": "number", "placeholder": "Exemple : 5", "required": true, "errorRequired": "Le nombre de salariés est requis" },
+        { "name": "nbDeclarationsMensuelles", "label": "Nombre de déclarations mensuelles", "type": "number", "placeholder": "Exemple : 12", "required": true, "errorRequired": "Le nombre de déclarations mensuelles est requis" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Représentant Légal",
+      "description": "Désignez le ou les représentants légaux de votre entreprise.",
+      "fields": [
+        { "name": "civilite", "label": "Civilité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La civilité est requise", "options": [ "Monsieur", "Madame" ] },
+        { "name": "nomComplet", "label": "Nom complet (Nom et Prénoms)", "type": "text", "placeholder": "Exemple : Jean Dupont", "required": true, "errorRequired": "Le nom complet est requis" },
+        { "name": "fonction", "label": "Fonction / Qualité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La fonction est requise", "options": [ "Gérant / Co-gérant", "Président / Director", "Directeur Général", "Fondateur / Promoteur", "Mandataire / Fondé de pouvoir" ] },
+        { "name": "nationalite", "label": "Nationalité", "type": "text", "placeholder": "Exemple : Camerounaise", "required": false },
+        { "name": "typePiece", "label": "Type de pièce d'identité", "type": "select", "placeholder": "Sélectionner le type", "required": true, "errorRequired": "Le type de pièce est requis", "options": [ "Carte Nationale d'Identité (CNI)", "Passeport", "Carte de Séjour / Titre de Résidence" ] },
+        { "name": "numPiece", "label": "Numéro de la pièce d'identité", "type": "text", "placeholder": "Numéro de la pièce d'identité", "required": true, "errorRequired": "Le numéro de pièce est requis" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Coordonnées & Notification",
+      "description": "Fournissez vos coordonnées pour le suivi de votre dossier.",
+      "fields": [
+        { "name": "email", "label": "Adresse e-mail professionnelle", "type": "email", "placeholder": "vous@entreprise.com", "required": true, "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "errorRequired": "L'email est requis", "errorPattern": "Email invalide" },
+        { "name": "telephone", "label": "Téléphone principal (WhatsApp)", "type": "tel", "placeholder": "+237 6XX XXX XXX", "required": true, "pattern": "^\\+?[0-9\\s]{9,16}$", "errorRequired": "Le téléphone est requis", "errorPattern": "Téléphone invalide" },
+        { "name": "adresse", "label": "Adresse de résidence / Siège actuel", "type": "text", "placeholder": "Exemple : Immeuble X, Quartier Y, Douala", "required": true, "errorRequired": "L'adresse est requise" },
+        { "name": "ville", "label": "Ville", "type": "text", "placeholder": "Douala", "required": true, "errorRequired": "La ville est requise" },
+        { "name": "pays", "label": "Pays", "type": "select", "placeholder": "", "required": true, "errorRequired": "", "options": [ "Cameroun", "France", "Belgique", "Suisse", "Canada", "Autre" ], "default": "Cameroun" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Choix de la formule",
+      "description": "Sélectionnez le forfait adapté à votre régime fiscal et à votre volume d'activité.",
+      "fields": [
+        { "name": "formule", "label": "Formule", "type": "select", "placeholder": "Sélectionner la formule", "required": true, "errorRequired": "La formule est requise", "options": [ "Forfait Régime Simplifié — 35 000 FCFA / mois", "Forfait Régime du Réel / Corporate — Sur devis personnalisé" ] },
+        { "name": "periodicite", "label": "Périodicité", "type": "select", "placeholder": "Sélectionner la périodicité", "required": true, "errorRequired": "La périodicité est requise", "options": [ "Mensuel (Paiement chaque mois)", "Semestriel (6 mois)", "Annuel (12 mois — Bénéficiez de remises exclusives)" ] }
+      ],
+      "options": [
+        { "id": "heures-supplementaires", "label": "Heures de bureau supplémentaires" },
+        { "id": "ligne-telephonique", "label": "Attribution de ligne téléphonique / Standard dédié" },
+        { "id": "salle-reunion", "label": "Réservation de salle de réunion / Conférence" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Validation & Paiement",
+      "description": "Confirmez votre demande, validez les conditions et procédez au paiement.",
+      "checkboxes": [
+        { "name": "chkCgv", "label": "J'accepte expressément les Conditions Générales de Vente et la Politique de Confidentialité de FEDPAWA CORPORATE SOLUTIONS SARL.", "required": true, "errorRequired": "Vous devez accepter les CGV" },
+        { "name": "chkCadre", "label": "Je reconnais que la prestation de conseil juridique et fiscal est régie par une convention de prestation de services.", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
+        { "name": "chkExactitude", "label": "Je certifie sur l'honneur que les informations et documents fournis sont exacts, authentiques et sincères.", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
+      ],
+      "invoice": {
+        "label": "Facture proforma",
+        "serviceLine": "Conseil juridique et fiscal",
+        "amountFCFA": 35000
+      },
+      "invoiceDetail": {
+        "label": "Facture proforma",
+        "serviceLine": "Conseil juridique et fiscal",
+        "amountFCFA": 35000,
+        "companyName": "FEDPAWA CORPORATE SOLUTIONS SARL",
+        "companyNiu": "M09261890362B",
+        "companyRccm": "CM-DLA-01-2026-B13-00767",
+        "companyAddress": "Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun",
+        "companyPhone": "+237 691 70 48 02",
+        "companyEmail": "contact@fedpawa.com",
+        "invoiceLabel": "Facture proforma",
+        "invoiceNumLabel": "N°",
+        "invoiceDateLabel": "Date",
+        "billedToLabel": "Facturé à",
+        "serviceLabel": "Prestation",
+        "periodLabel": "Période",
+        "designationLabel": "Désignation",
+        "amountLabel": "Montant",
+        "totalLabel": "Total",
+        "footer": "Total à payer :",
+        "footerEnd": " FCFA"
+      },
+      "payButton": "Payer {amount} FCFA (Mobile Money)",
+      "devisMessage": "La formule \"Régime du Réel / Corporate\" est établie sur devis personnalisé. Nos équipes vous contacteront pour finaliser le montant et les modalités de paiement."
+    }
+  ],
+  "localStorageKey": "souscription_conseil_fiscal_draft_v1",
+  "successMessage": "Votre dossier de conseil juridique et fiscal a bien été transmis à nos équipes.",
+  "successLink": "Aller à mon Espace Client",
+  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville" ]
+}

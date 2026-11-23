@@ -1,0 +1,111 @@
+{
+  "serviceId": "creation-entreprise",
+  "serviceName": "Création d'Entreprise",
+  "endpoint": "/api/v1/souscription/creation-entreprise",
+  "priceFixedFCFA": 100000,
+  "priceLabel": "Création d'entreprise — Constitution juridique",
+  "contract": false,
+  "hideStepper": false,
+  "totalSteps": 6,
+  "formTitle": "Création d'Entreprise — Souscription en Ligne",
+  "formSubtitle": "Constituez votre société en toute simplicité avec FEDPAWA",
+  "steps": [
+    {
+      "id": 1,
+      "title": "Situation de l'entreprise",
+      "description": "Définissez l'identité et l'activité de votre entreprise.",
+      "fields": [
+        { "name": "denomination", "label": "Dénomination sociale / Nom commercial", "type": "text", "placeholder": "Exemple : FEDPAWA CORPORATE SOLUTIONS SARL", "required": true, "errorRequired": "La dénomination est requise" },
+        { "name": "formeJuridique", "label": "Forme juridique", "type": "select", "placeholder": "Sélectionner la forme juridique", "required": true, "errorRequired": "La forme juridique est requise", "options": [ "SARL", "SARLU", "SAS", "SASU", "SA", "Établissement (Nom propre)", "GIE (Groupement d'Intérêt Économique)", "Succursale / Filiale", "Autre" ] },
+        { "name": "secteur", "label": "Secteur d'activité principal", "type": "select", "placeholder": "Sélectionner le secteur", "required": true, "errorRequired": "Le secteur est requis", "options": [ "Commerce et distribution", "Services aux entreprises / Conseil", "Bâtiment et travaux publics (BTP)", "Agroalimentaire & Agriculture", "Technologie, Numérique & E-commerce", "Santé, Pharmacie & Bien-être", "Éducation, Formation & Coaching", "Transport, Logistique & Import-Export", "Finance, Assurance & Immobilier", "Autre" ] },
+        { "name": "description", "label": "Description synthétique des activités", "type": "textarea", "placeholder": "Décrivez brièvement l'objet social de votre entreprise.", "required": true, "errorRequired": "La description est requise", "rows": 4 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Capital et Apports",
+      "description": "Définissez le capital social et la répartition des apports.",
+      "fields": [
+        { "name": "capital", "label": "Capital social (FCFA)", "type": "number", "placeholder": "Exemple : 1 000 000", "required": true, "errorRequired": "Le capital social est requis" },
+        { "name": "apportsNumeraires", "label": "Apports en numéraire (FCFA)", "type": "number", "placeholder": "Exemple : 500 000", "required": true, "errorRequired": "Les apports en numéraire sont requis" },
+        { "name": "apportsNature", "label": "Apports en nature", "type": "textarea", "placeholder": "Matériel, fonds de commerce, etc.", "required": false, "rows": 3 }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Représentant légal",
+      "description": "Désignez le représentant légal de l'entreprise.",
+      "fields": [
+        { "name": "civilite", "label": "Civilité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La civilité est requise", "options": [ "Monsieur", "Madame" ] },
+        { "name": "nomComplet", "label": "Nom complet", "type": "text", "placeholder": "Exemple : Jean Dupont", "required": true, "errorRequired": "Le nom complet est requis" },
+        { "name": "fonction", "label": "Fonction / Qualité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La fonction est requise", "options": [ "Gérant / Co-gérant", "Président / Director", "Directeur Général", "Fondateur / Promoteur", "Mandataire / Fondé de pouvoir" ] },
+        { "name": "nationalite", "label": "Nationalité", "type": "text", "placeholder": "Exemple : Camerounaise", "required": false },
+        { "name": "typePiece", "label": "Type de pièce d'identité", "type": "select", "placeholder": "Sélectionner le type", "required": true, "errorRequired": "Le type de pièce est requis", "options": [ "Carte Nationale d'Identité (CNI)", "Passeport", "Carte de Séjour / Titre de Résidence" ] },
+        { "name": "numPiece", "label": "Numéro de pièce d'identité", "type": "text", "placeholder": "Numéro de la pièce", "required": true, "errorRequired": "Le numéro de pièce est requis" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Coordonnées & notification",
+      "description": "Fournissez vos coordonnées pour le suivi de votre dossier.",
+      "fields": [
+        { "name": "email", "label": "Adresse e-mail professionnelle", "type": "email", "placeholder": "vous@entreprise.com", "required": true, "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "errorRequired": "L'email est requis", "errorPattern": "Email invalide" },
+        { "name": "telephone", "label": "Téléphone principal (WhatsApp)", "type": "tel", "placeholder": "+237 6XX XXX XXX", "required": true, "pattern": "^\\+?[0-9\\s]{9,16}$", "errorRequired": "Le téléphone est requis", "errorPattern": "Téléphone invalide" },
+        { "name": "adresse", "label": "Adresse de résidence / Siège actuel", "type": "text", "placeholder": "Exemple : Immeuble X, Quartier Y, Douala", "required": true, "errorRequired": "L'adresse est requise" },
+        { "name": "ville", "label": "Ville", "type": "text", "placeholder": "Douala", "required": true, "errorRequired": "La ville est requise" },
+        { "name": "pays", "label": "Pays", "type": "select", "placeholder": "", "required": true, "errorRequired": "", "options": [ "Cameroun", "France", "Belgique", "Suisse", "Canada", "Autre" ], "default": "Cameroun" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Conformité & KYC",
+      "description": "Téléchargez les documents requis pour votre dossier KYC.",
+      "files": [
+        { "id": "identite", "title": "Pièce d'identité (CNI ou Passeport)", "hint": "Téléchargez votre pièce d'identité", "accept": "image/*,application/pdf", "required": true },
+        { "id": "statuts", "title": "Statuts de l'entreprise", "hint": "Téléchargez les statuts", "accept": "application/pdf", "required": true }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Validation & Paiement",
+      "description": "Confirmez votre demande, validez les conditions et procédez au paiement.",
+      "checkboxes": [
+        { "name": "chkCgv", "label": "J'accepte les Conditions Générales de Vente", "required": true, "errorRequired": "Vous devez accepter les CGV" },
+        { "name": "chkCadre", "label": "J'accepte le cadre contractuel", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
+        { "name": "chkExactitude", "label": "Je certifie l'exactitude des informations", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
+      ],
+      "invoice": {
+        "label": "Facture proforma",
+        "serviceLine": "Création d'entreprise — Constitution juridique",
+        "amountFCFA": 100000
+      },
+      "invoiceDetail": {
+        "label": "Facture proforma",
+        "serviceLine": "Création d'entreprise — Constitution juridique",
+        "amountFCFA": 100000,
+        "companyName": "FEDPAWA CORPORATE SOLUTIONS SARL",
+        "companyNiu": "M09261890362B",
+        "companyRccm": "CM-DLA-01-2026-B13-00767",
+        "companyAddress": "Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun",
+        "companyPhone": "+237 691 70 48 02",
+        "companyEmail": "contact@fedpawa.com",
+        "invoiceLabel": "Facture proforma",
+        "invoiceNumLabel": "N°",
+        "invoiceDateLabel": "Date",
+        "billedToLabel": "Facturé à",
+        "serviceLabel": "Prestation",
+        "periodLabel": "Période",
+        "designationLabel": "Désignation",
+        "amountLabel": "Montant",
+        "totalLabel": "Total",
+        "footer": "Total à payer :",
+        "footerEnd": " FCFA"
+      },
+      "payButton": "Payer {amount} FCFA (Mobile Money)"
+    }
+  ],
+  "localStorageKey": "souscription_creation_draft_v1",
+  "successMessage": "Votre dossier de création d'entreprise a bien été transmis à nos équipes.",
+  "successLink": "Aller à mon Espace Client",
+  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville" ]
+}

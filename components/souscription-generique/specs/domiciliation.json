@@ -1,0 +1,168 @@
+{
+  "serviceId": "domiciliation",
+  "serviceName": "Domiciliation d'Entreprise",
+  "endpoint": "/api/v1/souscription",
+  "priceFixedFCFA": null,
+  "priceLabel": "Pack de domiciliation",
+  "contract": true,
+  "statutStructure": true,
+  "formeAutre": true,
+  "rccmNiuConditional": true,
+  "noImmat": true,
+  "smartDetection": true,
+  "thirdDropzone": true,
+  "kycAlready": true,
+  "urlPackParam": true,
+  "lockScroll": true,
+  "successWithClient": true,
+  "hideStepper": false,
+  "totalSteps": 6,
+  "formTitle": "Souscription Domiciliation — 6 Étapes",
+  "formSubtitle": "6 étapes (entreprise, représentant, contact, formule, documents KYC, facturation), packs nationaux et internationaux, paiement Mobile Money.",
+  "steps": [
+    {
+      "id": 1,
+      "title": "Situation de l'entreprise",
+      "description": "Définissez l'identité et l'activité de votre entreprise.",
+      "radios": [
+        { "id": "existante", "label": "Entreprise existante", "desc": "Votre structure est déjà immatriculée (RCCM / NIU)" },
+        { "id": "creation", "label": "Création d'entreprise", "desc": "FEDPAWA prend en charge la création complète — statuts, RCCM, NIU et Kit Corporate" }
+      ],
+      "fields": [
+        { "name": "denomination", "label": "Dénomination sociale / Nom commercial", "type": "text", "placeholder": "Exemple : FEDPAWA CORPORATE SOLUTIONS SARL", "required": true, "errorRequired": "La dénomination est requise", "hint": "Nom officiel de votre société" },
+        { "name": "formeJuridique", "label": "Forme juridique", "type": "select", "placeholder": "Sélectionner la forme juridique", "required": true, "errorRequired": "La forme juridique est requise", "options": [ "SARL", "SARLU", "SAS", "SASU", "SA", "Établissement (Nom propre)", "GIE (Groupement d'Intérêt Économique)", "Succursale / Filiale", "Autre" ], "hint": "Forme légale de votre entreprise" },
+        { "name": "formeAutre", "label": "Précisez la forme juridique", "type": "text", "placeholder": "Autre forme juridique", "required": false, "errorRequired": "", "hint": "Uniquement si 'Autre' est sélectionné ci-dessus" },
+        { "name": "rccm", "label": "RCCM", "type": "text", "placeholder": "Numéro RCCM", "required": true, "errorRequired": "Le RCCM est requis", "hint": "Registre du Commerce et du Crédit Mobilier" },
+        { "name": "niu", "label": "NIU", "type": "text", "placeholder": "Numéro NIU", "required": true, "errorRequired": "Le NIU est requis", "hint": "Numéro d'Identification Unique" },
+        { "name": "noImmat", "label": "Je n'ai pas encore de RCCM / NIU", "type": "checkbox", "placeholder": "", "required": false, "errorRequired": "", "hint": "Cochez si votre entreprise n'est pas encore immatriculée" },
+        { "name": "secteur", "label": "Secteur d'activité principal", "type": "select", "placeholder": "Sélectionner le secteur", "required": true, "errorRequired": "Le secteur est requis", "options": [ "Commerce et distribution", "Services aux entreprises / Conseil", "Bâtiment et travaux publics (BTP)", "Agroalimentaire & Agriculture", "Technologie, Numérique & E-commerce", "Santé, Pharmacie & Bien-être", "Éducation, Formation & Coaching", "Transport, Logistique & Import-Export", "Finance, Assurance & Immobilier", "Autre" ], "hint": "Domaine d'activité principal" },
+        { "name": "description", "label": "Description synthétique des activités", "type": "textarea", "placeholder": "Décrivez brièvement l'objet social de votre entreprise.", "required": true, "errorRequired": "La description est requise", "rows": 3, "hint": "Que fait concrètement votre entreprise ?" }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Représentant légal",
+      "description": "Désignez le représentant légal de l'entreprise.",
+      "fields": [
+        { "name": "civilite", "label": "Civilité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La civilité est requise", "options": [ "Monsieur", "Madame" ] },
+        { "name": "nomComplet", "label": "Nom complet", "type": "text", "placeholder": "Exemple : Jean Dupont", "required": true, "errorRequired": "Le nom complet est requis" },
+        { "name": "fonction", "label": "Fonction / Qualité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La fonction est requise", "options": [ "Gérant / Co-gérant", "Président / Director", "Directeur Général", "Fondateur / Promoteur", "Mandataire / Fondé de pouvoir" ] },
+        { "name": "nationalite", "label": "Nationalité", "type": "text", "placeholder": "Exemple : Camerounaise", "required": false },
+        { "name": "typePiece", "label": "Type de pièce d'identité", "type": "select", "placeholder": "Sélectionner le type", "required": true, "errorRequired": "Le type de pièce est requis", "options": [ "Carte Nationale d'Identité (CNI)", "Passeport", "Carte de Séjour / Titre de Résidence" ] },
+        { "name": "numPiece", "label": "Numéro de pièce d'identité", "type": "text", "placeholder": "Numéro de la pièce", "required": true, "errorRequired": "Le numéro de pièce est requis" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Coordonnées & notification",
+      "description": "Fournissez vos coordonnées pour le suivi de votre dossier.",
+      "fields": [
+        { "name": "email", "label": "Adresse e-mail professionnelle", "type": "email", "placeholder": "vous@entreprise.com", "required": true, "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "errorRequired": "L'email est requis", "errorPattern": "Email invalide", "hint": "Adresse e-mail pour les notifications" },
+        { "name": "telephone", "label": "Téléphone principal (WhatsApp)", "type": "tel", "placeholder": "+237 6XX XXX XXX", "required": true, "pattern": "^\\+?[0-9\\s]{9,16}$", "errorRequired": "Le téléphone est requis", "errorPattern": "Téléphone invalide", "hint": "Numéro joignable sur WhatsApp" },
+        { "name": "adresse", "label": "Adresse de résidence / Siège actuel", "type": "text", "placeholder": "Exemple : Immeuble X, Quartier Y, Douala", "required": true, "errorRequired": "L'adresse est requise" },
+        { "name": "ville", "label": "Ville", "type": "text", "placeholder": "Douala", "required": true, "errorRequired": "La ville est requise" },
+        { "name": "pays", "label": "Pays", "type": "select", "placeholder": "", "required": true, "errorRequired": "", "options": [ "Cameroun", "France", "Belgique", "Suisse", "Canada", "Autre" ], "default": "Cameroun" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Formule & Pack",
+      "description": "Choisissez votre gamme, votre pack et la périodicité de facturation.",
+      "fields": [
+        { "name": "gamme", "label": "Gamme", "type": "select", "placeholder": "Sélectionner la gamme", "required": true, "errorRequired": "La gamme est requise" },
+        { "name": "pack", "label": "Pack", "type": "select", "placeholder": "Sélectionner le pack", "required": true, "errorRequired": "Le pack est requis" },
+        { "name": "periodicite", "label": "Périodicité", "type": "select", "placeholder": "Sélectionner la périodicité", "required": true, "errorRequired": "La périodicité est requise", "options": [ "Mensuel", "Semestriel", "Annuel" ], "hint": "Fréquence de facturation" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Documents KYC & Validation",
+      "description": "Téléchargez les documents requis et validez les conditions.",
+      "files": [
+        { "id": "identite", "title": "Pièce d'identité", "hint": "CNI ou Passeport du représentant légal", "accept": ".pdf,.jpg,.jpeg,.png", "required": true },
+        { "id": "statuts", "title": "Statuts de l'entreprise", "hint": "Statuts constitutifs ou projets de statuts", "accept": ".pdf", "required": true },
+        { "id": "domicile", "title": "Justificatif de domicile", "hint": "Justificatif de domicile du représentant légal", "accept": ".pdf,.jpg,.jpeg,.png", "required": false }
+      ],
+      "checkboxes": [
+        { "name": "chkCgv", "label": "J'accepte les Conditions Générales de Vente", "required": true, "errorRequired": "Vous devez accepter les CGV" },
+        { "name": "chkCadre", "label": "J'accepte le cadre contractuel (Convention de mise à disposition d'infrastructures et de services)", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
+        { "name": "chkExactitude", "label": "Je certifie l'exactitude des informations fournies", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Facturation & Paiement",
+      "description": "Récapitulatif de votre commande et paiement Mobile Money."
+    }
+  ],
+  "gammes": [
+    {
+      "id": "nationale",
+      "label": "Nationale",
+      "badge": "NATIONAL",
+      "title": "Gamme Nationale",
+      "desc": "Domiciliation sur le territoire national uniquement",
+      "packs": [
+        { "id": "national-basic", "label": "National Basic", "priceFCFA": 25000, "badge": "Entrée de gamme", "usd": 42, "features": { "fr": [ "Domiciliation commerciale", "Réexpédition du courrier mensuelle", "Accès salle de réunion 2h/mois" ] } },
+        { "id": "national-pro", "label": "National Pro", "priceFCFA": 45000, "badge": "Populaire", "usd": 75, "features": { "fr": [ "Domiciliation commerciale", "Réexpédition du courrier hebdomadaire", "Accès salle de réunion 8h/mois", "Scan couleur illimité" ] } },
+        { "id": "national-premium", "label": "National Premium", "priceFCFA": 75000, "badge": "Luxe", "usd": 125, "features": { "fr": [ "Domiciliation commerciale", "Réexpédition du courrier quotidienne", "Accès salle de réunion illimité", "Scan couleur illimité", "Archivage longue durée" ] } }
+      ]
+    },
+    {
+      "id": "internationale",
+      "label": "Internationale",
+      "badge": "INTERNATIONAL",
+      "title": "Gamme Internationale",
+      "desc": "Domiciliation avec ouverture à l'international",
+      "packs": [
+        { "id": "international-basic", "label": "International Basic", "priceFCFA": 120000, "badge": "Entrée de gamme", "usd": 200, "features": { "fr": [ "Domiciliation commerciale internationale", "Réexpédition internationale mensuelle", "Numéro de téléphone local" ] } },
+        { "id": "international-pro", "label": "International Pro", "priceFCFA": 200000, "badge": "Populaire", "usd": 333, "features": { "fr": [ "Domiciliation commerciale internationale", "Réexpédition internationale hebdomadaire", "Numéro de téléphone local", "Scan couleur illimité" ] } }
+      ]
+    }
+  ],
+  "packDetails": {
+    "national-basic": { "id": "national-basic", "label": "National Basic", "priceFCFA": 25000, "badge": "Entrée de gamme", "usd": 42, "features": { "fr": [ "Domiciliation commerciale", "Réexpédition du courrier mensuelle", "Accès salle de réunion 2h/mois" ] } },
+    "national-pro": { "id": "national-pro", "label": "National Pro", "priceFCFA": 45000, "badge": "Populaire", "usd": 75, "features": { "fr": [ "Domiciliation commerciale", "Réexpédition du courrier hebdomadaire", "Accès salle de réunion 8h/mois", "Scan couleur illimité" ] } },
+    "national-premium": { "id": "national-premium", "label": "National Premium", "priceFCFA": 75000, "badge": "Luxe", "usd": 125, "features": { "fr": [ "Domiciliation commerciale", "Réexpédition du courrier quotidienne", "Accès salle de réunion illimité", "Scan couleur illimité", "Archivage longue durée" ] } },
+    "international-basic": { "id": "international-basic", "label": "International Basic", "priceFCFA": 120000, "badge": "Entrée de gamme", "usd": 200, "features": { "fr": [ "Domiciliation commerciale internationale", "Réexpédition internationale mensuelle", "Numéro de téléphone local" ] } },
+    "international-pro": { "id": "international-pro", "label": "International Pro", "priceFCFA": 200000, "badge": "Populaire", "usd": 333, "features": { "fr": [ "Domiciliation commerciale internationale", "Réexpédition internationale hebdomadaire", "Numéro de téléphone local", "Scan couleur illimité" ] } }
+  },
+  "periodicites": [
+    { "id": "mensuel", "label": "Mensuel", "months": 1 },
+    { "id": "semestriel", "label": "Semestriel", "months": 6 },
+    { "id": "annuel", "label": "Annuel", "months": 12 }
+  ],
+  "invoiceDetail": {
+    "label": "Facture proforma",
+    "serviceLine": "Contrat de domiciliation commerciale",
+    "amountFCFA": 25000,
+    "companyName": "FEDPAWA CORPORATE SOLUTIONS SARL",
+    "companyNiu": "M09261890362B",
+    "companyRccm": "CM-DLA-01-2026-B13-00767",
+    "companyAddress": "Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun",
+    "companyPhone": "+237 691 70 48 02",
+    "companyEmail": "contact@fedpawa.com",
+    "invoiceLabel": "Facture proforma",
+    "invoiceNumLabel": "N°",
+    "invoiceDateLabel": "Date",
+    "billedToLabel": "Facturé à",
+    "serviceLabel": "Prestation",
+    "periodLabel": "Période",
+    "designationLabel": "Désignation",
+    "amountLabel": "Montant",
+    "totalLabel": "Total",
+    "footer": "Total à payer :",
+    "footerEnd": " FCFA"
+  },
+  "payButton": "Payer {amount} FCFA (Mobile Money)",
+  "kycCheck": {
+    "title": "KYC déjà validé",
+    "text": "Votre identité a déjà été vérifiée.",
+    "alreadyText": "Votre KYC est déjà validé depuis le",
+    "alreadyEnd": ". Les documents KYC ne sont pas requis."
+  },
+  "localStorageKey": "souscription_domiciliation_draft_v1",
+  "successMessage": "Votre dossier de domiciliation a bien été transmis à nos équipes.",
+  "successLink": "Aller à mon Espace Client",
+  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville", "rccm", "niu" ]
+}
