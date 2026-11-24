@@ -14,6 +14,7 @@ import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiAuthPost, fetchMe } from "@/lib/auth";
 import { isEmailNonVerifieError } from "@/lib/verification";
 import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
+import VerificationGateModal from "@/components/verification/VerificationGateModal";
 import { routesFor } from "@/lib/routes";
 
 // ---------------------------------------------------------------------------
@@ -624,14 +625,13 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       const res = await apiAuthPost<any>(spec.endpoint, payload);
       if (res.ok) {
         localStorage.removeItem(DRAFT_KEY);
-
-        if (spec.contract) {
-          setShowSuccess(true);
-          setStep(TOTAL_STEPS);
+        // Stocker le draftId pour la redirection vers le flux unifié Signature → Paiement
+        const draftId = res.draft_id ?? res.id ?? res.draftId;
+        if (draftId) {
+          localStorage.setItem('fedpawa_redirect_draft_id', String(draftId));
         }
-
-        setShowSuccess(true);
-        setStep(TOTAL_STEPS);
+        // Redirection vers le nouveau flux unifié (SouscriptionNouveauFlux)
+        window.location.href = '/souscription-domiciliation';
       } else {
         setErrors([res.message || "Erreur lors de la soumission"]);
       }
@@ -1407,6 +1407,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
         </div>
       )}
 
+      <VerificationGateModal locale={locale} />
     </>
   );
 }

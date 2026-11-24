@@ -30,7 +30,7 @@ export default function Fiscalite({ locale = "fr" }: FiscaliteProps) {
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               <Link
                 className="btn btn-gold"
-                href={`${routes.tunnel}?service=fiscalite&pack=simplifie`}
+                href={locale === "en" ? "/en/souscription/conseil-fiscal" : "/souscription/conseil-fiscal"}
               >
                 {t.heroCtaPrimary}
               </Link>
@@ -212,7 +212,7 @@ export default function Fiscalite({ locale = "fr" }: FiscaliteProps) {
               </p>
               <Link
                 className="btn btn-primary btn-block"
-                href={`${routes.tunnel}?service=fiscalite&pack=simplifie`}
+                href={locale === "en" ? "/en/souscription/conseil-fiscal" : "/souscription/conseil-fiscal"}
               >
                 {t.plan1Cta}
               </Link>
@@ -232,7 +232,7 @@ export default function Fiscalite({ locale = "fr" }: FiscaliteProps) {
               </p>
               <Link
                 className="btn btn-outline btn-block"
-                href={`${routes.contact}?service=fiscalite-reel`}
+                href="/souscription/conseil-fiscal"
               >
                 {t.plan2Cta}
               </Link>

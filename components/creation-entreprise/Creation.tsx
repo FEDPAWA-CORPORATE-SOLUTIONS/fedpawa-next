@@ -88,7 +88,7 @@ export default function Creation({ locale = "fr" }: CreationProps) {
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               <Link
                 className="btn btn-gold"
-                href={`${routes.tunnel}?service=creation&pack=standard`}
+                href={locale === "en" ? "/en/souscription/creation-entreprise" : "/souscription/creation-entreprise"}
               >
                 {t.heroCtaPrimary}
               </Link>
@@ -254,7 +254,7 @@ export default function Creation({ locale = "fr" }: CreationProps) {
               </ul>
               <Link
                 className="btn btn-primary btn-block"
-                href={`${routes.tunnel}?service=creation&pack=standard`}
+                href={locale === "en" ? "/en/souscription/creation-entreprise" : "/souscription/creation-entreprise"}
               >
                 {t.pricingCta}
               </Link>

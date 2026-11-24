@@ -212,7 +212,7 @@ export default function Contrats({ locale = "fr" }: ContratsProps) {
               </ul>
               <Link
                 className="btn btn-outline btn-block"
-                href={`${routes.tunnel}?service=contrats&pack=standard`}
+                href={locale === "en" ? "/en/souscription/contrats" : "/souscription/contrats"}
               >
                 {t.plan1Cta}
               </Link>
@@ -234,7 +234,7 @@ export default function Contrats({ locale = "fr" }: ContratsProps) {
               </ul>
               <Link
                 className="btn btn-primary btn-block"
-                href={`${routes.tunnel}?service=contrats&pack=complexe`}
+                href={locale === "en" ? "/en/souscription/contrats" : "/souscription/contrats"}
               >
                 {t.plan2Cta}
               </Link>
@@ -252,7 +252,7 @@ export default function Contrats({ locale = "fr" }: ContratsProps) {
               </ul>
               <Link
                 className="btn btn-outline btn-block"
-                href={`${routes.contact}?service=audit-juridique`}
+                href="/souscription/contrats"
               >
                 {t.plan3Cta}
               </Link>

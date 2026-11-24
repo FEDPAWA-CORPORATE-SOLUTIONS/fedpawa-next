@@ -63,7 +63,7 @@ export default function Oapi({ locale = "fr" }: OapiProps) {
             <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
               <Link
                 className="btn btn-gold"
-                href={`${routes.tunnel}?service=oapi&pack=protect_brand`}
+                href={locale === "en" ? "/en/souscription/oapi" : "/souscription/oapi"}
               >
                 {t.heroCtaPrimary}
               </Link>
@@ -195,7 +195,7 @@ export default function Oapi({ locale = "fr" }: OapiProps) {
               </ul>
               <Link
                 className="btn btn-outline btn-block"
-                href={`${routes.contact}?service=oapi-recherche`}
+                href="/souscription/oapi"
               >
                 {t.plan1Cta}
               </Link>
@@ -217,7 +217,7 @@ export default function Oapi({ locale = "fr" }: OapiProps) {
               </ul>
               <Link
                 className="btn btn-primary btn-block"
-                href={`${routes.tunnel}?service=oapi&pack=protect_brand`}
+                href={locale === "en" ? "/en/souscription/oapi" : "/souscription/oapi"}
               >
                 {t.plan2Cta}
               </Link>
@@ -234,7 +234,7 @@ export default function Oapi({ locale = "fr" }: OapiProps) {
               </ul>
               <Link
                 className="btn btn-outline btn-block"
-                href={`${routes.contact}?service=oapi-brevet`}
+                href="/souscription/oapi"
               >
                 {t.plan3Cta}
               </Link>

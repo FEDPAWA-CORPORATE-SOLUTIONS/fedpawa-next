@@ -299,6 +299,19 @@ export default function SouscriptionNouveauFlux({
     }
   }, []);
 
+  // Redirection depuis GeneriqueFormulaire : reprise du draft créé
+  useEffect(() => {
+    const stored = localStorage.getItem('fedpawa_redirect_draft_id');
+    if (stored && !draftId) {
+      const id = parseInt(stored, 10);
+      if (!isNaN(id)) {
+        setDraftId(id);
+        setStep('email');
+      }
+      localStorage.removeItem('fedpawa_redirect_draft_id');
+    }
+  }, []);
+
   useEffect(() => {
     if (!draftResolved) return;
     try {

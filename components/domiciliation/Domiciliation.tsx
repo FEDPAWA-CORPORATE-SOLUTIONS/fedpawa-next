@@ -206,7 +206,7 @@ export default function Domiciliation({ locale = "fr" }: DomiciliationProps) {
                 </ul>
                 <Link
                   className={`btn ${p.popular ? "btn-primary" : "btn-outline"} btn-block`}
-                  href={`${routes.souscription}?pack=${p.id}`}
+                  href={`/souscription/domiciliation?pack=${p.id}`}
                 >
                   {t.packCta}
                 </Link>
@@ -247,7 +247,7 @@ export default function Domiciliation({ locale = "fr" }: DomiciliationProps) {
                 </ul>
                 <Link
                   className={`btn ${p.popular ? "btn-primary" : "btn-outline"} btn-block`}
-                  href={`${routes.souscription}?pack=${p.id}`}
+                  href={`/souscription/domiciliation?pack=${p.id}`}
                 >
                   {t.packCta}
                 </Link>
