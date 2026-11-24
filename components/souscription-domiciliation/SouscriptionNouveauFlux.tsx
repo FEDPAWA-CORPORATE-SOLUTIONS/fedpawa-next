@@ -43,6 +43,7 @@ import {
 } from "./plans";
 import OpenSignCanvas from "./OpenSignCanvas";
 import { createAuditEntry } from "../../lib/audit";
+import { generateSignedPDF } from "../../lib/pdf-signature";
 
 export interface SouscriptionNouveauFluxProps {
   locale?: Locale;
@@ -196,6 +197,8 @@ export default function SouscriptionNouveauFlux({
   const [paymentLinkSent, setPaymentLinkSent] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [signatureLinkSent, setSignatureLinkSent] = useState(false);
+  const [auditEntries, setAuditEntries] = useState<{ timestamp: string; action: string; ip: string; details: Record<string, unknown> }[]>([]);
+  const [pdfHash, setPdfHash] = useState<string | null>(null);
 
   // Brouillon localStorage (Groupe 1)
   const [savedDraft, setSavedDraft] = useState<Draft | null>(null);
@@ -636,7 +639,7 @@ export default function SouscriptionNouveauFlux({
       setFlowToken(res.flow_token);
       setPaymentLinkSent(false);
       setSignatureLinkSent(true);
-      window.location.href = res.signature_link;
+      setStep("sign");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -663,7 +666,7 @@ export default function SouscriptionNouveauFlux({
         message: string;
       }>(`/api/v1/souscription-nouveau-flux/${draftId}/payment-link`, {});
       setPaymentLinkSent(true);
-      window.location.href = res.payment_link;
+      setStep("pay");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -714,6 +717,10 @@ export default function SouscriptionNouveauFlux({
       setError("Veuillez apposer votre signature avant de valider.");
       return;
     }
+    if (!otp || otp.length !== 6) {
+      setError("Veuillez saisir le code OTP à 6 chiffres avant de valider.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -729,19 +736,25 @@ export default function SouscriptionNouveauFlux({
       });
       setHashSha256(res.hash_sha256);
       // Journal d'audit append-only après signature
+      const entry = {
+        timestamp: new Date().toISOString(),
+        action: "CONTRACT_SIGNED",
+        ip: signatureMetadata.ip,
+        details: {
+          otp_verified: true,
+          signature_method: signatureMetadata.method,
+          signature_timestamp: signatureMetadata.timestamp,
+          pack: form.pack,
+          prix: prix,
+          email: form.email,
+          hash_sha256: res.hash_sha256,
+        },
+      };
       try {
         createAuditEntry(
           String(draftId),
           "CONTRACT_SIGNED",
-          {
-            otp_verified: true,
-            signature_method: signatureMetadata.method,
-            signature_timestamp: signatureMetadata.timestamp,
-            pack: form.pack,
-            prix: prix,
-            email: form.email,
-            hash_sha256: res.hash_sha256,
-          },
+          entry.details,
           {
             ip: signatureMetadata.ip,
             userAgent: signatureMetadata.userAgent,
@@ -751,8 +764,28 @@ export default function SouscriptionNouveauFlux({
       } catch {
         /* journal d'audit non bloquant */
       }
-      // Après signature : génération du lien de paiement
-      await handleSendPaymentLink();
+      setAuditEntries((prev) => [...prev, entry]);
+      // Génération du PDF signé avec page supplémentaire de preuve
+      try {
+        const pdfHash = generateSignedPDF(
+          {
+            pack: form.pack,
+            prix: prix,
+            nomComplet: form.nomComplet,
+            denomination: form.denomination,
+            email: form.email,
+          },
+          signatureImage || "",
+          { transactionId: null, montant: prix },
+          auditEntries,
+          res.hash_sha256,
+        );
+        setPdfHash(pdfHash);
+      } catch {
+        /* génération PDF non bloquante */
+      }
+      // Après signature : passage à l'étape paiement (sans sortir de l'appli)
+      setStep("pay");
     } catch (err) {
       setError(
         err instanceof ApiError
