@@ -257,11 +257,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [smartModal, setSmartModal] = useState<"closed" | "open" | "blocked">("closed");
-  const [otpStep, setOtpStep] = useState<"idle" | "pending" | "verified" | "error">("idle");
-  const [otpCode, setOtpCode] = useState("");
   const [savedDraft, setSavedDraft] = useState<any | null>(null);
   const [draftResolved, setDraftResolved] = useState(false);
-  const [payError, setPayError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<string | null>(null);
   const [kycDoneServer, setKycDoneServer] = useState<string | null>(null);
   const meRef = useRef<Record<string, string | undefined> | null>(null);
@@ -599,31 +596,6 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     return uploaded;
   };
 
-  // ---------- OTP ----------
-  const verifyOTP = async (code: string): Promise<boolean> => {
-    try {
-      const res = await apiAuthPost<any>("/api/v1/signature/verify", { code });
-      if (res.ok) {
-        setOtpStep("verified");
-        return true;
-      }
-      setOtpStep("error");
-      return false;
-    } catch {
-      setOtpStep("error");
-      return false;
-    }
-  };
-
-  const requestOTP = async (phone: string): Promise<boolean> => {
-    try {
-      const res = await apiAuthPost<any>("/api/v1/signature/otp-request", { phone });
-      return res.ok;
-    } catch {
-      return false;
-    }
-  };
-
   // ---------- Submit ----------
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -654,13 +626,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
         localStorage.removeItem(DRAFT_KEY);
 
         if (spec.contract) {
-          setOtpStep("pending");
-          const otpRequested = await requestOTP(form.telephone || "");
-          if (!otpRequested) {
-            setErrors(["Impossible d'envoyer le code OTP. Réessayez."]);
-            return;
-          }
-          return;
+          setShowSuccess(true);
+          setStep(TOTAL_STEPS);
         }
 
         setShowSuccess(true);
@@ -677,36 +644,6 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     }
   };
 
-  const handlePaySubmit = async (pay: { phone: string; operator: string; price: number }) => {
-    setPayError(null);
-    try {
-      if (verif.unverified) {
-        verif.requestGate();
-        return { ok: false, message: "Email non vérifié" };
-      }
-      const res = await apiAuthPost<any>(spec.endpoint, {
-        ...form,
-        planLabel: currentPack?.label ?? "",
-        telephone: pay.phone,
-        prix: pay.price,
-        paymentMethod: "momo",
-        momo_phone: pay.phone,
-        momo_operator: pay.operator,
-      });
-      if (res.ok) {
-        localStorage.removeItem(DRAFT_KEY);
-        return { ok: true, message: res.message || "Paiement effectué." };
-      }
-      return { ok: false, message: res.message || "Échec du paiement." };
-    } catch (err: any) {
-      if (isEmailNonVerifieError(err)) {
-        verif.requestGate();
-        return { ok: false, message: "Email non vérifié." };
-      }
-      return { ok: false, message: "Erreur réseau lors du paiement." };
-    }
-  };
-
   const gateModalOpen =
     verif.status === "unverified" ||
     (verif.gateOpen && verif.status !== "anonymous" && verif.status !== "verified");
@@ -717,60 +654,6 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   // ============================================================================
   // RENDU
   // ============================================================================
-
-  if (otpStep !== "idle") {
-    return (
-      <div className="container py-24 text-center">
-        <div style={{ maxWidth: 520, margin: "0 auto" }}>
-          <h2 style={{ fontSize: "1.5rem", marginBottom: 12 }}>
-            {otpStep === "verified" ? "Contrat signé" : "Vérification du contrat"}
-          </h2>
-          {otpStep === "pending" && (
-            <>
-              <p style={{ marginBottom: 20 }}>
-                Un code de confirmation a été envoyé par SMS sur votre téléphone.
-                Saisissez le code pour signer électroniquement votre contrat.
-              </p>
-              <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 20 }}>
-                <input
-                  type="text"
-                  maxLength="6"
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  className="form-control"
-                  placeholder="Code OTP"
-                  autoFocus
-                />
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={() => verifyOTP(otpCode)}
-                  disabled={otpCode.length !== 6}
-                >
-                  Vérifier
-                </button>
-              </div>
-              {otpStep === "error" && (
-                <p style={{ color: "red", fontSize: "0.85rem", marginTop: 8 }}>
-                  Code invalide. Réessayez.
-                </p>
-              )}
-            </>
-          )}
-          {otpStep === "verified" && (
-            <>
-              <p style={{ marginBottom: 20 }}>
-                Votre contrat a été signé électroniquement avec succès.
-              </p>
-              <Link href={routes.espaceClient} className="btn btn-primary btn-block">
-                Aller à mon Espace Client
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
