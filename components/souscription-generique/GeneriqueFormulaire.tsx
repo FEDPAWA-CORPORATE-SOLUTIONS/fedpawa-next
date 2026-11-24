@@ -1,17 +1,10 @@
 "use client";
 
 /**
- * FEDPAWA — Formulaire Générique Malléable (v3)
- * Implémente les 27 éléments de l'audit :
- * #1 Radios statut_structure, #2 formeAutre conditionnel, #3&#4 RCCM/NIU conditionnels,
- * #5 Checkbox noImmat, #6 Smart-détection bloquante, #7 Cartes gamme, #8 Sélecteur pack,
- * #9 Détail des packs, #10 Options avec descriptions, #11 3ème dropzone domicile,
- * #12 Vérification KYC déjà faite, #13 Facture proforma complète, #14 Sidebar détaillé,
- * #15 Bouton de paiement avec montant, #16 Écran succès avec nom client + 24h,
- * #17 Small hints, #18 Pré-remplissage RCCM/NIU depuis /me, #19 Paramètre URL ?pack=,
- * #20 Verrou du scroll, #21 Radio-pill style, #22 Erreurs en liste à puces,
- * #23 Constants importées, #24 useRef stepRefs, #25 IDs spécifiques,
- * #26 Numéro de facture F-YYYY-XXXXXX, #27 Pied de facture.
+ * FEDPAWA — Formulaire Générique Malléable (v4)
+ * Corrigé : IDs uniques par étape, attributs name sur tous les champs,
+ * logique RCCM/NIU conditionnelle, stepper avec espace, étapes masquées
+ * quand inactives.
  */
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -22,7 +15,6 @@ import { apiAuthPost, fetchMe } from "@/lib/auth";
 import { isEmailNonVerifieError } from "@/lib/verification";
 import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 import { routesFor } from "@/lib/routes";
-import PayModal from "../souscription-domiciliation/PayModal";
 
 // ---------------------------------------------------------------------------
 // Types de spécification
@@ -150,6 +142,7 @@ type FormSpec = {
   packDetails?: Record<string, PackSpec>;
   periodicites?: PeriodiciteSpec[];
   invoice?: InvoiceDetailSpec;
+  invoiceDetail?: InvoiceDetailSpec;
   payButton?: PayButtonSpec;
   checkboxes?: CheckboxSpec[];
   localStorageKey: string;
@@ -264,7 +257,6 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [smartModal, setSmartModal] = useState<"closed" | "open" | "blocked">("closed");
-  const [showPayModal, setShowPayModal] = useState(false);
   const [otpStep, setOtpStep] = useState<"idle" | "pending" | "verified" | "error">("idle");
   const [otpCode, setOtpCode] = useState("");
   const [savedDraft, setSavedDraft] = useState<any | null>(null);
@@ -274,7 +266,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   const [kycDoneServer, setKycDoneServer] = useState<string | null>(null);
   const meRef = useRef<Record<string, string | undefined> | null>(null);
   const [invoice, setInvoice] = useState<{ dateStr: string; num: string } | null>(null);
-  const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const [isCreationStructure, setIsCreationStructure] = useState(spec.statutStructure ? false : true);
 
   const TOTAL_STEPS = spec.totalSteps;
   const DRAFT_KEY = spec.localStorageKey;
@@ -283,7 +275,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   const set = (key: string, value: any) =>
     setForm((f) => ({ ...f, [key]: value }));
 
-  // ---------- Facture : numéro et date (#26) ----------
+  // ---------- Facture : numéro et date ----------
   useEffect(() => {
     if (!spec.invoiceDetail) return;
     const now = new Date();
@@ -293,7 +285,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     });
   }, [spec.invoiceDetail]);
 
-  // ---------- Pré-remplissage depuis /me (#18 RCCM/NIU inclus) ----------
+  // ---------- Pré-remplissage depuis /me (incluant RCCM/NIU) ----------
   useEffect(() => {
     (async () => {
       try {
@@ -313,7 +305,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     })();
   }, []);
 
-  // ---------- Paramètre URL ?pack= (#19) ----------
+  // ---------- Paramètre URL ?pack= ----------
   useEffect(() => {
     if (!spec.urlPackParam) return;
     try {
@@ -358,7 +350,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     }
   }, [form, step, draftResolved, DRAFT_KEY]);
 
-  // ---------- Verrou du scroll pendant modale de reprise (#20) ----------
+  // ---------- Verrou du scroll pendant modale de reprise ----------
   useEffect(() => {
     if (!spec.lockScroll) return;
     document.body.style.overflow = !!savedDraft && !draftResolved ? "hidden" : "";
@@ -396,7 +388,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [step]);
 
-  // ---------- Prix avec pack détaillé (#8, #9) ----------
+  // ---------- Prix avec pack détaillé ----------
   const months = useMemo(() => {
     const p = form.periodicite;
     if (p === "mensuel") return 1;
@@ -417,7 +409,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
 
   const totalPrice = useMemo(() => basePrice * months, [basePrice, months]);
 
-  // ---------- Validation (#22 erreurs en liste à puces) ----------
+  // ---------- Validation ----------
   function validateStep(n: number): string[] {
     const errs: string[] = [];
     const fieldErrs: Record<string, string[]> = {};
@@ -428,10 +420,19 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     stepDef.fields?.forEach((field) => {
       if (!isFieldVisible(field, f)) return;
       const v = f[field.name];
-      if (isFieldRequired(field, f) && (v == null || String(v).trim() === "")) {
-        errs.push(field.errorRequired || "Champ requis");
-        if (!fieldErrs[field.name]) fieldErrs[field.name] = [];
-        fieldErrs[field.name].push(field.errorRequired || "Champ requis");
+      if (isRCCNiuConditional(field, f) && f.statutStructure !== "creation") {
+        // RCCM/NIU requis seulement si pas en création
+        if ((field.name === "rccm" || field.name === "niu") && !v) {
+          errs.push(field.errorRequired || "Champ requis");
+          if (!fieldErrs[field.name]) fieldErrs[field.name] = [];
+          fieldErrs[field.name].push(field.errorRequired || "Champ requis");
+        }
+      } else {
+        if (isFieldRequired(field, f) && (v == null || String(v).trim() === "")) {
+          errs.push(field.errorRequired || "Champ requis");
+          if (!fieldErrs[field.name]) fieldErrs[field.name] = [];
+          fieldErrs[field.name].push(field.errorRequired || "Champ requis");
+        }
       }
       if (field.pattern && v && !new RegExp(field.pattern).test(String(v))) {
         errs.push(field.errorPattern || "Format invalide");
@@ -446,6 +447,14 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       }
     });
 
+    // Radios requises (ex: sélection du type de contrat)
+    if (stepDef.radiosRequired && stepDef.radios) {
+      const radioKey = "_radio_" + stepDef.id;
+      if (!f[radioKey]) {
+        errs.push("Veuillez sélectionner une option");
+      }
+    }
+
     // Gamme requise
     if (spec.gammes && spec.gammes.length > 0 && !f.gamme) {
       errs.push("La gamme est requise");
@@ -454,14 +463,13 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     if (spec.packs && spec.packs.length > 0 && !f.pack) {
       errs.push("Le pack est requis");
     }
-    // RCCM/NIU conditionnels (#3&#4)
-    if (spec.rccmNiuConditional && f.statutStructure !== "creation") {
-      if (!f.rccm) errs.push("Le RCCM est requis");
-      if (!f.niu) errs.push("Le NIU est requis");
-    }
 
     setFieldErrors(fieldErrs);
     return [...new Set(errs)];
+  }
+
+  function isRCCNiuConditional(field: FieldSpec, form: Record<string, any>): boolean {
+    return (field.name === "rccm" || field.name === "niu") && spec.rccmNiuConditional;
   }
 
   function validateFinal(): string[] {
@@ -498,14 +506,14 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     if (n >= 1 && n <= TOTAL_STEPS) setStep(n);
   }
 
-  // ---------- Smart-détection noImmat (#5, #6) ----------
+  // ---------- Smart-détection noImmat ----------
   const handleNoImmat = (checked: boolean) => {
     set("noImmat", checked);
     if (checked) setSmartModal("open");
     else setSmartModal("closed");
   };
 
-  // ---------- Sélecteur gamme (cartes cliquables #7) ----------
+  // ---------- Sélecteur gamme (cartes cliquables) ----------
   const handleGammeChange = (id: string) => {
     set("gamme", id);
     set("pack", "");
@@ -515,8 +523,9 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     }
   };
 
-  // ---------- Dropzone avec drag & drop (#11 3ème dropzone incluse) ----------
+  // ---------- Dropzone avec drag & drop ----------
   function DropzoneGen({ field }: { field: FileDropzoneSpec }) {
+    const fieldId = "step-dz-" + field.id;
     const file = form.files?.[field.id];
     return (
       <div
@@ -526,7 +535,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
           (file ? " has-file" : "") +
           (dragOver === field.id ? " drag-over" : "")
         }
-        onClick={() => document.getElementById("dz-file-" + field.id)?.click()}
+        id={"step-dz-" + field.id}
+        onClick={() => document.getElementById(fieldId + "-input")?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragOver(field.id); }}
         onDragLeave={() => setDragOver(null)}
         onDrop={(e) => {
@@ -547,8 +557,9 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
           {file ? `📄 ${file.name} (${Math.round(file.size / 1024)} Ko)` : ""}
         </span>
         <input
-          id={"dz-file-" + field.id}
+          id={fieldId + "-input"}
           type="file"
+          name={field.id}
           hidden
           accept={field.accept}
           onChange={(e) => {
@@ -696,24 +707,12 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     }
   };
 
-  const openPayModal = () => {
-    const errs = validateStep(TOTAL_STEPS);
-    if (errs.length) { setErrors(errs); return; }
-    setErrors([]);
-    setShowPayModal(true);
-  };
-
-  const closePayModal = () => {
-    setShowPayModal(false);
-    setPayError(null);
-  };
-
   const gateModalOpen =
     verif.status === "unverified" ||
     (verif.gateOpen && verif.status !== "anonymous" && verif.status !== "verified");
   const resumePending = !!savedDraft && !draftResolved;
   const showResumeModal =
-    resumePending && !gateModalOpen && smartModal === "closed" && !showPayModal;
+    resumePending && !gateModalOpen && smartModal === "closed";
 
   // ============================================================================
   // RENDU
@@ -777,65 +776,50 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     <>
       {/* STEPPER — affiché sur tous les formulaires */}
       <div className="progress-wrapper" id="genStepper">
-          <div className="container">
-            <div className="gen-step-mobile" id="genStepMobile">
-              <div className="gen-step-mobile-txt">
-                <span id="genStepCount">{step}/{TOTAL_STEPS}</span>
-                <strong id="genStepTitle">{stepLabels[step - 1]}</strong>
-              </div>
-              <div className="gen-step-mobile-bar">
-                <div
-                  className="gen-step-mobile-fill"
-                  id="genStepFill"
-                  style={{ width: `${((step - 1) / Math.max(TOTAL_STEPS - 1, 1)) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div className="progress-container">
-              <div className="progress-line">
-                <div
-                  className="progress-line-fill"
-                  id="progressFill"
-                  style={{ width: `${((step - 1) / Math.max(TOTAL_STEPS - 1, 1)) * 100}%` }}
-                />
-              </div>
-              {stepLabels.map((label, i) => {
-                const n = i + 1;
-                return (
-                  <div
-                    key={n}
-                    className={
-                      "progress-step" +
-                      (n === step ? " active" : n < step ? " completed" : "")
-                    }
-                    data-step={n}
-                    onClick={() => n < step && goToStep(n)}
-                    style={{ cursor: n < step ? "pointer" : "default" }}
-                    ref={(el) => { stepRefs.current[n - 1] = el; }}
-                  >
-                    <div className="progress-dot">{n}</div>
-                    <span className="progress-label">{label}</span>
-                  </div>
-                );
-              })}
+        <div className="container">
+          <div className="gen-step-mobile" id="genStepMobile">
+            <div className="gen-step-mobile-bar">
+              <div
+                className="gen-step-mobile-fill"
+                id="genStepFill"
+                style={{ width: `${((step - 1) / Math.max(TOTAL_STEPS - 1, 1)) * 100}%` }}
+              />
             </div>
           </div>
+          <div className="progress-container">
+            <div className="progress-line">
+              <div
+                className="progress-line-fill"
+                id="progressFill"
+                style={{ width: `${((step - 1) / Math.max(TOTAL_STEPS - 1, 1)) * 100}%` }}
+              />
+            </div>
+            {stepLabels.map((label, i) => {
+              const n = i + 1;
+              return (
+                <div
+                  key={n}
+                  className={
+                    "progress-step" +
+                    (n === step ? " active" : n < step ? " completed" : "")
+                  }
+                  data-step={n}
+                  onClick={() => n < step && goToStep(n)}
+                  style={{ cursor: n < step ? "pointer" : "default" }}
+                >
+                  <div className="progress-dot">{n}</div>
+                  <span className="progress-label">{label}</span>
+                </div>
+              );
+            })}
+          </div>
         </div>
-
-      <div className="nav-actions" style={{ marginTop: "1rem", display: "flex", justifyContent: "flex-end" }}>
-        {step > 1 && (
-          <button className="btn btn-outline" onClick={() => domPrev()}>
-            {t.prev || "Précédent"}
-          </button>
-        )}
       </div>
 
       <div className="container" style={{ padding: "32px 16px 64px" }}>
         <div className="tunnel-layout-v2">
-          <div className="tunnel-card" style={{ padding: 40, boxShadow: "none", border: "1px solid var(--color-border)" }} id="generiqueForm">
+          <div className="tunnel-card" style={{ padding: 40, boxShadow: "none", border: "1px solid var(--color-border)", maxWidth: 700, margin: "0 auto" }} id="generiqueForm">
             {showSuccess ? (
-              <>
-              {/* ÉCRAN DE SUCCÈS (#16 avec nom client + délai 24h) */}
               <div id="form-success" style={{ textAlign: "center", padding: "60px 20px" }}>
                 <div style={{ width: 80, height: 80, margin: "0 auto 24px", borderRadius: "50%", background: "var(--color-primary)", display: "grid", placeItems: "center" }}>
                   <svg viewBox="0 0 24 24" width={40} height={40} fill="none" stroke="#fff" strokeWidth="2.5">
@@ -858,7 +842,6 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                   {spec.successLink}
                 </Link>
               </div>
-              </>
             ) : (
               <>
                 <div className="step-header" style={{ marginBottom: 28 }}>
@@ -871,11 +854,16 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                 </div>
 
                 <form id="generiqueForm" onSubmit={handleSubmit} noValidate>
+                  <style>{`
+                    .tunnel-step-content:not(.active) { display: none !important; }
+                    .tunnel-step-content.active { display: block !important; }
+                  `}</style>
                   {spec.steps.map((stepDef) => (
                     <div
                       key={stepDef.id}
                       className={"tunnel-step-content" + (step === stepDef.id ? " active" : "")}
                       data-step={stepDef.id}
+                      style={{ display: step === stepDef.id ? "block" : "none" }}
                     >
                       <section className="form-section">
                         <h2 className="form-section-title">
@@ -885,109 +873,132 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
 
                         {/* #1 Radios statut_structure (domiciliation uniquement) */}
                         {spec.statutStructure && (
-                          <>
-                            <div className="form-group">
-                              <label>Statut de la structure <em className="req">*</em></label>
-                              <div className="radio-row">
-                                <label className="radio-pill">
-                                  <input
-                                    type="radio"
-                                    name="statut_structure"
-                                    value="existante"
-                                    checked={form.statutStructure === "existante"}
-                                    onChange={() => set("statutStructure", "existante")}
-                                  />{" "}
-                                  Entreprise existante
-                                </label>
-                                <label className="radio-pill">
-                                  <input
-                                    type="radio"
-                                    name="statut_structure"
-                                    value="creation"
-                                    checked={form.statutStructure === "creation"}
-                                    onChange={() => set("statutStructure", "creation")}
-                                  />{" "}
-                                  Création d'entreprise
-                                </label>
-                              </div>
+                          <div className="form-group">
+                            <label>Statut de la structure <em className="req">*</em></label>
+                            <div className="radio-row">
+                              <label className="radio-pill">
+                                <input
+                                  type="radio"
+                                  name="statut_structure"
+                                  id={"step-" + stepDef.id + "-statut-existante"}
+                                  value="existante"
+                                  checked={form.statutStructure === "existante"}
+                                  onChange={() => {
+                                    set("statutStructure", "existante");
+                                    setIsCreationStructure(false);
+                                  }}
+                                />{" "}
+                                Entreprise existante
+                              </label>
+                              <label className="radio-pill">
+                                <input
+                                  type="radio"
+                                  name="statut_structure"
+                                  id={"step-" + stepDef.id + "-statut-creation"}
+                                  value="creation"
+                                  checked={form.statutStructure === "creation"}
+                                  onChange={() => {
+                                    set("statutStructure", "creation");
+                                    setIsCreationStructure(true);
+                                  }}
+                                />{" "}
+                                Création d'entreprise
+                              </label>
                             </div>
-                          </>
+                          </div>
                         )}
 
-                        {/* Champs texte / select / textarea / date / checkbox (#17 small hints, #21 radio-pill) */}
-                        {stepDef.fields?.filter((f) => f.name !== "gamme" && f.name !== "pack" && isFieldVisible(f, form)).map((field) => (
-                          <div key={field.name} className="form-group">
-                            <label htmlFor={field.name}>
-                              {field.label} {isFieldRequired(field, form) && <em className="req">*</em>}
-                              {field.hint && <span className="field-hint" style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginLeft: 6 }}>{field.hint}</span>}
-                            </label>
-                            {field.type === "select" ? (
-                              <select
-                                id={field.name}
-                                className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
-                                required={isFieldRequired(field, form)}
-                                value={form[field.name] || ""}
-                                onChange={(e) => set(field.name, e.target.value)}
-                              >
-                                <option value="">{field.placeholder || "Sélectionner"}</option>
-                                {field.options?.map((opt) => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
-                            ) : field.type === "textarea" ? (
-                              <textarea
-                                id={field.name}
-                                className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
-                                required={isFieldRequired(field, form)}
-                                placeholder={field.placeholder}
-                                value={form[field.name] || ""}
-                                onChange={(e) => set(field.name, e.target.value)}
-                                rows={field.rows || 3}
-                              />
-                            ) : field.type === "date" ? (
-                              <input
-                                type="date"
-                                id={field.name}
-                                className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
-                                required={isFieldRequired(field, form)}
-                                placeholder={field.placeholder}
-                                value={form[field.name] || ""}
-                                onChange={(e) => set(field.name, e.target.value)}
-                              />
-                            ) : field.type === "checkbox" ? (
-                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
-                                <input
-                                  type="checkbox"
-                                  id={field.name}
-                                  checked={form[field.name] === true}
-                                  onChange={(e) => set(field.name, e.target.checked)}
+                        {/* Champs texte / select / textarea / date / checkbox */}
+                        {stepDef.fields?.filter((f) => f.name !== "gamme" && f.name !== "pack" && isFieldVisible(f, form)).map((field) => {
+                          const fieldId = "step-" + stepDef.id + "-" + field.name;
+                          const isRCCNNIU = field.name === "rccm" || field.name === "niu";
+                          const isRCCNNIURequired = isRCCNNIU && spec.rccmNiuConditional && isCreationStructure;
+                          const fieldRequired = isRCCNNIU ? isRCCNNIURequired : isFieldRequired(field, form);
+                          return (
+                            <div key={field.name} className="form-group">
+                              <label htmlFor={fieldId}>
+                                {field.label} {fieldRequired && <em className="req">*</em>}
+                                {field.hint && <span className="field-hint" style={{ fontSize: "0.85rem", color: "var(--color-text-muted)", marginLeft: 6 }}>{field.hint}</span>}
+                              </label>
+                              {field.type === "select" ? (
+                                <select
+                                  id={fieldId}
+                                  name={field.name}
+                                  className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
+                                  required={fieldRequired}
+                                  value={form[field.name] || ""}
+                                  onChange={(e) => set(field.name, e.target.value)}
+                                >
+                                  <option value="">{field.placeholder || "Sélectionner"}</option>
+                                  {field.options?.map((opt) => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                              ) : field.type === "textarea" ? (
+                                <textarea
+                                  id={fieldId}
+                                  name={field.name}
+                                  className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
+                                  required={fieldRequired}
+                                  placeholder={field.placeholder}
+                                  value={form[field.name] || ""}
+                                  onChange={(e) => set(field.name, e.target.value)}
+                                  rows={field.rows || 3}
                                 />
-                                <label htmlFor={field.name}>{field.label}</label>
-                              </div>
-                            ) : (
-                              <input
-                                type={field.type}
-                                id={field.name}
-                                className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
-                                required={isFieldRequired(field, form)}
-                                placeholder={field.placeholder}
-                                value={form[field.name] || ""}
-                                onChange={(e) => set(field.name, e.target.value)}
-                              />
-                            )}
-                            {fieldErrors[field.name] && (
-                              <span className="error-text">{fieldErrors[field.name][0]}</span>
-                            )}
-                          </div>
+                              ) : field.type === "date" ? (
+                                <input
+                                  type="date"
+                                  id={fieldId}
+                                  name={field.name}
+                                  className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
+                                  required={fieldRequired}
+                                  placeholder={field.placeholder}
+                                  value={form[field.name] || ""}
+                                  onChange={(e) => set(field.name, e.target.value)}
+                                />
+                              ) : field.type === "checkbox" ? (
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+                                  <input
+                                    type="checkbox"
+                                    id={fieldId}
+                                    name={field.name}
+                                    checked={form[field.name] === true}
+                                    onChange={(e) => set(field.name, e.target.checked)}
+                                  />
+                                  <label htmlFor={fieldId}>{field.label}</label>
+                                </div>
+                              ) : (
+                                <input
+                                  type={field.type}
+                                  id={fieldId}
+                                  name={field.name}
+                                  className={`form-control ${fieldErrors[field.name] ? "error" : ""}`}
+                                  required={fieldRequired}
+                                  placeholder={field.placeholder}
+                                  value={form[field.name] || ""}
+                                  onChange={(e) => set(field.name, e.target.value)}
+                                />
+                              )}
+                              {fieldErrors[field.name] && (
+                                <span className="error-text">{fieldErrors[field.name][0]}</span>
+                              )}
+                            </div>
+                          );
+                        })}
+
+                        {/* #3 Dropzones de fichiers (KYC, logo, etc.) */}
+                        {stepDef.files?.map((file) => (
+                          <DropzoneGen key={file.id} field={file} />
                         ))}
 
                         {/* #2 Champ formeAutre conditionnel (domiciliation) */}
                         {spec.formeAutre && form.formeJuridique === "Autre" && (
-                          <div className="form-group" id="forme-autre-group">
-                            <label htmlFor="forme_autre">Précisez la forme juridique</label>
+                          <div className="form-group" id={"step-" + stepDef.id + "-forme-autre-group"}>
+                            <label htmlFor={"step-" + stepDef.id + "-forme_autre"}>Précisez la forme juridique</label>
                             <input
                               type="text"
-                              id="forme_autre"
+                              id={"step-" + stepDef.id + "-forme_autre"}
+                              name="formeAutre"
                               className="form-control"
                               placeholder="Autre forme juridique"
                               value={form.formeAutre || ""}
@@ -1003,6 +1014,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                               <input
                                 type="radio"
                                 name={"_radio_" + stepDef.id}
+                                id={"step-" + stepDef.id + "-radio-" + radio.id}
                                 value={radio.id}
                                 checked={form["_radio_" + stepDef.id] === radio.id}
                                 onChange={() => set("_radio_" + stepDef.id, radio.id)}
@@ -1013,8 +1025,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           </div>
                         ))}
 
-                        {/* #7 Sélecteur gamme (cartes cliquables) */}
-                        {spec.gammes && spec.gammes.length > 0 && (
+                        {/* #7 Sélecteur gamme (cartes cliquables) — uniquement sur l'étape qui a des champs gamme/pack */}
+                        {spec.gammes && spec.gammes.length > 0 && stepDef.fields?.some((f) => f.name === "gamme" || f.name === "pack") && (
                           <>
                             <div className="form-group">
                               <label>Gamme <em className="req">*</em></label>
@@ -1026,7 +1038,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                                       "selectable-card gamme-card" +
                                       (form.gamme === g.id ? " selected" : "")
                                     }
-                                    id={"gamme-" + g.id}
+                                    id={"step-" + stepDef.id + "-gamme-" + g.id}
                                     onClick={() => handleGammeChange(g.id)}
                                   >
                                     {g.badge && <span className="card-badge">{g.badge}</span>}
@@ -1036,12 +1048,11 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                                 ))}
                               </div>
                             </div>
-                            <div className="form-group" id="pack-select-group">
-                              <label htmlFor="pack">
-                                Pack <em className="req">*</em>
-                              </label>
+                            <div className="form-group" id={"step-" + stepDef.id + "-pack-select-group"}>
+                              <label htmlFor={"step-" + stepDef.id + "-pack"}>Pack <em className="req">*</em></label>
                               <select
-                                id="pack"
+                                id={"step-" + stepDef.id + "-pack"}
+                                name="pack"
                                 className="form-control"
                                 required
                                 value={form.pack || ""}
@@ -1062,26 +1073,24 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                               <small className="field-hint">Sélectionnez le pack adapté à votre gamme.</small>
                             </div>
 
-                            {/* #9 Détail du pack */}
+                            {/* Détail du pack */}
                             {currentPack && (
-                              <div className="pack-detail" id="packDetail" style={{ display: "block" }}>
+                              <div className="pack-detail" id={"step-" + stepDef.id + "-pack-detail"} style={{ display: "block" }}>
                                 <div className="pack-detail-head">
                                   <div>
-                                    {currentPack.badge && (
-                                      <span className="pack-detail-badge">{currentPack.badge}</span>
-                                    )}
-                                    <h4 id="pdName">{currentPack.label}</h4>
+                                    {currentPack.badge && <span className="pack-detail-badge">{currentPack.badge}</span>}
+                                    <h4 id={"step-" + stepDef.id + "-pack-name"}>{currentPack.label}</h4>
                                     {currentPack.usd && (
-                                      <p className="pack-detail-usd" id="pdUsd">
+                                      <p className="pack-detail-usd" id={"step-" + stepDef.id + "-pack-usd"}>
                                         {currentPack.usd} $ / mois
                                       </p>
                                     )}
                                   </div>
-                                  <div className="pack-detail-price" id="pdPrice">
+                                  <div className="pack-detail-price" id={"step-" + stepDef.id + "-pack-price"}>
                                     {fmtFCFA(currentPack.priceFCFA)} / mois
                                   </div>
                                 </div>
-                                <ul className="pack-detail-features" id="pdFeatures">
+                                <ul className="pack-detail-features" id={"step-" + stepDef.id + "-pack-features"}>
                                   {(currentPack.features?.[locale] || []).map((f, i) => (
                                     <li key={i}>{f}</li>
                                   ))}
@@ -1101,6 +1110,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                                   <input
                                     type="checkbox"
                                     value={opt.id}
+                                    name={"opt-" + stepDef.id + "-" + opt.id}
                                     checked={form.options?.includes(opt.id)}
                                     onChange={(e) => {
                                       const checked = e.target.checked;
@@ -1121,10 +1131,23 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                         )}
                       </section>
 
+                      {/* Erreurs de validation de l'étape (affichées sur toutes les étapes) */}
+                      {errors.length > 0 && (
+                        <div id={"step-errors-" + stepDef.id} className="form-errors" style={{ display: "block", marginTop: 16, marginBottom: 16, padding: 12, background: "#fdecea", border: "1px solid #e74c3c", borderRadius: 8, color: "#c0392b" }}>
+                          <strong style={{ display: "block", marginBottom: 6 }}>⚠ Veuillez corriger les erreurs suivantes avant de continuer :</strong>
+                          <ul style={{ marginTop: 0, paddingLeft: 20, marginBottom: 0 }}>
+                            {errors.map((m, i) => (
+                              <li key={i}>{m}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
                       {/* #5 Checkbox noImmat (domiciliation) */}
                       {spec.noImmat && stepDef.id === 1 && (
                         <div
                           className="form-group"
+                          id={"step-" + stepDef.id + "-noimmat"}
                           style={{
                             background: "var(--color-bg-alt)",
                             padding: "12px 14px",
@@ -1148,7 +1171,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           >
                             <input
                               type="checkbox"
-                              id="opt-no-immat"
+                              id={"step-" + stepDef.id + "-noimmat-checkbox"}
+                              name="noImmat"
                               className="fp-check"
                               style={{ marginTop: 3 }}
                               checked={form.noImmat}
@@ -1161,12 +1185,12 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
 
                       <div className="btn-group">
                         {stepDef.id > 1 && (
-                          <button type="button" className="btn btn-outline" onClick={() => stepDef.id === TOTAL_STEPS ? goToStep(TOTAL_STEPS - 1) : domPrev()}>
+                          <button type="button" className="btn btn-outline" onClick={() => domPrev()}>
                             {t.btnBack || "← Précédent"}
                           </button>
                         )}
                         {stepDef.id < TOTAL_STEPS ? (
-                          <button type="button" className="btn btn-primary" onClick={domNext}>
+                          <button type="button" className="btn btn-primary" onClick={domNext} disabled={stepDef.id !== step}>
                             {t.btnContinue || "Suivant →"}
                           </button>
                         ) : null}
@@ -1174,7 +1198,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                     </div>
                   ))}
 
-                  {step === TOTAL_STEPS && (
+                  {step === TOTAL_STEPS && !spec.steps.some((s) => s.id === TOTAL_STEPS) && (
                     <div className="tunnel-step-content active" data-step={TOTAL_STEPS}>
                       <section className="form-section">
                         <h2 className="form-section-title">
@@ -1191,7 +1215,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                             <label key={cb.name} className="checkbox-line validation-line">
                               <input
                                 type="checkbox"
-                                id={cb.name}
+                                id={"step-" + TOTAL_STEPS + "-" + cb.name}
+                                name={cb.name}
                                 required={cb.required}
                                 checked={form[cb.name]}
                                 onChange={(e) => set(cb.name, e.target.checked)}
@@ -1241,26 +1266,12 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                                   {spec.invoiceDetail.companyName || "FEDPAWA CORPORATE SOLUTIONS SARL"}
                                 </strong>
                                 <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
-                                  {spec.invoiceDetail.companyNiu && (
-                                    <>
-                                      NIU : {spec.invoiceDetail.companyNiu}<br />
-                                    </>
-                                  )}
-                                  {spec.invoiceDetail.companyRccm && (
-                                    <>
-                                      RCCM : {spec.invoiceDetail.companyRccm}<br />
-                                    </>
-                                  )}
-                                  {spec.invoiceDetail.companyAddress && (
-                                    <>
-                                      Siège Social : {spec.invoiceDetail.companyAddress}<br />
-                                    </>
-                                  )}
-                                  {spec.invoiceDetail.companyPhone && spec.invoiceDetail.companyEmail && (
-                                    <>
-                                      {spec.invoiceDetail.companyPhone} · {spec.invoiceDetail.companyEmail}
-                                    </>
-                                  )}
+                                  {spec.invoiceDetail.companyNiu && <>{`NIU : ${spec.invoiceDetail.companyNiu}<br />`}</>}
+                                  {spec.invoiceDetail.companyRccm && <>{`RCCM : ${spec.invoiceDetail.companyRccm}<br />`}</>}
+                                  {spec.invoiceDetail.companyAddress && <>{`Siège Social : ${spec.invoiceDetail.companyAddress}<br />`}</>}
+                                  {spec.invoiceDetail.companyPhone && spec.invoiceDetail.companyEmail && <>{
+                                    `${spec.invoiceDetail.companyPhone} · ${spec.invoiceDetail.companyEmail}`
+                                  }</>}
                                 </div>
                               </div>
                               <div style={{ textAlign: "right" }}>
@@ -1345,7 +1356,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           </div>
                         )}
 
-                        {/* Fallback facture simplifiée */}
+                        {/* Facture simplifiée (fallback) */}
                         {!spec.invoiceDetail && spec.invoice && (
                           <div className="invoice-summary" style={{ marginTop: 24, padding: 16, background: "#fdfcf9", borderRadius: 8, border: "1px solid rgba(212,175,55,0.2)" }}>
                             <div style={{ fontWeight: 700, marginBottom: 8, fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "0.08em" }}>
@@ -1372,12 +1383,12 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           </div>
                         )}
 
-                        {/* #15 Bouton de paiement avec montant */}
+                        {/* Bouton de paiement avec montant */}
                         <button
                           type="button"
                           className="btn btn-primary btn-block"
                           style={{ marginTop: 16 }}
-                          onClick={openPayModal}
+                          onClick={() => domNext()}
                         >
                           {spec.payButton?.label?.replace("{amount}", totalPrice.toLocaleString("fr-FR")) ||
                            (spec.invoiceDetail || spec.invoice ? `Payer ${totalPrice.toLocaleString("fr-FR")} FCFA (Mobile Money)` : "Valider")}
@@ -1490,19 +1501,29 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
         </div>
       )}
 
-      {showPayModal && (
-        <PayModal
-          config={{
-            label: spec.priceLabel || spec.serviceName,
-            priceFCFA: totalPrice,
-            contract: spec.contract ?? false,
-            onSubmit: handlePaySubmit,
-            onSuccessCloseUrl: routes.espaceClient,
-            labels: {} as any,
-          }}
-          onClose={closePayModal}
-        />
+      {step === "email" && (
+        <div className="tunnel-step-content active" data-step="email">
+          <section className="form-section">
+            <h2 className="form-section-title">
+              <span className="form-section-num">3</span> En attente de signature
+            </h2>
+            <p className="section-intro">
+              Votre dossier est en attente de signature. Un lien vous sera envoyÃ© par e-mail
+              pour procÃ©der Ã  la signature Ã©lectronique du contrat.
+            </p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+              <button
+                type="button"
+                onClick={() => domPrev()}
+                className="btn btn-outline"
+              >
+                ← Retour
+              </button>
+            </div>
+          </section>
+        </div>
       )}
+
     </>
   );
 }
