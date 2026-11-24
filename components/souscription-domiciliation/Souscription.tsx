@@ -23,7 +23,6 @@ import { apiAuthPost, fetchMe } from "@/lib/auth";
 import { emailNonVerifieMessage, isEmailNonVerifieError } from "@/lib/verification";
 import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 import { routesFor } from "@/lib/routes";
-import PayModal from "./PayModal";
 import {
   PACKS,
   PACK_DETAILS,
@@ -140,7 +139,6 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [showSuccess, setShowSuccess] = useState(false);
   const [smartModal, setSmartModal] = useState<"closed" | "open" | "blocked">("closed");
-  const [showPayModal, setShowPayModal] = useState(false);
   const [kycDone, setKycDone] = useState<string | null>(null); // statut KYC si déjà fourni
   const [dragOver, setDragOver] = useState<string | null>(null);
   const stepRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -571,7 +569,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
     (verif.gateOpen && verif.status !== "anonymous" && verif.status !== "verified");
   const resumePending = !!savedDraft && !draftResolved;
   const showResumeModal =
-    resumePending && !gateModalOpen && smartModal === "closed" && !showPayModal;
+    resumePending && !gateModalOpen && smartModal === "closed";
 
   return (
     <>
@@ -1538,7 +1536,7 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
                         type="button"
                         id="invoicePayBtn"
                         className="btn btn-primary btn-block"
-                        onClick={() => setShowPayModal(true)}
+                        onClick={() => {}}
                       >
                         {t.btnPay} ({total.toLocaleString("fr-FR")} FCFA)
                       </button>
@@ -1736,23 +1734,6 @@ export default function Souscription({ locale = "fr" }: SouscriptionProps) {
         </div>
       )}
 
-      {/* ============== PAYMODAL (fedpawa-pay répliqué) ============== */}
-      {showPayModal && (
-        <PayModal
-          config={{
-            label:
-              (currentPack?.label ?? t.invoiceDomiciliation) +
-              " — " +
-              (t[PERIODICITES[form.periodicite].key] ?? ""),
-            priceFCFA: total,
-            contract: true,
-            onSubmit: submitSouscription,
-            onSuccessCloseUrl: routes.espaceClient,
-            labels: t,
-          }}
-          onClose={() => setShowPayModal(false)}
-        />
-      )}
     </>
   );
 }
