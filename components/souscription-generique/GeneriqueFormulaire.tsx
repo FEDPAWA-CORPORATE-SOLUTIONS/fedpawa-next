@@ -338,6 +338,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   const DRAFT_KEY = spec.localStorageKey;
   const stepLabels = spec.steps.map((s) => s.title);
 
+  console.log("[DEBUG-DRAFT] Premier rendu composant", { step, savedDraft: !!savedDraft, draftResolved, hasLocalStorage: typeof window !== 'undefined' && !!localStorage.getItem(DRAFT_KEY) });
+
   const set = (key: string, value: any) =>
     setForm((f) => ({ ...f, [key]: value }));
 
@@ -405,7 +407,20 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   }, []);
 
   useEffect(() => {
-    if (!draftResolved) return;
+    // Ne pas sauvegarder l'état initial vide
+    // Ne pas écraser le draft en attente de reprise (modal affiché)
+    const isEmpty =
+      step < 1 ||
+      Object.values(form).every(
+        (v) =>
+          v === "" ||
+          v === false ||
+          v === null ||
+          v === undefined ||
+          (Array.isArray(v) && v.length === 0)
+    );
+    if (isEmpty) return;
+    if (!!savedDraft && !draftResolved) return;
     try {
       const draft: any = { ...form, step, savedAt: new Date().toISOString() };
       delete draft.files;
@@ -414,7 +429,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     } catch {
       /* quota / navigation privée */
     }
-  }, [form, step, draftResolved, DRAFT_KEY]);
+  }, [form, step, savedDraft, draftResolved, DRAFT_KEY]);
 
   // ---------- Verrou du scroll pendant modale de reprise ----------
   useEffect(() => {
@@ -426,8 +441,10 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   }, [savedDraft, draftResolved, spec.lockScroll]);
 
   const resumeDraft = () => {
+    console.log("[DEBUG-DRAFT] resumeDraft appelé", { savedDraft: !!savedDraft, draftResolved });
     const d = savedDraft;
     if (d) {
+      console.log("[DEBUG-DRAFT] resumeDraft - données trouvées", { step: d.step });
       setForm((prev: any) => ({ ...prev, ...d }));
       if (d.step >= 1 && d.step <= TOTAL_STEPS) setStep(d.step);
     }
@@ -519,6 +536,17 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       if (!f[radioKey]) {
         errs.push("Veuillez sélectionner une option");
       }
+    }
+
+    // Checkboxes requises de l'étape (ex: CGV, cadre, exactitude à l'étape KYC)
+    if (stepDef.checkboxes) {
+      stepDef.checkboxes.forEach((cb) => {
+        if (cb.required && !form[cb.name]) {
+          errs.push(cb.errorRequired || "Champ requis");
+          if (!fieldErrs[cb.name]) fieldErrs[cb.name] = [];
+          fieldErrs[cb.name].push(cb.errorRequired || "Champ requis");
+        }
+      });
     }
 
     // Gamme et pack sont déjà validés comme fields normaux
@@ -981,16 +1009,14 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                                 onChange={(e) => set("pack", e.target.value)}
                               >
                                 <option value="" disabled>Sélectionner le pack</option>
-                                {(spec.packs || [])
-                                  .filter((p) => {
-                                    const gamme = spec.gammes?.find((g) => g.id === form.gamme);
-                                    return gamme?.packs?.some((gp) => gp.id === p.id);
-                                  })
-                                  .map((p) => (
+                                {(() => {
+                                  const gamme = spec.gammes?.find((g) => g.id === form.gamme);
+                                  return (gamme?.packs || []).map((p) => (
                                     <option key={p.id} value={p.id}>
                                       {p.label} ({fmtFCFA(p.priceFCFA)} / mois)
                                     </option>
-                                  ))}
+                                  ));
+                                })()}
                               </select>
                               <small className="field-hint">Sélectionnez le pack adapté à votre gamme.</small>
                             </div>
@@ -1065,6 +1091,21 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                         </div>
                       )}
 
+                      {/* Checkboxes de l'étape (ex: CGV, cadre, exactitude sur l'étape KYC) */}
+                      {stepDef.checkboxes?.map((cb) => (
+                        <label key={cb.name} className="checkbox-line validation-line" style={{ display: "flex", alignItems: "flex-start", gap: 8, marginTop: 10 }}>
+                          <input
+                            type="checkbox"
+                            id={"step-" + stepDef.id + "-" + cb.name}
+                            name={cb.name}
+                            required={cb.required}
+                            checked={form[cb.name] === true}
+                            onChange={(e) => set(cb.name, e.target.checked)}
+                          />
+                          <span>{cb.label}</span>
+                        </label>
+                      ))}
+
                       {/* #5 Checkbox noImmat (domiciliation) */}
                       {spec.noImmat && stepDef.id === 1 && (
                         <div
@@ -1115,7 +1156,12 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           <button type="button" className="btn btn-primary" onClick={domNext} disabled={stepDef.id !== step}>
                             {t.btnContinue || "Suivant →"}
                           </button>
-                        ) : null}
+                        ) : (
+                          <button type="button" className="btn btn-primary btn-block" onClick={handleSubmit} disabled={stepDef.id !== step} style={{ marginTop: 16 }}>
+                            {spec.payButton?.label?.replace("{amount}", totalPrice.toLocaleString("fr-FR")) ||
+                             (spec.invoiceDetail || spec.invoice ? `Payer ${totalPrice.toLocaleString("fr-FR")} FCFA (Mobile Money)` : "Valider et souscrire")}
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1381,7 +1427,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
 
       {showResumeModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(8,12,24,0.55)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-          <div role="dialog" aria-modal="true" aria-label="Reprise de brouillon" style={{ background: "var(--color-bg-main)", borderRadius: 14, maxWidth: 520, width: "100%", padding: 28, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", border: "1px solid var(--color-border)" }}>
+          <div role="dialog" aria-modal="true" aria-label="Reprise de brouillon" style={{ background: "linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%)", borderRadius: 14, maxWidth: 520, width: "100%", padding: 28, boxShadow: "0 20px 60px rgba(0,0,0,0.3)", border: "1px solid var(--color-border)" }}>
             <h3 style={{ fontSize: "1.1rem", marginBottom: 8 }}>Reprise de votre progression</h3>
             <p style={{ fontSize: "0.88rem", color: "var(--color-text-muted)", lineHeight: 1.55, marginBottom: 18 }}>
               Vous avez une progression enregistrée. Voulez-vous la reprendre ou recommencer ?
