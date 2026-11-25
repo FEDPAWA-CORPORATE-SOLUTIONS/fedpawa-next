@@ -111,6 +111,15 @@ export interface AdminReplyMailPayload {
 
 export const MAILS_PAR_PAGE = 10;
 
+// ---------- Types : catégories d'utilisateurs ----------
+
+export interface UserCategory {
+  id: number;
+  nom: string;
+  couleur: string;
+  est_systeme: boolean;
+}
+
 // ---------- Repli démo uniquement sur 404 / réseau (0) ----------
 
 function isNotDeployed(e: unknown): boolean {
@@ -434,4 +443,49 @@ function demoCount(): MailsCount {
     non_lus: DEMO_MAILS.filter((m) => !m.lu).length,
     demo: true,
   };
+}
+
+// ---------- Admin : catégories d'utilisateurs ----------
+
+/** GET /admin/mail-categories — liste des catégories. Repli démo si 404. */
+export function adminFetchUserCategories(): Promise<UserCategory[]> {
+  return apiAuthGet<UserCategory[]>(`/api/v1/admin/mail-categories`).catch((e) => {
+    if (isNotDeployed(e)) {
+      return Promise.resolve([
+        { id: 1, nom: 'Utilisateurs inscrits', couleur: '#1a73e8', est_systeme: true },
+        { id: 2, nom: 'Utilisateurs actifs', couleur: '#34a853', est_systeme: true },
+        { id: 3, nom: 'Utilisateurs favoris', couleur: '#fbbc05', est_systeme: true },
+      ]);
+    }
+    throw e;
+  });
+}
+
+/** POST /admin/mail-categories — créer une catégorie. Repli démo si 404. */
+export function adminCreateUserCategory(payload: {
+  nom: string;
+  couleur?: string;
+}): Promise<UserCategory> {
+  return apiAuthPost<UserCategory>(`/api/v1/admin/mail-categories`, payload).catch((e) => {
+    if (isNotDeployed(e)) {
+      // Repli démo : simule une création réussie
+      return Promise.resolve({
+        id: Date.now(),
+        nom: payload.nom,
+        couleur: payload.couleur ?? '#1a73e8',
+        est_systeme: false,
+      });
+    }
+    throw e;
+  });
+}
+
+/** DELETE /admin/mail-categories/{id} — supprimer une catégorie. Repli démo si 404. */
+export function adminDeleteUserCategory(id: number): Promise<{ message: string }> {
+  return apiAuthDelete(`/api/v1/admin/mail-categories/${id}`).catch((e) => {
+    if (isNotDeployed(e)) {
+      return Promise.resolve({ message: 'Catégorie supprimée (démo)' });
+    }
+    throw e;
+  });
 }

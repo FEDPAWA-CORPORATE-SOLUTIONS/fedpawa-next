@@ -2,9 +2,9 @@
 
 // ==========================================================
 // FEDPAWA — Boîte de réception admin (look Gmail)
-// Barre latérale, recherche centrale, onglets catégories,
+// Barre latérale, recherche centrale, onglets catégories dynamiques,
 // liste de mails en 2 lignes, vue détail style Gmail,
-// envoi / réponse / suppression / favori.
+// envoi / réponse / suppression / favori / création de catégories.
 // Données : repli sur DEMO_MAILS si l'API répond 404.
 // ==========================================================
 
@@ -24,6 +24,9 @@ import {
   adminMarquerToutLu,
   adminSendMail,
   adminReplyMail,
+  adminFetchUserCategories,
+  adminCreateUserCategory,
+  adminDeleteUserCategory,
   type MailDetail,
   type MailEnvoye,
   type MailsCount,
@@ -31,6 +34,7 @@ import {
   type MailsEnvoyesPage,
   type MailSummary,
   type AdminSendMailPayload,
+  type UserCategory,
   DEMO_MAILS,
 } from "@/lib/mails";
 
@@ -39,8 +43,6 @@ export interface AdminMailsProps {
 }
 
 type Folder = "inbox" | "favoris" | "envoyes" | "brouillons" | "corbeille";
-
-type Tab = "inscrits" | "actifs" | "favoris" | "nouvelle-categorie";
 
 function fmtDate(iso: string | null | undefined, locale: Locale): string {
   if (!iso) return "—";
@@ -66,7 +68,8 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   // ---------- États de navigation ----------
   const [view, setView] = useState<"liste" | "detail" | "nouveau" | "repondre">("liste");
   const [folder, setFolder] = useState<Folder>("inbox");
-  const [tab, setTab] = useState<Tab>("inscrits");
+  const [categories, setCategories] = useState<UserCategory[]>([]);
+  const [activeCategorieId, setActiveCategorieId] = useState<number | null>(null);
   const [selectedMailId, setSelectedMailId] = useState<number | null>(null);
   const [detail, setDetail] = useState<MailDetail | null>(null);
   const [detailDemo, setDetailDemo] = useState(false);
@@ -96,6 +99,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [formTexte, setFormTexte] = useState("");
   const [formPiecesJointes, setFormPiecesJointes] = useState<File[]>([]);
 
+  // ---------- États création catégorie ----------
+  const [nouvelleCategorie, setNouvelleCategorie] = useState<{ nom: string; couleur: string }>({ nom: "", couleur: "#1a73e8" });
+  const [creerCategorieOuvert, setCreerCategorieOuvert] = useState(false);
+
   // ---------- Chargement des mails ----------
   const [resp, setResp] = useState<MailsPage<MailSummary> | null>(null);
   const [count, setCount] = useState<MailsCount | null>(null);
@@ -111,6 +118,13 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   useEffect(() => {
     loadEnvoyes();
   }, [loadEnvoyes]);
+
+  useEffect(() => {
+    // Charger les catégories au montage
+    adminFetchUserCategories()
+      .then(setCategories)
+      .catch(() => setCategories([]));
+  }, []);
 
   useEffect(() => {
     const h = setTimeout(() => {
@@ -141,25 +155,21 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     load();
   }, [load]);
 
-  // ---------- Données affichées (démo ou API) ----------
+  // ---------- Données affichées ----------
   const mailsDisplay = useMemo(() => {
-    // Si on a de vraies données de l'API, on les utilise.
-    // Sinon, repli sur DEMO_MAILS filtrés par dossier.
     const apiMails = resp?.data ?? [];
     if (apiMails.length > 0 && !(resp?.demo)) {
       return apiMails;
     }
-    // Repli démo : filtrer selon le dossier sélectionné
     let list = [...DEMO_MAILS];
     switch (folder) {
       case "inbox":
-        // Tous les mails reçus (ce sont tous des mails reçus dans la démo)
         break;
       case "favoris":
-        list = list.filter((m) => !m.lu); // approximation : non lus = favoris
+        list = list.filter((m) => !m.lu);
         break;
       case "envoyes":
-        list = []; // pas de mails envoyés dans la démo reçus
+        list = [];
         break;
       case "brouillons":
         list = [];
@@ -173,7 +183,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     if (r) {
       list = list.filter((m) => m.expediteur.toLowerCase().includes(r) || m.sujet.toLowerCase().includes(r));
     }
-    return list.map((m) => ({ ...m, id: m.id, expediteur: m.expediteur, sujet: m.sujet, recu_le: m.recu_le, lu: m.lu }));
+    return list.map((m) => ({ ...m }));
   }, [resp, folder, filtre, rechercheAppliquee]);
 
   // ---------- Actions ----------
@@ -307,7 +317,6 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   };
 
   const supprimerMail = (id: number) => {
-    // Simulation : on retire de la liste affichée
     setResp((r) =>
       r ? { ...r, data: r.data.filter((m) => m.id !== id) } : r,
     );
@@ -317,8 +326,51 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   };
 
   const basculerFavori = (id: number) => {
-    // Simulation : marque comme lu/non lu pour l'exemple
     appliquerLuLocal(id);
+  };
+
+  // ---------- Actions catégories ----------
+  const ouvrirCreerCategorie = () => {
+    setNouvelleCategorie({ nom: "", couleur: "#1a73e8" });
+    setCreerCategorieOuvert(true);
+  };
+
+  const annulerCreerCategorie = () => {
+    setCreerCategorieOuvert(false);
+  };
+
+  const creerCategorie = async () => {
+    if (!nouvelleCategorie.nom.trim()) return;
+    setBusy(true);
+    try {
+      const categorie = await adminCreateUserCategory({
+        nom: nouvelleCategorie.nom.trim(),
+        couleur: nouvelleCategorie.couleur,
+      });
+      setCategories((prev) => [...prev, categorie]);
+      setActiveCategorieId(categorie.id);
+      setCreerCategorieOuvert(false);
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Échec de la création de la catégorie.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const supprimerCategorie = async (id: number) => {
+    if (!window.confirm("Supprimer cette catégorie ?")) return;
+    setBusy(true);
+    try {
+      await adminDeleteUserCategory(id);
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      if (activeCategorieId === id) {
+        setActiveCategorieId(null);
+      }
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Échec de la suppression.");
+    } finally {
+      setBusy(false);
+    }
   };
 
   // ---------- Corps HTML assaini ----------
@@ -339,7 +391,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       a.remove();
       URL.revokeObjectURL(objectUrl);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Téléchargement impossible.", "error");
+      console.error("Téléchargement impossible:", err);
     }
   };
 
@@ -417,33 +469,79 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
           </button>
         </div>
 
-        {/* Onglets catégories */}
+        {/* Onglets catégories (dynamiques depuis l'API) */}
         <div className="gmail-tabs">
-          <button
-            className={`gmail-tab ${tab === "inscrits" ? "active" : ""}`}
-            onClick={() => setTab("inscrits")}
-          >
-            Utilisateurs inscrits
-          </button>
-          <button
-            className={`gmail-tab ${tab === "actifs" ? "active" : ""}`}
-            onClick={() => setTab("actifs")}
-          >
-            Utilisateurs actifs
-          </button>
-          <button
-            className={`gmail-tab ${tab === "favoris" ? "active" : ""}`}
-            onClick={() => setTab("favoris")}
-          >
-            Utilisateurs favoris
-          </button>
+          {categories.map((categorie) => (
+            <button
+              key={categorie.id}
+              className={`gmail-tab ${activeCategorieId === categorie.id ? "active" : ""}`}
+              style={{ borderLeft: `3px solid ${categorie.couleur}` }}
+              onClick={() => setActiveCategorieId(categorie.id)}
+            >
+              {categorie.nom}
+              {!categorie.est_systeme && (
+                <button
+                  type="button"
+                  className="gmail-tab-delete"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    supprimerCategorie(categorie.id);
+                  }}
+                >
+                  ✕
+                </button>
+              )}
+            </button>
+          ))}
           <button
             className="gmail-tab gmail-tab-add"
-            onClick={() => setTab("nouvelle-categorie")}
+            onClick={ouvrirCreerCategorie}
           >
             + Créer une catégorie
           </button>
         </div>
+
+        {/* Modal création catégorie */}
+        {creerCategorieOuvert && (
+          <div className="gmail-modal-overlay" onClick={annulerCreerCategorie}>
+            <div className="gmail-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>Nouvelle catégorie</h3>
+              <div className="gmail-modal-field">
+                <label>Nom de la catégorie</label>
+                <input
+                  type="text"
+                  className="gmail-compose-input"
+                  value={nouvelleCategorie.nom}
+                  onChange={(e) => setNouvelleCategorie({ ...nouvelleCategorie, nom: e.target.value })}
+                  placeholder="ex: Utilisateurs premium"
+                  autoFocus
+                />
+              </div>
+              <div className="gmail-modal-field">
+                <label>Couleur</label>
+                <input
+                  type="color"
+                  className="gmail-compose-input gmail-color-input"
+                  value={nouvelleCategorie.couleur}
+                  onChange={(e) => setNouvelleCategorie({ ...nouvelleCategorie, couleur: e.target.value })}
+                />
+              </div>
+              <div className="gmail-modal-actions">
+                <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerCreerCategorie}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="gmail-btn gmail-btn-primary"
+                  onClick={creerCategorie}
+                  disabled={busy || !nouvelleCategorie.nom.trim()}
+                >
+                  {busy ? "Création…" : "Créer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Filtres rapides */}
         {view === "liste" && (
@@ -793,7 +891,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   className="gmail-btn gmail-btn-primary"
                   disabled={busy || !formDest || !formSujet || !formTexte}
                 >
-                  {busy ? "Envoi en cours..." : "Envoyer"}
+                  {busy ? "Envoi en cours…" : "Envoyer"}
                 </button>
               </div>
             </form>
@@ -804,10 +902,4 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       </main>
     </div>
   );
-}
-
-// Helper toast minimal (à remplacer par votre système de toast si existant)
-function toast(message: string, type: "error" | "success" = "error") {
-  // eslint-disable-next-line no-console
-  console.log(`[${type}] ${message}`);
 }
