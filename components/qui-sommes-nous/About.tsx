@@ -1,52 +1,95 @@
 // ==========================================================
-// FEDPAWA — Qui sommes-nous : Hero, Histoire & Vision, Galerie
-// (lightbox), Chiffres (compteurs animés), 4 Piliers, Pôles,
-// Comparaison, CTA, Modale RDV. Conversion de qui-sommes-nous.php.
-// Interactivité : lightbox (gallery.js), compteurs (about.js),
-// modale RDV (about.js) → "use client".
-// ==========================================================
-
-"use client";
-
+// FEDPAWA — Qui sommes-nous : version unifiée (style approuvé)
+// Style "about-vision-box" appliqué aux 3 sections à 4 éléments.
+// Histoire & Vision déplacée en avant-dernière position.
+// Lightbox désactivée.
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
-import Carousel from "./Carousel";
 
 export interface AboutProps {
   locale?: Locale;
 }
 
-/** Item de galerie source : image + classe taille + légende. */
-// 12 images uniformisées 736×736 extraites de QUI_final.zip (crop centré équitable).
-const GALLERY: {
+/** Bloc de style "about-vision-box" : fond bleu #1A237E, bordure gauche or,
+ * padding 40px, texte blanc, image en haut, titre h3 sans emoji, texte p dessous.
+ * Lightbox désactivée (pas de onClick sur les images).
+ */
+function AboutBoxElement({
+  img,
+  title,
+  text,
+}: {
   img: string;
-  cls: string;
-  captionFr: string;
-  captionEn: string;
-  altFr: string;
-  altEn: string;
-}[] = [
-  { img: "qui_1", cls: "", captionFr: "Découverte FEDPAWA", captionEn: "Discover FEDPAWA", altFr: "Image FEDPAWA 1", altEn: "FEDPAWA image 1" },
-  { img: "qui_2", cls: "", captionFr: "Espace FEDPAWA", captionEn: "FEDPAWA Space", altFr: "Image FEDPAWA 2", altEn: "FEDPAWA image 2" },
-  { img: "qui_3", cls: "", captionFr: "Univers FEDPAWA", captionEn: "FEDPAWA Universe", altFr: "Image FEDPAWA 3", altEn: "FEDPAWA image 3" },
-  { img: "qui_4", cls: "", captionFr: "Médias & Vidéos", captionEn: "Media & Videos", altFr: "Médias et vidéos verticales", altEn: "Vertical media and videos" },
-  { img: "qui_5", cls: "", captionFr: "Stratégie d'Entreprise", captionEn: "Corporate Strategy", altFr: "Stratégie d'entreprise", altEn: "Corporate strategy" },
-  { img: "qui_6", cls: "", captionFr: "Numérisation & Digitalisation", captionEn: "Digitization & Digitalization", altFr: "Numérisation et digitalisation", altEn: "Digitization and digitalization" },
-  { img: "qui_7", cls: "", captionFr: "Formalités en Ligne", captionEn: "Online Formalities", altFr: "Formalités administratives en ligne", altEn: "Online administrative formalities" },
-  { img: "qui_8", cls: "", captionFr: "Bien-être & Ergonomie", captionEn: "Wellness & Ergonomics", altFr: "Bien-être et ergonomie au travail", altEn: "Wellness and ergonomics at work" },
-  { img: "qui_9", cls: "", captionFr: "Services aux Talents", captionEn: "Talent Services", altFr: "Services aux talents", altEn: "Talent services" },
-  { img: "qui_10", cls: "", captionFr: "Cession d'Entreprise", captionEn: "Business Exit", altFr: "Raisons de cession d'entreprise", altEn: "Business owners selling reasons" },
-  { img: "qui_11", cls: "", captionFr: "Transition 5.0", captionEn: "Transition 5.0", altFr: "Transition industrielle 5.0", altEn: "Industry transition 5.0" },
-  { img: "qui_12", cls: "", captionFr: "Téléphonie d'Entreprise", captionEn: "Business Phone Systems", altFr: "Système téléphonique d'entreprise", altEn: "Business phone systems" },
-];
+  title: string;
+  text: string;
+}) {
+  return (
+    <div
+      className="about-vision-box"
+      style={{
+        cursor: "default",
+        transition: "all 0.3s ease",
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)";
+        (e.currentTarget as HTMLElement).style.boxShadow =
+          "0 15px 40px rgba(26, 35, 126, 0.35)";
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLElement).style.boxShadow =
+          "0 10px 30px rgba(26, 35, 126, 0.2)";
+      }}
+    >
+      <div className="about-vision-photo" style={{ marginBottom: "16px" }}>
+        <picture>
+          <source type="image/webp" srcSet={`/assets/images/${img}.webp`} />
+          <img
+            src={`/assets/images/${img}.jpg`}
+            alt={title}
+            loading="lazy"
+            style={{
+              width: "100%",
+              height: 200,
+              objectFit: "cover",
+              display: "block",
+              borderRadius: 8,
+            }}
+          />
+        </picture>
+      </div>
+      <h3
+        style={{
+          color: "#fff",
+          fontSize: "1.4rem",
+          margin: "0 0 12px 0",
+          lineHeight: 1.3,
+          fontWeight: 800,
+        }}
+      >
+        {title}
+      </h3>
+      <p
+        style={{
+          fontSize: "0.95rem",
+          color: "rgba(255,255,255,0.85)",
+          lineHeight: 1.7,
+          margin: 0,
+        }}
+      >
+        {text}
+      </p>
+    </div>
+  );
+}
 
 export default function About({ locale = "fr" }: AboutProps) {
   const t = getPageDictionary(locale, "qui-sommes-nous");
   const routes = routesFor(locale);
 
-  // Lightbox (gallery.js) : image haute résolution + overflow bloqué.
+  // Lightbox désactivée — conservée pour la structure DOM mais sans interaction
   const [lightboxSrc, setLightboxSrc] = useState<string | null>(null);
   useEffect(() => {
     document.body.style.overflow = lightboxSrc ? "hidden" : "";
@@ -55,7 +98,7 @@ export default function About({ locale = "fr" }: AboutProps) {
     };
   }, [lightboxSrc]);
 
-  // Compteurs animés (about.js) : IntersectionObserver + incrément 10ms.
+  // Compteurs animés (inchangés)
   const counters: { target: number; decimals: number; suffix: string }[] = [
     { target: 300, decimals: 0, suffix: t.stat1Suffix },
     { target: 17, decimals: 0, suffix: t.stat2Suffix },
@@ -63,7 +106,7 @@ export default function About({ locale = "fr" }: AboutProps) {
     { target: 100, decimals: 0, suffix: t.stat4Suffix },
   ];
   const [counterValues, setCounterValues] = useState<number[]>(
-    counters.map(() => 0),
+    counters.map(() => 0)
   );
   const statsRef = useRef<HTMLDivElement | null>(null);
   const animated = useRef(false);
@@ -75,7 +118,6 @@ export default function About({ locale = "fr" }: AboutProps) {
       (entries) => {
         if (!entries[0].isIntersecting || animated.current) return;
         animated.current = true;
-        // Réplique about.js : durée 2000ms, tick 10ms.
         const speed = 2000;
         counters.forEach((c, i) => {
           const increment = c.target / (speed / 10);
@@ -100,14 +142,13 @@ export default function About({ locale = "fr" }: AboutProps) {
           tick();
         });
       },
-      { threshold: 0.5 },
+      { threshold: 0.5 }
     );
     observer.observe(el);
     return () => observer.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Modale Rendez-vous (about.js) : trigger data-modal-trigger + overlay.
+  // Modale Rendez-vous (inchangée)
   const [rdvOpen, setRdvOpen] = useState(false);
   const [rdvSent, setRdvSent] = useState(false);
   useEffect(() => {
@@ -117,8 +158,85 @@ export default function About({ locale = "fr" }: AboutProps) {
     };
   }, [rdvOpen]);
 
-  const openLightbox = (img: string) => {
-    setLightboxSrc(`/assets/images/${img}.jpg`);
+  const openLightbox = () => {
+    // Désactivé : pas de lightbox
+  };
+
+  // ========== DONNÉES DES 3 SECTIONS À 4 ÉLÉMENTS CHACUNE ==========
+  const piliersElements = [
+    {
+      img: "qui_1",
+      title: t.pillar1Title,
+      text: t.pillar1Text,
+    },
+    {
+      img: "qui_7",
+      title: t.pillar2Title,
+      text: t.pillar2Text,
+    },
+    {
+      img: "qui_11",
+      title: t.pillar3Title,
+      text: t.pillar3Text,
+    },
+    {
+      img: "qui_8",
+      title: t.pillar4Title,
+      text: t.pillar4Text,
+    },
+  ];
+
+  const savoirFaireElements = [
+    {
+      img: "qui_10",
+      title: t.pole1Title,
+      text: `${t.pole1Obj} ${t.pole1Item1} ${t.pole1Item2} ${t.pole1Item3}`,
+    },
+    {
+      img: "qui_4",
+      title: t.pole2Title,
+      text: `${t.pole2Obj} ${t.pole2Item1} ${t.pole2Item2} ${t.pole2Item3}`,
+    },
+    {
+      img: "qui_5",
+      title: t.pole3Title,
+      text: `${t.pole3Obj} ${t.pole3Item1} ${t.pole3Item2} ${t.pole3Item3}`,
+    },
+    {
+      img: "qui_2",
+      title: t.pole4Title,
+      text: `${t.pole4Obj} ${t.pole4Item1} ${t.pole4Item2} ${t.pole4Item3}`,
+    },
+  ];
+
+  const differenceElements = [
+    {
+      img: "qui_3",
+      title: t.compareHeadTradition,
+      text: `${t.row1Tradition} ${t.row2Tradition}`,
+    },
+    {
+      img: "qui_9",
+      title: t.compareHeadFedpawa,
+      text: `${t.row1Fedpawa} ${t.row2Fedpawa}`,
+    },
+    {
+      img: "qui_6",
+      title: t.compareHeadCriteria,
+      text: t.row3Criteria,
+    },
+    {
+      img: "qui_12",
+      title: "Notre engagement",
+      text: t.row4Criteria,
+    },
+  ];
+
+  const gridStyle = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+    gap: 32,
+    marginBottom: 40,
   };
 
   return (
@@ -147,59 +265,7 @@ export default function About({ locale = "fr" }: AboutProps) {
         </div>
       </section>
 
-      {/* ============== HISTOIRE & VISION ============== */}
-      <section className="oapi-risk-section">
-        <div className="container">
-          <div className="oapi-risk-grid">
-            <div className="oapi-risk-text">
-              <span className="section-kicker">{t.historyKicker}</span>
-              <h2>{t.historyTitle}</h2>
-              <p>{t.historyText1}</p>
-              <p>{t.historyText2}</p>
-            </div>
-            <div className="about-vision-box">
-              <div className="about-vision-photo">
-                <picture>
-                  <source
-                    type="image/webp"
-                    srcSet="/assets/images/qui_6.webp"
-                  />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src="/assets/images/qui_6.jpg"
-                    alt={t.visionImgAlt}
-                    loading="lazy"
-                  />
-                </picture>
-              </div>
-              <h3>
-                <span>🎯</span> {t.visionTitle.replace("🎯 ", "")}
-              </h3>
-              <p>{t.visionText}</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============== GALERIE PHOTOS ============== */}
-      <section className="section-padding">
-        <div className="container">
-          <div className="gallery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '16px' }}>
-            {GALLERY.map((item, index) => (
-              <div key={index} style={{ height: '300px', overflow: 'hidden', borderRadius: '8px', cursor: 'pointer' }} onClick={() => openLightbox(item.img)}>
-                <img 
-                  src={`/assets/images/${item.img}.jpg`} 
-                  alt={item.altFr} 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-      {/* ============== CHIFFRES CLÉS (compteurs animés) ============== */}
+      {/* ============== CHIFFRES CLÉS (compteurs animés — inchangé) ============== */}
       <section className="stats-section">
         <div className="container">
           <div className="section-header" style={{ marginBottom: 40 }}>
@@ -268,7 +334,7 @@ export default function About({ locale = "fr" }: AboutProps) {
         </div>
       </section>
 
-      {/* ============== 4 PILIERS D'EXCELLENCE ============== */}
+      {/* ============== NOS VALEURS — 4 PILIERS (style about-vision-box) ============== */}
       <section className="section-padding section-alt">
         <div className="container">
           <div className="section-header">
@@ -276,101 +342,30 @@ export default function About({ locale = "fr" }: AboutProps) {
             <h2>{t.pillarsTitle}</h2>
             <p>{t.pillarsIntro}</p>
           </div>
-          <div className="forms-grid">
-            <div className="form-card">
-              <h4>{t.pillar1Title}</h4>
-              <p>{t.pillar1Text}</p>
-            </div>
-            <div className="form-card">
-              <h4>{t.pillar2Title}</h4>
-              <p>{t.pillar2Text}</p>
-            </div>
-            <div className="form-card">
-              <h4>{t.pillar3Title}</h4>
-              <p>{t.pillar3Text}</p>
-            </div>
-            <div className="form-card">
-              <h4>{t.pillar4Title}</h4>
-              <p>{t.pillar4Text}</p>
-            </div>
+          <div style={gridStyle}>
+            {piliersElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ============== PÔLES D'EXPERTISE ============== */}
+      {/* ============== NOTRE SAVOIR-FAIRE — 4 PÔLES (style about-vision-box) ============== */}
       <section className="section-padding">
         <div className="container">
           <div className="section-header">
             <span className="section-kicker">{t.expertiseKicker}</span>
             <h2>{t.expertiseTitle}</h2>
           </div>
-          <div className="solutions-grid">
-            <div className="solution-card">
-              <div className="solution-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-                </svg>
-              </div>
-              <h3>{t.pole1Title}</h3>
-              <span className="obj">{t.pole1Obj}</span>
-              <ul className="solution-list">
-                <li>{t.pole1Item1}</li>
-                <li>{t.pole1Item2}</li>
-                <li>{t.pole1Item3}</li>
-              </ul>
-            </div>
-            <div className="solution-card">
-              <div className="solution-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <circle cx="11" cy="11" r="8" />
-                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                </svg>
-              </div>
-              <h3>{t.pole2Title}</h3>
-              <span className="obj">{t.pole2Obj}</span>
-              <ul className="solution-list">
-                <li>{t.pole2Item1}</li>
-                <li>{t.pole2Item2}</li>
-                <li>{t.pole2Item3}</li>
-              </ul>
-            </div>
-            <div className="solution-card">
-              <div className="solution-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
-                  <line x1="1" y1="10" x2="23" y2="10" />
-                </svg>
-              </div>
-              <h3>{t.pole3Title}</h3>
-              <span className="obj">{t.pole3Obj}</span>
-              <ul className="solution-list">
-                <li>{t.pole3Item1}</li>
-                <li>{t.pole3Item2}</li>
-                <li>{t.pole3Item3}</li>
-              </ul>
-            </div>
-            <div className="solution-card">
-              <div className="solution-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 21h18" />
-                  <path d="M5 21V8l7-5 7 5v13" />
-                  <path d="M9 21v-5h6v5" />
-                </svg>
-              </div>
-              <h3>{t.pole4Title}</h3>
-              <span className="obj">{t.pole4Obj}</span>
-              <ul className="solution-list">
-                <li>{t.pole4Item1}</li>
-                <li>{t.pole4Item2}</li>
-                <li>{t.pole4Item3}</li>
-              </ul>
-            </div>
+          <div style={gridStyle}>
+            {savoirFaireElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* ============== POURQUOI CHOISIR FEDPAWA ============== */}
+      {/* ============== POURQUOI CHOISIR FEDPAWA — 4 ÉLÉMENTS (style about-vision-box) ============== */}
       <section className="comparison-section">
         <div className="container">
           <div className="section-header">
@@ -378,37 +373,41 @@ export default function About({ locale = "fr" }: AboutProps) {
             <h2>{t.compareTitle}</h2>
             <p>{t.compareIntro}</p>
           </div>
-          <table className="comparison-table">
-            <thead>
-              <tr>
-                <th className="col-criteria">{t.compareHeadCriteria}</th>
-                <th className="col-tradition">{t.compareHeadTradition}</th>
-                <th className="col-fedpawa">{t.compareHeadFedpawa}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td className="col-criteria">{t.row1Criteria}</td>
-                <td>{t.row1Tradition}</td>
-                <td className="col-fedpawa">{t.row1Fedpawa}</td>
-              </tr>
-              <tr>
-                <td className="col-criteria">{t.row2Criteria}</td>
-                <td>{t.row2Tradition}</td>
-                <td className="col-fedpawa">{t.row2Fedpawa}</td>
-              </tr>
-              <tr>
-                <td className="col-criteria">{t.row3Criteria}</td>
-                <td>{t.row3Tradition}</td>
-                <td className="col-fedpawa">{t.row3Fedpawa}</td>
-              </tr>
-              <tr>
-                <td className="col-criteria">{t.row4Criteria}</td>
-                <td>{t.row4Tradition}</td>
-                <td className="col-fedpawa">{t.row4Fedpawa}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div style={gridStyle}>
+            {differenceElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============== HISTOIRE & VISION (inchangé, déplacé avant-dernier) ============== */}
+      <section className="oapi-risk-section">
+        <div className="container">
+          <div className="oapi-risk-grid">
+            <div className="oapi-risk-text">
+              <span className="section-kicker">{t.historyKicker}</span>
+              <h2>{t.historyTitle}</h2>
+              <p>{t.historyText1}</p>
+              <p>{t.historyText2}</p>
+            </div>
+            <div className="about-vision-box">
+              <div className="about-vision-photo">
+                <picture>
+                  <source type="image/webp" srcSet="/assets/images/qui_6.webp" />
+                  <img
+                    src="/assets/images/qui_6.jpg"
+                    alt={t.visionImgAlt}
+                    loading="lazy"
+                  />
+                </picture>
+              </div>
+              <h3>
+                <span>🎯</span> {t.visionTitle.replace("🎯 ", "")}
+              </h3>
+              <p>{t.visionText}</p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -423,21 +422,15 @@ export default function About({ locale = "fr" }: AboutProps) {
         </div>
       </section>
 
-      {/* ============== LIGHTBOX ============== */}
+      {/* ============== LIGHTBOX (désactivée) ============== */}
       <div
         className={`lightbox${lightboxSrc ? " open" : ""}`}
         id="lightbox"
-        onClick={(e) => {
-          if (
-            e.target === e.currentTarget ||
-            (e.target as HTMLElement).classList.contains("lightbox-close")
-          ) {
-            setLightboxSrc(null);
-          }
+        onClick={() => {
+          // Désactivé : pas de lightbox
         }}
       >
         <span className="lightbox-close">&times;</span>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={
             lightboxSrc ??
@@ -471,7 +464,6 @@ export default function About({ locale = "fr" }: AboutProps) {
           </div>
           <form
             onSubmit={(e) => {
-              // Comportement source (about.js) : alert + fermeture.
               e.preventDefault();
               window.alert(t.modalSuccess);
               setRdvSent(true);
