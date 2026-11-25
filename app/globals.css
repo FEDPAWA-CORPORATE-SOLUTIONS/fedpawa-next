@@ -4457,4 +4457,130 @@ html[data-mode="dark"] .global-loader-message {
   }
 }
 
+/* ==========================================================
+   FEDPAWA — Boîte de réception admin (Phase 4 — Sélection multiple)
+   Styles pour la sélection multiple, les actions en masse et le tri
+   ========================================================== */
+
+.mail-select-all {
+  width: 18px;
+  height: 18px;
+  margin-right: 12px;
+  accent-color: var(--color-primary);
+}
+
+.mail-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 24px;
+  background: var(--color-primary-soft);
+  border: 1px solid var(--color-primary);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--color-primary);
+}
+
+.mail-bulk-label {
+  font-weight: 600;
+}
+
+.mail-row-selected {
+  background: rgba(21, 41, 77, 0.08);
+}
+
+.mail-row-unread .mail-td-from,
+.mail-row-unread .mail-td-subject {
+  font-weight: 600;
+}
+
+.mail-row-unread .mail-td-from::before,
+.mail-row-unread .mail-td-subject::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: var(--color-primary);
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.mail-row-open {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+.mail-empty {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--color-text-muted);
+  font-size: 1rem;
+}
+
+.mail-validation-error {
+  color: var(--color-danger);
+  font-size: 0.75rem;
+  margin-top: 4px;
+  display: block;
+}
+
+.mail-th-checkbox,
+.mail-td-checkbox {
+  width: 40px;
+  text-align: center;
+}
+
+.mail-th-star,
+.mail-td-star {
+  width: 40px;
+  text-align: center;
+}
+
+.mail-th-from,
+.mail-td-from {
+  min-width: 180px;
+}
+
+.mail-th-subject,
+.mail-td-subject {
+  min-width: 200px;
+}
+
+.mail-th-preview,
+.mail-td-preview {
+  min-width: 250px;
+}
+
+.mail-th-date,
+.mail-td-date {
+  width: 140px;
+  text-align: right;
+}
+
+.mail-th-from,
+.mail-th-subject,
+.mail-th-date {
+  cursor: pointer;
+  user-select: none;
+}
+
+.mail-th-from:hover,
+.mail-th-subject:hover,
+.mail-th-date:hover {
+  color: var(--color-primary);
+}
+
+/* Responsive pour la liste */
+@media (max-width: 900px) {
+  .mail-table {
+    font-size: 0.8rem;
+  }
+  .mail-td-from,
+  .mail-td-subject,
+  .mail-td-preview {
+    min-width: auto;
+  }
+}
+
 

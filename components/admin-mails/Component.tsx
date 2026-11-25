@@ -3,7 +3,7 @@
 // ==========================================================
 // FEDPAWA — Boîte de réception admin (adaptée au design system du site)
 // Barre latérale, recherche centrale, onglets catégories dynamiques,
-// liste de mails en 2 lignes, vue détail style site FEDPAWA,
+// liste de mails en 2 lignes avec sélection multiple, vue détail style site FEDPAWA,
 // envoi / réponse / suppression / favori / création de catégories.
 // Données : repli sur DEMO_MAILS si l'API répond 404.
 // ==========================================================
@@ -86,6 +86,13 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // ---------- Sélection multiple ----------
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [sortBy, setSortBy] = useState<"date" | "sujet" | "expediteur">("date");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [isSelectingRange, setIsSelectingRange] = useState(false);
+  const [rangeStartId, setRangeStartId] = useState<number | null>(null);
+
   // ---------- États d'envoi / réponse ----------
   const [envoyes, setEnvoyes] = useState<MailsEnvoyesPage | null>(null);
   const [envoyesLoading, setEnvoyesLoading] = useState(false);
@@ -107,7 +114,6 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [creerCategorieOuvert, setCreerCategorieOuvert] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [defaultCategoryId, setDefaultCategoryId] = useState<number | null>(null);
-  const [draggingCategoryId, setDraggingCategoryId] = useState<number | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<UserCategory | null>(null);
 
   // ---------- Chargement des mails ----------
@@ -189,8 +195,18 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     if (r) {
       list = list.filter((m) => m.expediteur.toLowerCase().includes(r) || m.sujet.toLowerCase().includes(r));
     }
+    // Tri
+    list.sort((a, b) => {
+      let va: any, vb: any;
+      if (sortBy === "date") va = new Date(a.recu_le).getTime(), vb = new Date(b.recu_le).getTime();
+      else if (sortBy === "sujet") va = (a.sujet || "").toLowerCase(), vb = (b.sujet || "").toLowerCase();
+      else va = (a.expediteur || "").toLowerCase(), vb = (b.expediteur || "").toLowerCase();
+      if (va < vb) return sortDir === "asc" ? -1 : 1;
+      if (va > vb) return sortDir === "asc" ? 1 : -1;
+      return 0;
+    });
     return list.map((m) => ({ ...m }));
-  }, [resp, folder, filtre, rechercheAppliquee]);
+  }, [resp, folder, filtre, rechercheAppliquee, sortBy, sortDir]);
 
   // ---------- Actions ----------
   const ouvrirNouveau = () => {
@@ -264,7 +280,9 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     }
   };
 
-  const ouvrir = (id: number) => {
+  const ouvrir = (id: number, e?: React.MouseEvent) => {
+    // Si Ctrl/Cmd+clic, ouvrir dans un nouvel onglet (géré par le navigateur)
+    if (e && (e.ctrlKey || e.metaKey)) return;
     setSelectedMailId(id);
     setDetailLoading(true);
     setDetail(null);
@@ -329,10 +347,108 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     if (selectedMailId === id) {
       fermerDetail();
     }
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   const basculerFavori = (id: number) => {
     appliquerLuLocal(id);
+  };
+
+  // ---------- Actions sélection multiple ----------
+  const toggleSelect = (id: number, e?: React.MouseEvent) => {
+    // Shift+clic pour sélection par plage
+    if (e && e.shiftKey && rangeStartId !== null) {
+      const ids = mailsDisplay.map((m) => m.id);
+      const startIdx = ids.indexOf(rangeStartId);
+      const endIdx = ids.indexOf(id);
+      if (startIdx !== -1 && endIdx !== -1) {
+        const [min, max] = [startIdx, endIdx].sort((a, b) => a - b);
+        const rangeIds = ids.slice(min, max + 1);
+        setSelectedIds((prev) => {
+          const next = new Set(prev);
+          rangeIds.forEach((id) => next.add(id));
+          return next;
+        });
+        return;
+      }
+    }
+    setRangeStartId(id);
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(mailsDisplay.map((m) => m.id)));
+    } else {
+      setSelectedIds(new Set());
+    }
+  };
+
+  const isSelected = (id: number) => selectedIds.has(id);
+
+  const applyBulkAction = (action: string) => {
+    if (selectedIds.size === 0) return;
+    const ids = Array.from(selectedIds);
+    setResp((r) =>
+      r
+        ? {
+            ...r,
+            data: r.data.map((m) => {
+              if (!selectedIds.has(m.id)) return m;
+              switch (action) {
+                case "marquerLu":
+                  return { ...m, lu: true };
+                case "marquerNonLu":
+                  return { ...m, lu: false };
+                case "supprimer":
+                  return null;
+                case "marquerFavori":
+                  return { ...m, lu: true };
+                default:
+                  return m;
+              }
+            }).filter(Boolean),
+          }
+        : r,
+    );
+    setSelectedIds(new Set());
+    if (action === "supprimer") setSelectedMailId(null);
+  };
+
+  const supprimerCategorie = async (id: number) => {
+    const cat = categories.find((c) => c.id === id);
+    if (!cat) return;
+    setCategoryToDelete(cat);
+  };
+
+  const confirmerSuppressionCategorie = async () => {
+    if (!categoryToDelete) return;
+    setBusy(true);
+    try {
+      await adminDeleteUserCategory(categoryToDelete.id);
+      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete!.id));
+      if (activeCategorieId === categoryToDelete!.id) {
+        setActiveCategorieId(null);
+      }
+      setCategoryToDelete(null);
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Échec de la suppression.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const annulerSuppressionCategorie = () => {
+    setCategoryToDelete(null);
   };
 
   // ---------- Actions catégories ----------
@@ -361,33 +477,6 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     } finally {
       setBusy(false);
     }
-  };
-
-  const supprimerCategorie = async (id: number) => {
-    const cat = categories.find((c) => c.id === id);
-    if (!cat) return;
-    setCategoryToDelete(cat);
-  };
-
-  const confirmerSuppressionCategorie = async () => {
-    if (!categoryToDelete) return;
-    setBusy(true);
-    try {
-      await adminDeleteUserCategory(categoryToDelete.id);
-      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete!.id));
-      if (activeCategorieId === categoryToDelete!.id) {
-        setActiveCategorieId(null);
-      }
-      setCategoryToDelete(null);
-    } catch (e) {
-      setSendError(e instanceof Error ? e.message : "Échec de la suppression.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const annulerSuppressionCategorie = () => {
-    setCategoryToDelete(null);
   };
 
   // ---------- Corps HTML assaini ----------
@@ -542,7 +631,6 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 onDrop={(e) => {
                   const draggedId = parseInt(e.dataTransfer.getData("text/category-id"));
                   if (draggedId && draggedId !== categorie.id) {
-                    // Réordonner les catégories
                     const newOrder = [...categories].filter((c) => c.id !== draggedId);
                     const insertIndex = newOrder.findIndex((c) => c.id === categorie.id);
                     newOrder.splice(insertIndex, 0, categories.find((c) => c.id === draggedId)!);
@@ -594,6 +682,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   placeholder="ex: Utilisateurs premium"
                   autoFocus
                 />
+                {validationError && <span className="mail-validation-error">{validationError}</span>}
               </div>
               <div className="mail-modal-field">
                 <label>Couleur</label>
@@ -676,13 +765,41 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
         {view === "liste" && !detail && (
           <section className="mail-list-section">
             <div className="mail-toolbar">
-              <input type="checkbox" className="mail-select-all" />
+              <input
+                type="checkbox"
+                className="mail-select-all"
+                checked={selectedIds.size > 0 && selectedIds.size === mailsDisplay.length}
+                onChange={(e) => toggleSelectAll(e.target.checked)}
+              />
               <span className="mail-count">
-                {mailsDisplay.length} mail{mailsDisplay.length > 1 ? "s" : ""}
+                {selectedIds.size > 0
+                  ? `${selectedIds.size} sélectionné${selectedIds.size > 1 ? "s" : ""}`
+                  : `${mailsDisplay.length} mail${mailsDisplay.length > 1 ? "s" : ""}`}
               </span>
               {sendSuccess && <span className="mail-success">{sendSuccess}</span>}
               {sendError && <span className="mail-error">{sendError}</span>}
             </div>
+
+            {selectedIds.size > 0 && (
+              <div className="mail-bulk-actions">
+                <span className="mail-bulk-label">{selectedIds.size} sélectionné{selectedIds.size > 1 ? "s" : ""}</span>
+                <button type="button" className="btn btn-outline mail-btn-sm" onClick={() => applyBulkAction("marquerLu")}>
+                  Marquer comme lu
+                </button>
+                <button type="button" className="btn btn-outline mail-btn-sm" onClick={() => applyBulkAction("marquerNonLu")}>
+                  Marquer comme non lu
+                </button>
+                <button type="button" className="btn btn-outline mail-btn-sm mail-btn-delete" onClick={() => applyBulkAction("supprimer")}>
+                  Supprimer
+                </button>
+                <button type="button" className="btn btn-outline mail-btn-sm" onClick={() => applyBulkAction("marquerFavori")}>
+                  Marquer comme favori
+                </button>
+                <button type="button" className="btn btn-outline mail-btn-sm" onClick={() => setSelectedIds(new Set())}>
+                  Annuler la sélection
+                </button>
+              </div>
+            )}
 
             {(loading && !resp) || (error && <p className="mail-error">{error}</p>)}
 
@@ -694,23 +811,31 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               <table className="mail-table">
                 <thead>
                   <tr>
-                    <th className="mail-th-checkbox"><input type="checkbox" /></th>
+                    <th className="mail-th-checkbox">
+                      <input type="checkbox" checked={selectedIds.size > 0 && selectedIds.size === mailsDisplay.length} onChange={(e) => toggleSelectAll(e.target.checked)} />
+                    </th>
                     <th className="mail-th-star">★</th>
-                    <th className="mail-th-from">De</th>
-                    <th className="mail-th-subject">Sujet</th>
+                    <th className="mail-th-from" onClick={() => { setSortBy("expediteur"); setSortDir(sortBy === "expediteur" && sortDir === "asc" ? "desc" : "asc"); }}>
+                      De
+                    </th>
+                    <th className="mail-th-subject" onClick={() => { setSortBy("sujet"); setSortDir(sortBy === "sujet" && sortDir === "asc" ? "desc" : "asc"); }}>
+                      Sujet
+                    </th>
                     <th className="mail-th-preview">Contenu</th>
-                    <th className="mail-th-date">Heure</th>
+                    <th className="mail-th-date" onClick={() => { setSortBy("date"); setSortDir(sortBy === "date" && sortDir === "asc" ? "desc" : "asc"); }}>
+                      Heure
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {mailsDisplay.map((m) => (
                     <tr
                       key={m.id}
-                      className={`mail-row ${!m.lu ? "mail-unread" : ""} ${selectedMailId === m.id ? "mail-selected" : ""}`}
-                      onClick={() => ouvrir(m.id)}
+                      className={`mail-row ${!m.lu ? "mail-unread" : ""} ${selectedIds.has(m.id) ? "mail-selected" : ""} ${selectedMailId === m.id ? "mail-open" : ""}`}
+                      onClick={(e) => ouvrir(m.id, e)}
                     >
                       <td className="mail-td-checkbox">
-                        <input type="checkbox" />
+                        <input type="checkbox" checked={isSelected(m.id)} onChange={(e) => toggleSelect(m.id, e)} />
                       </td>
                       <td className="mail-td-star">☆</td>
                       <td className="mail-td-from">{m.expediteur}</td>
