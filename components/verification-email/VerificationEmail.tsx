@@ -206,6 +206,13 @@ export default function VerificationEmail({ locale = "fr" }: { locale?: Locale }
             </svg>
           </div>
           <h1>{t.networkKo}</h1>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => window.location.reload()}
+          >
+            Réessayer
+          </button>
         </>
       );
       break;

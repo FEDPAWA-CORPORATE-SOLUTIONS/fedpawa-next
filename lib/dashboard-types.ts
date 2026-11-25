@@ -35,6 +35,7 @@ export interface ApiFacture {
   montant?: number | null;
   date?: string | null;
   lien_pdf?: string | null;
+  statut?: string | null;
 }
 
 export interface ApiContrat {

@@ -24,6 +24,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { routesFor } from "@/lib/routes";
 import { sanitizeMailHtml } from "@/lib/sanitize-mail-html";
+import { apiAuthGetBlob, getToken } from "@/lib/auth";
 import {
   MAILS_PAR_PAGE,
   adminFetchMail,
@@ -286,6 +287,27 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     () => (detail ? sanitizeMailHtml(detail.corps_html) : ""),
     [detail],
   );
+
+  const downloadMailAttachment = async (url: string, filename: string) => {
+    const token = getToken();
+    try {
+      const res = await fetch(url, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!res.ok) throw new Error(`Échec du téléchargement (${res.status})`);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Téléchargement impossible.", "error");
+    }
+  };
 
   return (
     <div className="db-main apub-main amail-main">
@@ -606,14 +628,13 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                         {pj.type ?? "—"} · {fmtTaille(pj.taille)}
                       </span>
                       {pj.url && (
-                        <a
+                        <button
+                          type="button"
                           className="btn btn-outline apub-btn-sm"
-                          href={pj.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                          onClick={() => downloadMailAttachment(pj.url, pj.nom)}
                         >
                           {t.telecharger}
-                        </a>
+                        </button>
                       )}
                     </li>
                   ))}

@@ -17,7 +17,9 @@ import {
   apiAuthGetBlob,
   apiAuthPost,
   apiAuthPostForm,
+  apiAuthDelete,
   getToken,
+  logout,
 } from "@/lib/auth";
 import { getFriendlyErrorMessage } from "@/lib/errors";
 import { markNotificationsRead } from "@/lib/notifications";
@@ -46,11 +48,13 @@ import {
   fmtFCFA,
   initials,
   statutBadgeVariant,
+  traduireStatutCourrier,
 } from "@/lib/dashboard-format";
 import { DashboardUIProvider, useToast } from "@/components/dashboard/UI";
 import { routesFor } from "@/lib/routes";
 import type { Locale } from "@/lib/i18n";
 import ContractSigningList from "@/components/espace-client/signature/ContractSigningList";
+import StatutFactureBadge from "@/components/stats/StatutFactureBadge";
 
 // ---------- Catalogue packs (tunnel.js = source de vérité) ----------
 const PACK2SERVICE: Record<string, string> = {
@@ -213,6 +217,9 @@ export default function EspaceClient({ locale = "fr" }: EspaceClientProps) {
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></svg>
               Paramètres
             </Link>
+            <div className="db-nav-item" role="button" tabIndex={0} onClick={() => logout(routes.auth)}>
+              Déconnexion
+            </div>
           </nav>
         </aside>
         {/* W-14 : barre d'onglets mobile (chips scrollables) — visible <991px */}
@@ -364,7 +371,6 @@ function ErrorLine({ message }: { message: string }) {
 function TabDashboard() {
   const { data, loading, error } = useDashboardData(0);
 
-  if (loading) return <LoadingLine />;
   if (error) return <ErrorLine message={error} />;
   if (!data) return null;
 
@@ -451,6 +457,8 @@ function TabDashboard() {
 function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
   const { data, loading, error } = useDashboardData(0);
   const [showPacks, setShowPacks] = useState(false);
+  const [resiliating, setResiliating] = useState(false);
+  const { toast } = useToast();
   const sub = data?.subscription;
   const pastSubs = data?.pastSubscriptions ?? [];
 
@@ -462,7 +470,29 @@ function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
     if (svc === "domiciliation") {
       return `${routes.souscription}?pack=${encodeURIComponent(packId)}`;
     }
-    return `${routes.tunnel}?service=${encodeURIComponent(svc)}&pack=${encodeURIComponent(packId)}`;
+    const serviceRoute: Record<string, string> = {
+      creation: "/souscription/creation-entreprise",
+      oapi: "/souscription/oapi",
+      contrats: "/souscription/contrats",
+      fiscalite: "/souscription/conseil-fiscal",
+    };
+    return `${serviceRoute[svc] ?? routes.tunnel}?service=${encodeURIComponent(svc)}&pack=${encodeURIComponent(packId)}`;
+  };
+
+  const resilierAbonnement = async () => {
+    if (!window.confirm("Êtes-vous sûr de vouloir résilier votre abonnement ? Cette action est irréversible.")) return;
+    setResiliating(true);
+    try {
+      await apiAuthDelete(`/api/v1/admin/clients/${sub?.id}/abonnement`);
+      toast("Abonnement résilié avec succès.", "success");
+      setShowPacks(false);
+      // Recharger les données via le reloadKey
+      window.location.reload();
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Échec de la résiliation.", "error");
+    } finally {
+      setResiliating(false);
+    }
   };
 
   return (
@@ -489,6 +519,8 @@ function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
             {sub ? (
               <>
                 <strong>Tarif :</strong> {Number(sub.prix ?? 0).toLocaleString("fr-FR")} FCFA
+                <br />
+                <small className="text-muted">Renouvellement automatique : Oui (mensuel)</small>
               </>
             ) : (
               <>
@@ -516,8 +548,21 @@ function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
               </>
             ) : null}
           </div>
-          <div id="offerHours"></div>
+          <div id="offerHours">
+            <small className="text-muted">Délai de traitement : 24-48h ouvrées</small>
+          </div>
         </div>
+        {sub && sub.statut === "actif" && (
+          <button
+            type="button"
+            className="btn btn-outline"
+            style={{ marginRight: 8 }}
+            onClick={resilierAbonnement}
+            disabled={resiliating}
+          >
+            {resiliating ? "Résiliation…" : "Résilier mon abonnement"}
+          </button>
+        )}
         <button className="btn btn-outline" type="button" onClick={() => setShowPacks((v) => !v)}>
           Changer de pack / Ajouter des options
         </button>
@@ -672,12 +717,19 @@ function TabFactures() {
                       <td>{f.numero ?? "—"}</td>
                       <td>{fmtDate(f.date)}</td>
                       <td>{Number(f.montant ?? 0).toLocaleString("fr-FR")} FCFA</td>
-                      <td><span className="badge badge-success">Payée</span></td>
+                      <td><StatutFactureBadge statut={f.statut} /></td>
                       <td>
                         <DownloadDocButton
                           path={`/api/v1/document?type=facture&id=${f.id}`}
                           label="Télécharger (PDF)"
                         />
+                        <Link
+                          href={`/espace-client/facture/${f.id}`}
+                          className="btn btn-outline btn-sm"
+                          style={{ marginLeft: 8 }}
+                        >
+                          Détails
+                        </Link>
                       </td>
                     </tr>
                   ))
@@ -720,13 +772,15 @@ function TabDocuments() {
   const { data: liveData } = useDashboardData(reloadKey);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [downloadingZip, setDownloadingZip] = useState(false);
 
   const kyc: ApiKyc | null = liveData?.kyc ?? data?.kyc ?? null;
   const approuve = kyc?.statuts === "approuvé";
 
   const submitKyc = useCallback(
-    async (files: FileList | File[]) => {
-      const list = Array.from(files);
+    async () => {
+      const list = selectedFiles;
       if (!list.length) return;
       // Parité back (KycSubmitRequest/FileUploader) : max 10 Mo par fichier.
       const MAX_BYTES = 10 * 1024 * 1024;
@@ -734,6 +788,9 @@ function TabDocuments() {
       if (tooBig) {
         toast(`« ${tooBig.name} » dépasse 10 Mo (maximum autorisé).`, "error");
         return;
+      }
+      if (list.length > 2) {
+        toast(`Seuls les 2 premiers fichiers seront transmis. ${list.length - 2} fichier(s) supplémentaire(s) ignoré(s).`, "warning");
       }
       const fd = new FormData();
       // le backend attend exactement ces deux champs (KycService)
@@ -750,31 +807,73 @@ function TabDocuments() {
     [toast],
   );
 
+  const downloadKycZip = async () => {
+    setDownloadingZip(true);
+    try {
+      const blob = await apiAuthGetBlob("/api/v1/kyc/download-zip");
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "kyc_documents.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      toast("Archive ZIP de vos documents KYC téléchargée.", "success");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Erreur lors du téléchargement de l'archive.", "error");
+    } finally {
+      setDownloadingZip(false);
+    }
+  };
+
   const docItem = (
     ok: boolean | undefined,
     title: string,
     label: string,
     key: string,
-  ) => (
-    <div className="doc-item" key={key}>
-      <div className={`doc-status ${ok ? "valid" : "pending"}`}>
-        {ok ? (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-        )}
+  ) => {
+    const icon = approuve
+      ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12" /></svg>
+      )
+      : ok
+      ? (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+      )
+      : (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /></svg>
+      );
+    return (
+      <div className="doc-item" key={key}>
+        <div className={`doc-status ${ok ? "valid" : "pending"}`}>{icon}</div>
+        <div className="doc-info">
+          <h5>{title}</h5>
+          <p>{label}</p>
+        </div>
       </div>
-      <div className="doc-info">
-        <h5>{title}</h5>
-        <p>{label}</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="db-tab-content active" id="tab-documents">
       <div className="db-welcome"><div><h1>Mes Documents (Conformité KYC)</h1><p>Soumettez vos pièces pour valider votre compte.</p></div></div>
       <div className="kyc-alert"><p>Merci de compléter votre dossier en téléchargeant les documents ci-dessous afin d'assurer la conformité légale de votre compte.</p></div>
+      {kyc && (kyc.piece_identite || kyc.justificatif_domicile) && (
+        <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            disabled={downloadingZip}
+            onClick={downloadKycZip}
+          >
+            {downloadingZip ? "Préparation de l'archive…" : "Télécharger tous mes documents (ZIP)"}
+          </button>
+          <span style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
+            Récupérez vos pièces d'identité et justificatif de domicile en une seule archive.
+          </span>
+        </div>
+      )}
       <div className="db-section">
         <div
           className={`upload-area${dragOver ? " dragover" : ""}`}
@@ -788,7 +887,8 @@ function TabDocuments() {
           onDrop={(e) => {
             e.preventDefault();
             setDragOver(false);
-            submitKyc(e.dataTransfer.files);
+            const newFiles = Array.from(e.dataTransfer.files);
+            setSelectedFiles((prev) => [...prev, ...newFiles]);
           }}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
@@ -802,10 +902,52 @@ function TabDocuments() {
             hidden
             accept=".pdf,.png,.jpg,.jpeg"
             onChange={(e) => {
-              if (e.target.files) submitKyc(e.target.files);
+              if (e.target.files) {
+                const newFiles = Array.from(e.target.files);
+                setSelectedFiles((prev) => [...prev, ...newFiles]);
+              }
             }}
           />
         </div>
+        {selectedFiles.length > 0 && (
+          <div style={{ marginTop: 12, padding: 12, background: "var(--color-bg-alt)", borderRadius: 8, border: "1px solid var(--color-border)" }}>
+            <h5 style={{ margin: "0 0 8px 0", fontSize: "0.9rem" }}>Fichiers sélectionnés ({selectedFiles.length})</h5>
+            <ul style={{ margin: 0, paddingLeft: 18, listStyleType: "none" }}>
+              {selectedFiles.map((f, i) => (
+                <li key={`${f.name}-${i}`} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, fontSize: "0.85rem" }}>
+                  <span>{f.name}</span>
+                  <span style={{ fontSize: "0.75rem", color: "var(--color-text-muted)" }}>({(f.size / 1024).toFixed(1)} Ko)</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedFiles((prev) => prev.filter((_, idx) => idx !== i))}
+                    style={{ background: "none", border: "none", color: "var(--color-danger)", cursor: "pointer", padding: 0, fontSize: "0.8rem" }}
+                  >
+                    Supprimer
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  submitKyc();
+                  setSelectedFiles([]);
+                }}
+              >
+                Soumettre ces fichiers
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                onClick={() => setSelectedFiles([])}
+              >
+                Tout supprimer
+              </button>
+            </div>
+          </div>
+        )}
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
         <div className="required-docs">
@@ -859,6 +1001,14 @@ function TabDocuments() {
 function TabCourriers() {
   const { data, loading, error } = useDashboardData(0);
   const courriers: ApiCourrier[] = data?.courriers ?? [];
+  const [courrierSearch, setCourrierSearch] = useState("");
+  const [courrierFilter, setCourrierFilter] = useState("");
+
+  const filteredCourriers = courriers.filter((co) => {
+    const matchesSearch = co.statut?.toLowerCase().includes(courrierSearch.toLowerCase()) || (co.date_reception ?? "").toLowerCase().includes(courrierSearch.toLowerCase());
+    const matchesFilter = !courrierFilter || co.statut === courrierFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="db-tab-content active" id="tab-courriers">
@@ -867,35 +1017,65 @@ function TabCourriers() {
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
         {!loading && !error && (
-          <div className="db-table-wrap">
-            <table className="db-table">
-              <thead><tr><th>Date de Réception</th><th>Expéditeur / Type</th><th>Statut</th><th>Action</th></tr></thead>
-              <tbody>
-                {courriers.length === 0 ? (
-                  <tr><td colSpan={4} style={{ textAlign: "center", padding: "28px 12px", color: "var(--color-text-muted)", fontSize: "0.92rem" }}>Aucun courrier reçu pour le moment. Chaque courrier adressé à votre adresse de domiciliation sera numérisé ici.</td></tr>
-                ) : (
-                  courriers.map((co) => (
-                    <tr key={co.id}>
-                      <td>{fmtDate(co.date_reception)}</td>
-                      <td>Courrier postal / Administratif</td>
-                      <td>
-                        <span className={`badge badge-${statutBadgeVariant(co.statut)}`}>{co.statut ?? "—"}</span>
-                      </td>
-                      <td>
-                        {co.scan ? (
-                          <DownloadDocButton
-                            path={`/api/v1/document?type=courrier&id=${co.id}`}
-                            label="Consulter le scan"
-                          />
-                        ) : (
-                          <span className="action-link" style={{ opacity: 0.5 }}>Aucun scan</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          <div className="db-section">
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+              <label>
+                <input
+                  type="search"
+                  placeholder="Rechercher un courrier..."
+                  value={courrierSearch}
+                  onChange={(e) => setCourrierSearch(e.target.value)}
+                  className="form-control"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                />
+              </label>
+              <label>
+                <select
+                  value={courrierFilter}
+                  onChange={(e) => setCourrierFilter(e.target.value as any)}
+                  className="form-control"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                >
+                  <option value="">Tous les statuts</option>
+                  <option value="scanné">Numérisé</option>
+                  <option value="en_attente">En attente</option>
+                  <option value="archivé">Archivé</option>
+                </select>
+              </label>
+              <p className="db-hint" style={{ margin: 0, fontSize: "0.85rem" }}>{filteredCourriers.length} courrier(s)</p>
+            </div>
+            <div className="db-table-wrap">
+              <table className="db-table">
+                <thead><tr><th>Date de Réception</th><th>Expéditeur / Type</th><th>Statut</th><th>Action</th></tr></thead>
+                <tbody>
+                  {filteredCourriers.length === 0 ? (
+                    <tr><td colSpan={4} style={{ textAlign: "center", padding: "28px 12px", color: "var(--color-text-muted)", fontSize: "0.92rem" }}>Aucun courrier reçu pour le moment. Chaque courrier adressé à votre adresse de domiciliation sera numérisé ici.</td></tr>
+                  ) : (
+                    filteredCourriers.map((co) => (
+                      <tr key={co.id}>
+                        <td>{fmtDate(co.date_reception)}</td>
+                        <td>Courrier postal / Administratif</td>
+                        <td>
+                          <span className={`badge badge-${statutBadgeVariant(co.statut)}`}>
+                            {traduireStatutCourrier(co.statut)}
+                          </span>
+                        </td>
+                        <td>
+                          {co.scan ? (
+                            <DownloadDocButton
+                              path={`/api/v1/document?type=courrier&id=${co.id}`}
+                              label="Consulter le scan"
+                            />
+                          ) : (
+                            <span className="action-link" style={{ opacity: 0.5 }}>Aucun scan</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>
@@ -927,6 +1107,7 @@ function TabProfil() {
     adresse: "",
   });
   const [saving, setSaving] = useState(false);
+  const [profileHistory, setProfileHistory] = useState<{ field: string; ancien: string; nouveau: string; date: string }[]>([]);
 
   useEffect(() => {
     const c = data?.client;
@@ -945,8 +1126,20 @@ function TabProfil() {
     e.preventDefault();
     setSaving(true);
     try {
+      const c = data?.client;
+      const changes: { field: string; ancien: string; nouveau: string; date: string }[] = [];
+      if (c) {
+        if (form.nom !== (c.nom ?? "")) changes.push({ field: "Nom", ancien: c.nom ?? "", nouveau: form.nom, date: new Date().toLocaleDateString("fr-FR") });
+        if (form.entreprise !== (c.entreprise ?? "")) changes.push({ field: "Entreprise", ancien: c.entreprise ?? "", nouveau: form.entreprise, date: new Date().toLocaleDateString("fr-FR") });
+        if (form.email !== (c.email ?? "")) changes.push({ field: "E-mail", ancien: c.email ?? "", nouveau: form.email, date: new Date().toLocaleDateString("fr-FR") });
+        if (form.telephone !== (c.telephone ?? "")) changes.push({ field: "Téléphone", ancien: c.telephone ?? "", nouveau: form.telephone, date: new Date().toLocaleDateString("fr-FR") });
+        if (form.adresse !== (c.adresse ?? "")) changes.push({ field: "Adresse", ancien: c.adresse ?? "", nouveau: form.adresse, date: new Date().toLocaleDateString("fr-FR") });
+      }
       await apiAuthPost("/api/v1/profil/update", form);
       toast("Profil mis à jour.", "success");
+      if (changes.length > 0) {
+        setProfileHistory((prev) => [...changes, ...prev]);
+      }
       setReloadKey((k) => k + 1);
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erreur de mise à jour.", "error");
@@ -998,6 +1191,8 @@ function TabProfil() {
                   className="form-control"
                   autoComplete="email"
                   required
+                  pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}"
+                  title="Adresse e-mail invalide (ex: prenom.nom@domaine.com)"
                   value={form.email}
                   onChange={(e) => setForm({ ...form, email: e.target.value })}
                 />
@@ -1011,6 +1206,8 @@ function TabProfil() {
                   className="form-control"
                   autoComplete="tel"
                   required
+                  pattern="^(\+237|0)[2-6][0-9]{7,8}$"
+                  title="Numéro de téléphone invalide (ex: +2376XXXXXXXX ou 06XXXXXXXX)"
                   value={form.telephone}
                   onChange={(e) => setForm({ ...form, telephone: e.target.value })}
                 />
@@ -1034,6 +1231,31 @@ function TabProfil() {
           </form>
         )}
       </div>
+      {profileHistory.length > 0 && (
+        <div className="db-section" style={{ marginTop: 20 }}>
+          <h2 style={{ fontSize: "1rem", marginBottom: 10 }}>Historique des modifications</h2>
+          <table className="db-table">
+            <thead>
+              <tr>
+                <th>Champ</th>
+                <th>Ancienne valeur</th>
+                <th>Nouvelle valeur</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {profileHistory.map((h, i) => (
+                <tr key={i}>
+                  <td>{h.field}</td>
+                  <td>{h.ancien}</td>
+                  <td>{h.nouveau}</td>
+                  <td>{h.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -1078,17 +1300,34 @@ function TabSupport() {
     reloadTickets();
   }, [reloadTickets]);
 
+  const [nextTicketId, setNextTicketId] = useState(-1);
+
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!sujet.trim() || !message.trim()) return;
     setSending(true);
+    let tempTicket: ApiTicket | null = null;
     try {
+      const tt: ApiTicket = {
+        id: nextTicketId,
+        sujet: sujet.trim(),
+        message: message.trim(),
+        statut: "en_cours",
+        created_at: new Date().toISOString(),
+        reponse: null,
+        reponse_at: null,
+      };
+      tempTicket = tt;
+      setTickets((prev) => (prev ? [tt, ...prev] : [tt]));
+      setNextTicketId((id) => id - 1);
       await apiAuthPost("/api/v1/support", { sujet: sujet.trim(), message: message.trim() });
       toast("Message envoyé au support. Réponse sous 24h.", "success");
       setSujet("");
       setMessage("");
       reloadTickets();
     } catch (err) {
+      // En cas d'échec, retirer le ticket temporaire
+      setTickets((prev) => (prev ? prev.filter((t) => t.id === tempTicket?.id) : prev));
       toast(err instanceof Error ? err.message : "Erreur d'envoi.", "error");
     } finally {
       setSending(false);
@@ -1164,7 +1403,9 @@ function TabSupport() {
                 }}
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-                  <strong style={{ fontSize: "0.82rem", color: "var(--color-primary)" }}>Administration FEDPAWA</strong>
+                  <strong style={{ fontSize: "0.82rem", color: "var(--color-primary)" }}>
+                    <span style={{ marginRight: 6 }}>🔵</span>Administration FEDPAWA
+                  </strong>
                   <span style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>{fmtDateTime(m.created_at)}</span>
                 </div>
                 <p style={{ fontSize: "0.88rem", margin: "6px 0 0", color: "var(--color-text-main)" }}>{m.content}</p>
@@ -1176,6 +1417,7 @@ function TabSupport() {
         {/* F7: historique des demandes du client */}
         <div id="ticketsHistory" style={{ marginTop: 28 }}>
           <h3 style={{ fontSize: "1.05rem", marginBottom: 12 }}>Mes demandes précédentes</h3>
+          <p className="db-hint">{tickets?.length ?? 0} demande(s)</p>
           <div id="ticketsList" style={{ display: "grid", gap: 12 }}>
             {ticketsError && (
               <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>Historique indisponible.</p>
@@ -1195,9 +1437,18 @@ function TabSupport() {
                   {ticketBadge(t.statut)}
                 </div>
                 <p style={{ fontSize: "0.86rem", color: "var(--color-text-main)", margin: "8px 0 6px" }}>
-                  {(t.message ?? "").slice(0, 200)}
-                  {(t.message ?? "").length > 200 ? "…" : ""}
+                  {(t.message ?? "")}
                 </p>
+                {(t.message ?? "").length > 200 && (
+                  <span style={{ fontSize: "0.78rem", color: "var(--color-primary)", cursor: "pointer", textDecoration: "underline" }}
+                    onClick={() => {
+                      const el = document.getElementById(`full-msg-${t.id}`);
+                      if (el) el.style.display = el.style.display === "none" ? "block" : "none";
+                    }}
+                  >
+                    Voir le message complet
+                  </span>
+                )}
                 {t.reponse ? (
                   <div style={{ background: "var(--color-bg-alt)", borderRadius: 8, padding: "10px 12px", margin: "8px 0" }}>
                     <strong style={{ fontSize: "0.78rem", color: "var(--color-primary)" }}>Réponse du support :</strong>

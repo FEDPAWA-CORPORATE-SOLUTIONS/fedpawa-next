@@ -20,7 +20,7 @@ ENV NEXT_IGNORE_BUILD_ERRORS=true
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 

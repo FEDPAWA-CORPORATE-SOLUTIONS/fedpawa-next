@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useState, useEffect, Suspense } from "react";
 import { FactureDisplay } from "@/components/souscription-domiciliation/FactureDisplay";
 import { apiAuthPost } from "@/lib/auth";
 import { ApiError } from "@/lib/api";
@@ -354,8 +353,7 @@ const CSS = `
 `;
 
 export default function PaiementConseilFiscalPage() {
-  const searchParams = useSearchParams();
-  const draftId = searchParams.get("draftId") ?? undefined;
+  const [draftId, setDraftId] = useState<string | undefined>(undefined);
   const [mode, setMode] = useState("mtn" as "mtn" | "carte");
   const [phone, setPhone] = useState("+237 6");
   const [amount, setAmount] = useState(35000);
@@ -364,6 +362,12 @@ export default function PaiementConseilFiscalPage() {
   const [txId, setTxId] = useState<string | null>(null);
   const [paymentError, setPaymentError] = useState<string | null>(null);
   const [step, setStep] = useState(1); // 1 = facture, 2 = paiement
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get("draftId");
+    if (id) setDraftId(id);
+  }, []);
 
   const fmtFCFA = (n: number) => n.toLocaleString("fr-FR") + " FCFA";
 
@@ -408,7 +412,7 @@ export default function PaiementConseilFiscalPage() {
   };
 
   return (
-    <>
+    <Suspense fallback={<div className="paiement-page"><div className="paiement-container"><p>Chargement du paiement...</p></div></div>}>
       <style>{CSS}</style>
       <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <div className="paiement-page">
@@ -591,6 +595,6 @@ export default function PaiementConseilFiscalPage() {
           )}
         </div>
       </div>
-    </>
+    </Suspense>
   );
 }

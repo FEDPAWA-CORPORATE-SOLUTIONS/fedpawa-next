@@ -1,8 +1,11 @@
 // ==========================================================
 // FEDPAWA — Qui sommes-nous : version unifiée (style approuvé)
 // Style "about-vision-box" appliqué aux 3 sections à 4 éléments.
-// Histoire & Vision déplacée en avant-dernière position.
+// Histoire & Vision déplacée avant-dernière, juste avant le CTA.
+// Chiffres Clés déplacés en avant-dernière position (juste avant le CTA).
 // Lightbox désactivée.
+"use client";
+
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
@@ -265,7 +268,84 @@ export default function About({ locale = "fr" }: AboutProps) {
         </div>
       </section>
 
-      {/* ============== CHIFFRES CLÉS (compteurs animés — inchangé) ============== */}
+      {/* ============== NOS VALEURS — 4 PILIERS (style about-vision-box) ============== */}
+      <section className="section-padding section-alt">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-kicker">{t.pillarsKicker}</span>
+            <h2>{t.pillarsTitle}</h2>
+            <p>{t.pillarsIntro}</p>
+          </div>
+          <div style={gridStyle}>
+            {piliersElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============== NOTRE SAVOIR-FAIRE — 4 PÔLES (style about-vision-box) ============== */}
+      <section className="section-padding">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-kicker">{t.expertiseKicker}</span>
+            <h2>{t.expertiseTitle}</h2>
+          </div>
+          <div style={gridStyle}>
+            {savoirFaireElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============== POURQUOI CHOISIR FEDPAWA — 4 ÉLÉMENTS (style about-vision-box) ============== */}
+      <section className="comparison-section">
+        <div className="container">
+          <div className="section-header">
+            <span className="section-kicker">{t.compareKicker}</span>
+            <h2>{t.compareTitle}</h2>
+            <p>{t.compareIntro}</p>
+          </div>
+          <div style={gridStyle}>
+            {differenceElements.map((el, i) => (
+              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ============== HISTOIRE & VISION (avant-dernier) ============== */}
+      <section className="oapi-risk-section">
+        <div className="container">
+          <div className="oapi-risk-grid">
+            <div className="oapi-risk-text">
+              <span className="section-kicker">{t.historyKicker}</span>
+              <h2>{t.historyTitle}</h2>
+              <p>{t.historyText1}</p>
+              <p>{t.historyText2}</p>
+            </div>
+            <div className="about-vision-box">
+              <div className="about-vision-photo">
+                <picture>
+                  <source type="image/webp" srcSet="/assets/images/qui_6.webp" />
+                  <img
+                    src="/assets/images/qui_6.jpg"
+                    alt={t.visionImgAlt}
+                    loading="lazy"
+                  />
+                </picture>
+              </div>
+              <h3>
+                <span>🎯</span> {t.visionTitle.replace("🎯 ", "")}
+              </h3>
+              <p>{t.visionText}</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ============== CHIFFRES CLÉS — AVANT-DERNIÈRE SECTION (compteurs animés) ============== */}
       <section className="stats-section">
         <div className="container">
           <div className="section-header" style={{ marginBottom: 40 }}>
@@ -329,83 +409,6 @@ export default function About({ locale = "fr" }: AboutProps) {
                 {t.stat4Suffix}
               </strong>
               <span>{t.stat4Label}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ============== NOS VALEURS — 4 PILIERS (style about-vision-box) ============== */}
-      <section className="section-padding section-alt">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-kicker">{t.pillarsKicker}</span>
-            <h2>{t.pillarsTitle}</h2>
-            <p>{t.pillarsIntro}</p>
-          </div>
-          <div style={gridStyle}>
-            {piliersElements.map((el, i) => (
-              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============== NOTRE SAVOIR-FAIRE — 4 PÔLES (style about-vision-box) ============== */}
-      <section className="section-padding">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-kicker">{t.expertiseKicker}</span>
-            <h2>{t.expertiseTitle}</h2>
-          </div>
-          <div style={gridStyle}>
-            {savoirFaireElements.map((el, i) => (
-              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============== POURQUOI CHOISIR FEDPAWA — 4 ÉLÉMENTS (style about-vision-box) ============== */}
-      <section className="comparison-section">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-kicker">{t.compareKicker}</span>
-            <h2>{t.compareTitle}</h2>
-            <p>{t.compareIntro}</p>
-          </div>
-          <div style={gridStyle}>
-            {differenceElements.map((el, i) => (
-              <AboutBoxElement key={i} img={el.img} title={el.title} text={el.text} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ============== HISTOIRE & VISION (inchangé, déplacé avant-dernier) ============== */}
-      <section className="oapi-risk-section">
-        <div className="container">
-          <div className="oapi-risk-grid">
-            <div className="oapi-risk-text">
-              <span className="section-kicker">{t.historyKicker}</span>
-              <h2>{t.historyTitle}</h2>
-              <p>{t.historyText1}</p>
-              <p>{t.historyText2}</p>
-            </div>
-            <div className="about-vision-box">
-              <div className="about-vision-photo">
-                <picture>
-                  <source type="image/webp" srcSet="/assets/images/qui_6.webp" />
-                  <img
-                    src="/assets/images/qui_6.jpg"
-                    alt={t.visionImgAlt}
-                    loading="lazy"
-                  />
-                </picture>
-              </div>
-              <h3>
-                <span>🎯</span> {t.visionTitle.replace("🎯 ", "")}
-              </h3>
-              <p>{t.visionText}</p>
             </div>
           </div>
         </div>

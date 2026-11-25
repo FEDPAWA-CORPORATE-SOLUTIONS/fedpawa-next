@@ -143,6 +143,7 @@ export interface AdminPublicationsQuery {
   statut?: PublicationStatut | "";
   page?: number;
   par_page?: number;
+  recherche?: string;
 }
 
 export function adminFetchPublications(

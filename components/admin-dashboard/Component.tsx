@@ -11,6 +11,7 @@
 
 "use client";
 
+import CloseTag from "./CloseTag";
 import { useCallback, useEffect, useState } from "react";
 import {
   apiAuthGet,
@@ -345,7 +346,9 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
           </div>
         )}
         {kycPending === 0 && ticketsOpen === 0 && msgsClients === 0 && contactNouveau === 0 && (
-          <p style={{ color: "var(--color-text-muted)" }}>Aucune action requise. Tout est à jour.</p>
+          <div className="alert-card">
+            <p style={{ color: "var(--color-text-muted)" }}>Aucune action requise. Tout est à jour.</p>
+          </div>
         )}
       </div>
     </div>
@@ -379,6 +382,33 @@ function TabClients() {
           <>
             <div className="db-section-header">
               <h2>Annuaire des Clients</h2>
+              <p className="db-hint">{filtered.length} client(s) affiché(s) / {clients.length} total</p>
+              <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                style={{ marginLeft: 12, fontSize: "0.85rem" }}
+                onClick={() => {
+                  const csv = ["ID,Nom,Raison Sociale,Email,Statut"];
+                  filtered.forEach(c => {
+                    csv.push([
+                      c.id,
+                      `"${c.nom ?? ""}"`,
+                      `"${c.entreprise ?? ""}"`,
+                      `"${c.email ?? ""}"`,
+                      c.statut ?? "actif"
+                    ].join(","));
+                  });
+                  const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+                  const url = URL.createObjectURL(blob);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "clients.csv";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                Export CSV
+              </button>
               <div className="search-bar">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                 <input
@@ -605,7 +635,34 @@ function TabCourriers() {
         </form>
       </div>
       <div className="db-section">
-        <div className="db-section-header"><h2>Historique des Courriers</h2></div>
+        <div className="db-section-header">
+          <h2>Historique des Courriers</h2>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            style={{ fontSize: "0.85rem" }}
+            onClick={() => {
+              const csv = ["ID,Date,Client,Statut"];
+              courriers.forEach(co => {
+                csv.push([
+                  co.id,
+                  fmtDate(co.date_reception),
+                  `"${co.client_nom ?? ""}"`,
+                  co.statut ?? ""
+                ].join(","));
+              });
+              const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "courriers.csv";
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Export CSV
+          </button>
+        </div>
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
         {!loading && !error && (
@@ -879,6 +936,35 @@ function TabTickets() {
     <div className="db-tab-content active" id="tab-tickets">
       <div className="db-welcome"><div><h1>Tickets Support</h1><p>Demandes clients via l'Espace Client.</p></div></div>
       <div className="db-section">
+        <div className="db-section-header">
+          <h2>Historique des Tickets</h2>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            style={{ fontSize: "0.85rem" }}
+            onClick={() => {
+              const csv = ["ID,Client,Sujet,Statut,Date"];
+              tickets.forEach((t: any) => {
+                csv.push([
+                  t.id,
+                  `"${(t as any).client_nom ?? t.client ?? ""}"`,
+                  `"${t.sujet ?? ""}"`,
+                  t.statut ?? "",
+                  fmtDate(t.created_at)
+                ].join(","));
+              });
+              const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "tickets.csv";
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+          >
+            Export CSV
+          </button>
+        </div>
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
         {!loading && !error && (

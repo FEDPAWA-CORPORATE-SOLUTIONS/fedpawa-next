@@ -188,17 +188,18 @@ function emptyState(spec: FormSpec): Record<string, any> {
       state[cb.name] = false;
     });
     step.radios?.forEach((r) => {
-      if (state["_radio_" + step.id] === undefined) state["_radio_" + step.id] = r.id;
+      // Pas de pré-sélection : l'utilisateur doit choisir activement
+      if (state["_radio_" + step.id] === undefined) state["_radio_" + step.id] = "";
     });
   });
   state.chkCgv = false;
   state.chkCadre = false;
   state.chkExactitude = false;
   state.noImmat = false;
-  state.gamme = spec.gammes?.[0]?.id ?? "";
+  state.gamme = "";
   state.pack = "";
-  state.periodicite = spec.periodicites?.[0]?.id ?? "mensuel";
-  state.statutStructure = spec.statutStructure ? "existante" : "";
+  state.periodicite = "";
+  state.statutStructure = "";
   state.formeAutre = "";
   state.rccm = "";
   state.niu = "";
@@ -235,6 +236,74 @@ function isFieldRequired(field: FieldSpec, form: Record<string, any>): boolean {
     return form[field.requiredIf.field] === field.requiredIf.value;
   }
   return field.required ?? false;
+}
+
+// ============================================================================
+// Composant DropzoneGen — extrait hors de GeneriqueFormulaire
+// Modèle identique à l'ancien formulaire (SouscriptionNouveauFlux.tsx) :
+// état local, attribut HTML "hidden" sur l'input, aucun style CSS bloquant.
+// Cela évite que le composant ne soit recréé à chaque render du parent.
+// ============================================================================
+interface DropzoneGenProps {
+  field: FileDropzoneSpec;
+  file: File | null | undefined;
+  onFileChange: (file: File) => void;
+  dragOver: string | null;
+  onDragOver: (id: string) => void;
+  onDragLeave: () => void;
+  onDrop: (files: FileList) => void;
+}
+
+function DropzoneGen({
+  field,
+  file,
+  onFileChange,
+  dragOver,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+}: DropzoneGenProps) {
+  const fieldId = "step-dz-" + field.id;
+  return (
+    <div
+      className={
+        "dropzone" +
+        (field.required ? " required" : "") +
+        (file ? " has-file" : "") +
+        (dragOver === field.id ? " drag-over" : "")
+      }
+      id={"step-dz-" + field.id}
+      onClick={() => document.getElementById(fieldId + "-input")?.click()}
+      onDragOver={(e) => { e.preventDefault(); onDragOver(field.id); }}
+      onDragLeave={onDragLeave}
+      onDrop={(e) => {
+        e.preventDefault();
+        onDragLeave();
+        if (e.dataTransfer.files.length)
+          onDrop(e.dataTransfer.files);
+      }}
+      style={{ cursor: "pointer" }}
+    >
+      <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      <h5>{field.title} {field.required && <em className="req">*</em>}</h5>
+      <p>{field.hint}</p>
+      <span className="dz-filename">{file ? `📄 ${file.name} (${Math.round(file.size / 1024)} Ko)` : ""}</span>
+      <input
+        id={fieldId + "-input"}
+        type="file"
+        name={field.id}
+        hidden
+        accept={field.accept}
+        onChange={(e) => {
+          if (e.target.files?.length)
+            onFileChange(e.target.files[0]);
+        }}
+      />
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -444,22 +513,18 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       }
     });
 
-    // Radios requises (ex: sélection du type de contrat)
-    if (stepDef.radiosRequired && stepDef.radios) {
+    // Radios requises (ex: sélection du type de contrat, statut de la structure)
+    if (stepDef.radios && stepDef.radios.length > 0) {
       const radioKey = "_radio_" + stepDef.id;
       if (!f[radioKey]) {
         errs.push("Veuillez sélectionner une option");
       }
     }
 
-    // Gamme requise
-    if (spec.gammes && spec.gammes.length > 0 && !f.gamme) {
-      errs.push("La gamme est requise");
-    }
-    // Pack requis
-    if (spec.packs && spec.packs.length > 0 && !f.pack) {
-      errs.push("Le pack est requis");
-    }
+    // Gamme et pack sont déjà validés comme fields normaux
+    // dans la boucle stepDef.fields ci-dessus quand ils sont présents à l'étape actuelle.
+    // Aucune vérification globale ici : elle causerait des erreurs à tort
+    // sur des étapes qui ne demandent pas la gamme ou le pack.
 
     setFieldErrors(fieldErrs);
     return [...new Set(errs)];
@@ -520,53 +585,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     }
   };
 
-  // ---------- Dropzone avec drag & drop ----------
-  function DropzoneGen({ field }: { field: FileDropzoneSpec }) {
-    const fieldId = "step-dz-" + field.id;
-    const file = form.files?.[field.id];
-    return (
-      <div
-        className={
-          "dropzone" +
-          (field.required ? " required" : "") +
-          (file ? " has-file" : "") +
-          (dragOver === field.id ? " drag-over" : "")
-        }
-        id={"step-dz-" + field.id}
-        onClick={() => document.getElementById(fieldId + "-input")?.click()}
-        onDragOver={(e) => { e.preventDefault(); setDragOver(field.id); }}
-        onDragLeave={() => setDragOver(null)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(null);
-          if (e.dataTransfer.files.length)
-            set("files", { ...form.files, [field.id]: e.dataTransfer.files[0] });
-        }}
-        style={{ cursor: "pointer" }}
-      >
-        <svg className="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        <h5>{field.title} {field.required && <em className="req">*</em>}</h5>
-        <p>{field.hint}</p>
-        <span className="dz-filename">
-          {file ? `📄 ${file.name} (${Math.round(file.size / 1024)} Ko)` : ""}
-        </span>
-        <input
-          id={fieldId + "-input"}
-          type="file"
-          name={field.id}
-          hidden
-          accept={field.accept}
-          onChange={(e) => {
-            if (e.target.files?.length)
-              set("files", { ...form.files, [field.id]: e.target.files[0] });
-          }}
-        />
-      </div>
-    );
-  }
+  // DropzoneGen déplacé hors du composant (définition ci-dessus)
 
   // ---------- Upload fichiers ----------
   const uploadAllFiles = async (): Promise<Record<string, string>> => {
@@ -630,7 +649,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
           localStorage.setItem('fedpawa_redirect_draft_id', String(draftId));
         }
         // Redirection vers le nouveau flux unifié (SouscriptionNouveauFlux)
-        window.location.href = '/souscription-domiciliation';
+        window.location.href = '/souscription/signature-paiement';
       } else {
         setErrors([res.message || "Erreur lors de la soumission"]);
       }
@@ -678,19 +697,24 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
             </div>
             {stepLabels.map((label, i) => {
               const n = i + 1;
+              const isActive = n === step;
               return (
                 <div
                   key={n}
                   className={
                     "progress-step" +
-                    (n === step ? " active" : n < step ? " completed" : "")
+                    (isActive ? " active" : n < step ? " completed" : "") +
+                    (isActive ? " active-step" : "")
                   }
                   data-step={n}
                   onClick={() => n < step && goToStep(n)}
-                  style={{ cursor: n < step ? "pointer" : "default" }}
+                  style={{
+                    cursor: n < step ? "pointer" : "default",
+                    flex: isActive ? 2 : 1, // L'étape active prend plus de place
+                  }}
                 >
                   <div className="progress-dot">{n}</div>
-                  <span className="progress-label">{label}</span>
+                  {isActive && <span className="progress-label">{label}</span>}
                 </div>
               );
             })}
@@ -753,8 +777,8 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                         </h2>
                         {stepDef.description && <p className="section-intro">{stepDef.description}</p>}
 
-                        {/* #1 Radios statut_structure (domiciliation uniquement) */}
-                        {spec.statutStructure && (
+                        {/* #1 Radios statut_structure (domiciliation uniquement — une seule fois, étape 1) */}
+                        {spec.statutStructure && stepDef.id === 1 && (
                           <div className="form-group">
                             <label>Statut de la structure <em className="req">*</em></label>
                             <div className="radio-row">
@@ -870,7 +894,23 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
 
                         {/* #3 Dropzones de fichiers (KYC, logo, etc.) */}
                         {stepDef.files?.map((file) => (
-                          <DropzoneGen key={file.id} field={file} />
+                          <DropzoneGen
+                            key={file.id}
+                            field={file}
+                            file={form.files?.[file.id]}
+                            onFileChange={(f) =>
+                              set("files", { ...form.files, [file.id]: f })
+                            }
+                            dragOver={dragOver}
+                            onDragOver={setDragOver}
+                            onDragLeave={() => setDragOver(null)}
+                            onDrop={(files) =>
+                              set("files", {
+                                ...form.files,
+                                [file.id]: files[0],
+                              })
+                            }
+                          />
                         ))}
 
                         {/* #2 Champ formeAutre conditionnel (domiciliation) */}

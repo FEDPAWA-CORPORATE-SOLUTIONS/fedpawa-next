@@ -68,3 +68,20 @@ export function initials(nom: string | null | undefined): string {
     .toUpperCase()
     .substring(0, 2);
 }
+
+/** Traduction des statuts de courrier en français lisible */
+export function traduireStatutCourrier(statut: string | null | undefined): string {
+  const map: Record<string, string> = {
+    "scanné": "Numérisé",
+    "scanne": "Numérisé",
+    "en_attente": "En attente de traitement",
+    "en attente": "En attente de traitement",
+    "archivé": "Archivé",
+    "archive": "Archivé",
+    "reçu": "Reçu",
+    "recu": "Reçu",
+    "lu": "Lu",
+  };
+  if (!statut) return "—";
+  return map[statut.toLowerCase()] ?? statut;
+}

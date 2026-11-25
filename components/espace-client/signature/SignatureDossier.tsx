@@ -52,6 +52,7 @@ export default function SignatureDossier({ dossierId }: Props) {
   // Formulaire.
   const [consentement, setConsentement] = useState(false);
   const [otpEnvoye, setOtpEnvoye] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
   const [otpEnCours, setOtpEnCours] = useState(false);
   const [otp, setOtp] = useState("");
   const [padMode, setPadMode] = useState<PadMode>("draw");
@@ -59,6 +60,16 @@ export default function SignatureDossier({ dossierId }: Props) {
   const [padVide, setPadVide] = useState(true);
   const [enCours, setEnCours] = useState(false);
   const padRef = useRef<SignaturePadHandle>(null);
+
+  // Cooldown pour le renvoi OTP (60 secondes)
+  useEffect(() => {
+    if (otpCooldown > 0) {
+      const timer = setInterval(() => {
+        setOtpCooldown((c) => (c > 1 ? c - 1 : 0));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [otpCooldown]);
 
   // Résultat de signature.
   const [resultat, setResultat] = useState<SignatureSigneeResponse | null>(null);
@@ -140,6 +151,7 @@ export default function SignatureDossier({ dossierId }: Props) {
     try {
       const r = await envoyerOtpSignature(dossierId);
       setOtpEnvoye(true);
+      setOtpCooldown(60);
       setInfo(
         r.delivered
           ? `${r.message} (dossier #${r.dossier_id}, statut « ${r.statut} »).`
@@ -271,7 +283,18 @@ export default function SignatureDossier({ dossierId }: Props) {
               apercuEnCours ? (
                 <p style={{ color: "var(--color-text-muted)" }}>Chargement de l&apos;aperçu…</p>
               ) : apercuUrl ? (
-                <iframe title="Aperçu du contrat" src={apercuUrl} className="sig-apercu" />
+                <div style={{ marginTop: 8 }}>
+                  <iframe title="Aperçu du contrat" src={apercuUrl} className="sig-apercu" />
+                  <Link
+                    href={apercuUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn btn-outline btn-sm"
+                    style={{ marginTop: 8, display: "inline-block" }}
+                  >
+                    Ouvrir dans un nouvel onglet
+                  </Link>
+                </div>
               ) : (
                 <p style={{ color: "var(--color-text-muted)" }}>
                   Aperçu PDF indisponible — le contrat sera scellé après signature.
@@ -344,7 +367,7 @@ export default function SignatureDossier({ dossierId }: Props) {
                 <div className="db-section-header">
                   <h2>3. Code de confirmation (e-mail)</h2>
                   <button type="button" className="btn btn-outline" onClick={demanderOtp} disabled={otpEnCours}>
-                    {otpEnvoye ? "Renvoyer le code" : "Envoyer le code par e-mail"}
+                    {otpEnvoye ? otpCooldown > 0 ? `Renvoyer le code (${otpCooldown}s)` : "Renvoyer le code" : "Envoyer le code par e-mail"}
                   </button>
                 </div>
                 <p className="sig-note">

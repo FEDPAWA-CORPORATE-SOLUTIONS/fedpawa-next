@@ -209,6 +209,35 @@ export default function TabKyc({
               <div className="db-section-header">
                 <h2>Clients avec dossiers KYC en cours</h2>
               </div>
+              {pending.length > 0 && (
+                <div style={{ marginBottom: 12, display: "flex", gap: 8, alignItems: "center" }}>
+                  <span style={{ fontWeight: "bold" }}>{pending.length} dossier(s) en attente</span>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={docLoading}
+                    onClick={() => {
+                      setCompleteOpen(true);
+                      setCompleteDocType("piece_identite");
+                      setCompleteMotif("Approbation groupée");
+                    }}
+                  >
+                    Tout approuver (identité)
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    disabled={docLoading}
+                    onClick={() => {
+                      setCompleteOpen(true);
+                      setCompleteDocType("justificatif_domicile");
+                      setCompleteMotif("Approbation groupée");
+                    }}
+                  >
+                    Tout approuver (domicile)
+                  </button>
+                </div>
+              )}
               <div className="db-table-wrap">
                 <table className="db-table">
                   <thead>
@@ -265,6 +294,7 @@ export default function TabKyc({
             </div>
           </>
         )}
+
       </div>
     );
   }

@@ -127,8 +127,24 @@ export default function EmailVerificationProvider({
   }, [status]);
 
   useEffect(() => {
+    let retryTimeout: NodeJS.Timeout | null = null;
+    let retryCount = 0;
+    
+    const attemptRefresh = async () => {
+      try {
+        await refresh();
+        retryCount = 0;
+      } catch {
+        retryCount++;
+        if (retryCount <= 3 && mounted.current) {
+          const backoff = Math.min(1000 * Math.pow(2, retryCount), 10000);
+          retryTimeout = setTimeout(attemptRefresh, backoff);
+        }
+      }
+    };
+    
     mounted.current = true;
-    refresh();
+    attemptRefresh();
     // Vérification faite dans un autre onglet : re-lire /me au focus.
     const onFocus = () => {
       void refresh();
@@ -136,6 +152,7 @@ export default function EmailVerificationProvider({
     window.addEventListener("focus", onFocus);
     return () => {
       mounted.current = false;
+      if (retryTimeout) clearTimeout(retryTimeout);
       window.removeEventListener("focus", onFocus);
     };
   }, [refresh]);

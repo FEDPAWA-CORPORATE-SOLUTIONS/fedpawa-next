@@ -16,7 +16,7 @@
   "lockScroll": true,
   "successWithClient": true,
   "hideStepper": false,
-  "totalSteps": 6,
+  "totalSteps": 5,
   "formTitle": "Souscription Domiciliation — 6 Étapes",
   "formSubtitle": "6 étapes (entreprise, représentant, contact, formule, documents KYC, facturation), packs nationaux et internationaux, paiement Mobile Money.",
   "steps": [
@@ -88,11 +88,6 @@
         { "name": "chkCadre", "label": "J'accepte le cadre contractuel (Convention de mise à disposition d'infrastructures et de services)", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
         { "name": "chkExactitude", "label": "Je certifie l'exactitude des informations fournies", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
       ]
-    },
-    {
-      "id": 6,
-      "title": "Facturation & Paiement",
-      "description": "Récapitulatif de votre commande et paiement Mobile Money."
     }
   ],
   "gammes": [

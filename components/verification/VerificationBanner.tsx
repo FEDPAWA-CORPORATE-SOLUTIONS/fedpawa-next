@@ -17,24 +17,25 @@ import type { Locale } from "@/lib/i18n";
 export default function VerificationBanner({ locale = "fr" }: { locale?: Locale }) {
   const t = verifTexts(locale);
   const routes = routesFor(locale);
-  const { status, unverified, resend, resending, resendFeedback, clearResendFeedback } =
+  const { status, unverified, resend, resending, feedback, clearFeedback } =
     useEmailVerification();
 
   if (status !== "unverified" || !unverified) return null;
 
-  const feedbackText =
-    resendFeedback == null
-      ? null
-      : resendFeedback.type === "success"
-        ? t.resendOk
-        : resendFeedback.type === "info"
-          ? t.resendWait.replace("{s}", String(resendFeedback.retryAfter ?? "60"))
-          : resendFeedback.text === "needLogin"
-            ? t.resendNeedLogin
-            : t.resendKo;
+  const feedbackText = feedback
+    ? feedback.type === "success"
+      ? t.resendOk
+      : feedback.type === "info"
+        ? t.resendWait.replace("{s}", String(feedback.retryAfter ?? "60"))
+        : feedback.text === "needLogin"
+          ? t.resendNeedLogin
+          : t.resendKo
+    : null;
+
+  const generalFeedbackText = feedback?.text ?? feedbackText;
 
   const handleResend = async () => {
-    clearResendFeedback();
+    clearFeedback();
     await resend();
   };
 
@@ -59,9 +60,9 @@ export default function VerificationBanner({ locale = "fr" }: { locale?: Locale 
         <div className="fp-verif-banner-text">
           <strong>{t.bannerTitle}</strong>
           <span>{t.bannerText}</span>
-          {feedbackText && (
-            <span className={"fp-verif-banner-feedback fp-verif-" + resendFeedback?.type}>
-              {feedbackText}
+          {generalFeedbackText && (
+            <span className={"fp-verif-banner-feedback fp-verif-" + (feedback?.type ?? "error")}>
+              {generalFeedbackText}
             </span>
           )}
         </div>

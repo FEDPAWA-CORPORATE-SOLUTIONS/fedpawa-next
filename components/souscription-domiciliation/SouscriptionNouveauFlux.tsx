@@ -152,7 +152,7 @@ const INITIAL: SouscriptionState = {
   chkExactitude: false,
 };
 
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 3;
 
 // ============================================================================
 // COMPOSANT PRINCIPAL
@@ -168,7 +168,7 @@ export default function SouscriptionNouveauFlux({
   // ------------------------------------------------------------------
   // États de formulaire (Groupe 1)
   // ------------------------------------------------------------------
-  const [step, setStep] = useState<Step>("form");
+  const [step, setStep] = useState<Step>("sign");
   const [form, setForm] = useState<SouscriptionState>(INITIAL);
   const [files, setFiles] = useState<FormFile>({});
   const [errors, setErrors] = useState<string[]>([]);
@@ -309,7 +309,7 @@ export default function SouscriptionNouveauFlux({
       const id = parseInt(stored, 10);
       if (!isNaN(id)) {
         setDraftId(id);
-        setStep('email');
+        setStep('sign');
       }
       localStorage.removeItem('fedpawa_redirect_draft_id');
     }
@@ -388,8 +388,7 @@ export default function SouscriptionNouveauFlux({
         chkExactitude: d.chkExactitude ?? f.chkExactitude,
       }) as SouscriptionState);
       if (d.step >= 1 && d.step <= TOTAL_STEPS) {
-        const stepMap: Record<number, Step> = { 1: "form", 2: "approve", 3: "email", 4: "sign", 5: "pay", 6: "success" };
-        setStep(stepMap[d.step]);
+        setStep(stepOrder[d.step - 1]);
       }
     }
     setSavedDraft(null);
@@ -405,7 +404,7 @@ export default function SouscriptionNouveauFlux({
     setSavedDraft(null);
     setDraftResolved(true);
     setForm({ ...INITIAL, options: [] });
-    setStep("form");
+    setStep("sign");
     applyUrlPack();
     if (meRef.current) applyMeFill(meRef.current);
   }
@@ -612,7 +611,7 @@ export default function SouscriptionNouveauFlux({
       }>(`/api/v1/souscription/${draftId}/approve`, {
         approuve: true,
       });
-      setStep("email");
+      setStep("sign");
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -890,8 +889,7 @@ export default function SouscriptionNouveauFlux({
   // ------------------------------------------------------------------
 
   const goToStep = (n: number) => {
-    const map: Record<number, Step> = { 1: "form", 2: "approve", 3: "email", 4: "sign", 5: "pay", 6: "success" };
-    setStep(map[n]);
+    setStep(stepOrder[n - 1]);
   };
 
   const domPrev = () => {
@@ -910,8 +908,8 @@ export default function SouscriptionNouveauFlux({
     };
   }, []);
 
-  const stepOrder: Step[] = ["form", "approve", "email", "sign", "pay", "success"];
-  const stepLabels = [t.step1, t.step2, t.step3, t.step4, t.step5, t.step6];
+  const stepOrder: Step[] = ["sign", "pay", "success"];
+  const stepLabels = [t.step4, t.step5, t.step6];
   const currentStepIndex = stepOrder.indexOf(step);
   const gateModalOpen =
     verif.status === "unverified" ||

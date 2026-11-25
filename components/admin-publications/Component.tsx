@@ -115,6 +115,7 @@ export default function AdminPublications({
   const [error, setError] = useState("");
   const [statut, setStatut] = useState<PublicationStatut | "">(("" as PublicationStatut | ""));
   const [page, setPage] = useState(1);
+  const [recherche, setRecherche] = useState("");
   const [editing, setEditing] = useState<AdminPublication | null | "new">(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [busy, setBusy] = useState(false);
@@ -124,11 +125,11 @@ export default function AdminPublications({
   const load = useCallback(() => {
     setLoading(true);
     setError("");
-    adminFetchPublications({ statut, page, par_page: PUBLICATIONS_PAR_PAGE })
+    adminFetchPublications({ statut, page, par_page: PUBLICATIONS_PAR_PAGE, recherche })
       .then((r) => setResp(r))
       .catch(() => setError(t.loadError))
       .finally(() => setLoading(false));
-  }, [statut, page, t.loadError]);
+  }, [statut, page, recherche, t.loadError]);
 
   useEffect(() => {
     load();
@@ -431,6 +432,14 @@ export default function AdminPublications({
                 </option>
               ))}
             </select>
+          </label>
+          <label>
+            <input
+              type="search"
+              placeholder={t.searchPlaceholder ?? "Rechercher…"}
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+            />
           </label>
         </div>
 
