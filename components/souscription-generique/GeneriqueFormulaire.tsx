@@ -338,8 +338,11 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   const DRAFT_KEY = spec.localStorageKey;
   const stepLabels = spec.steps.map((s) => s.title);
 
-  const set = (key: string, value: any) =>
+  const hasUserEdited = useRef(false);
+  const set = (key: string, value: any) => {
+    hasUserEdited.current = true;
     setForm((f) => ({ ...f, [key]: value }));
+  };
 
   // ---------- Facture : numéro et date ----------
   useEffect(() => {
@@ -405,7 +408,24 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
   }, []);
 
   useEffect(() => {
-    if (!draftResolved) return;
+    // Ne pas sauvegarder l'état initial vierge avant toute interaction utilisateur
+    if (!hasUserEdited.current) return;
+    // Ne pas écraser un brouillon déjà présent et non résolu (modal de reprise affichée)
+    const existing = localStorage.getItem(DRAFT_KEY);
+    if (existing) {
+      try {
+        const d = JSON.parse(existing);
+        const hasContent =
+          d.step > 1 ||
+          (Array.isArray(d.options) && d.options.length > 0) ||
+          Object.values(d).some(
+            (v: any) => typeof v === "string" && v.trim() !== ""
+          );
+        if (hasContent) return;
+      } catch {
+        /* fichier corrompu : on écrase */
+      }
+    }
     try {
       const draft: any = { ...form, step, savedAt: new Date().toISOString() };
       delete draft.files;
@@ -414,7 +434,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     } catch {
       /* quota / navigation privée */
     }
-  }, [form, step, draftResolved, DRAFT_KEY]);
+  }, [form, step, DRAFT_KEY]);
 
   // ---------- Verrou du scroll pendant modale de reprise ----------
   useEffect(() => {
