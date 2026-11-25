@@ -351,15 +351,23 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               type="text"
               className="amail-form-input"
               value={formCopie.join(", ")}
-              onChange={(e) =>
-                setFormCopie(
-                  e.target.value
-                    .split(",")
-                    .map((s) => s.trim())
-                    .filter(Boolean),
-                )
-              }
+              onChange={(e) => {
+                const emails = e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean);
+                // Validation simple de format email
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const validEmails = emails.filter((email) => emailRegex.test(email) || email === "");
+                setFormCopie(validEmails);
+              }}
               placeholder="copie1@domaine.com, copie2@domaine.com"
+              onInvalid={(e) => {
+                (e.target as HTMLInputElement).setCustomValidity("Veuillez entrer des adresses emails valides");
+              }}
+              onInput={(e) => {
+                (e.target as HTMLInputElement).setCustomValidity("");
+              }}
             />
             <label className="amail-form-label">{t.champSujet}</label>
             <input

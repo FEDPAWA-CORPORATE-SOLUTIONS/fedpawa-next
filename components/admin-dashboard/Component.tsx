@@ -613,6 +613,7 @@ function TabCourriers() {
                 type="date"
                 className="form-control"
                 required
+                max={new Date().toISOString().split('T')[0]}
                 value={dateReception}
                 onChange={(e) => setDateReception(e.target.value)}
               />
@@ -1082,7 +1083,38 @@ function TabMessages() {
 
   return (
     <div className="db-tab-content active" id="tab-messages">
-      <div className="db-welcome"><div><h1>Messagerie Interne</h1><p>Échanges entre clients et administration.</p></div></div>
+      <div className="db-welcome">
+        <div>
+          <h1>Messagerie Interne</h1>
+          <p>Échanges entre clients et administration.</p>
+        </div>
+        <button
+          type="button"
+          className="btn btn-outline btn-sm"
+          style={{ fontSize: "0.85rem" }}
+          onClick={() => {
+            const csv = ["ID,Date,Destinataire,Sujet,Statut"];
+            messages.forEach((m) => {
+              csv.push([
+                m.id ?? "",
+                `"${fmtDate(m.created_at)}"`,
+                `"${m.client_nom ?? (m.sender_type === "admin" ? "Client" : "Administration")}"`,
+                `"${(m.content ?? "").slice(0, 60)}"`,
+                m.sender_type ?? "—",
+              ].join(","));
+            });
+            const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "messages.csv";
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+        >
+          Export CSV
+        </button>
+      </div>
       <div className="db-section">
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
@@ -1176,6 +1208,7 @@ function TabMessages() {
 // ==========================================================
 
 function TabStats() {
+  const { lists, overview } = useAdminData();
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     orange: true,
     mtn: true,
@@ -1187,12 +1220,46 @@ function TabStats() {
     setToggles((t) => ({ ...t, [key]: !t[key] }));
   };
 
+  const k = overview?.stats ?? {};
+  const ticketsEnAttente = (lists?.tickets ?? []).filter(
+    (t) => t.statut !== "closed" && t.statut !== "resolved",
+  ).length;
+
   return (
     <div className="db-tab-content active" id="tab-stats">
       <div className="db-welcome"><div><h1>Statistiques & Paramètres</h1><p>Configuration du système et analyse des performances.</p></div></div>
       <div className="db-section">
+        <div className="overview-grid">
+          <div className="overview-card">
+            <h3>Clients actifs</h3>
+            <div className="value">{k.clients ?? 0}</div>
+          </div>
+          <div className="overview-card">
+            <h3>Abonnements</h3>
+            <div className="value">{k.abonnements ?? 0}</div>
+          </div>
+          <div className="overview-card">
+            <h3>Tickets en attente</h3>
+            <div className="value">{ticketsEnAttente}</div>
+          </div>
+          <div className="overview-card">
+            <h3>KYC en cours</h3>
+            <div className="value">{k.kyc_en_cours ?? 0}</div>
+          </div>
+        </div>
         <div className="db-section-header"><h2>Configuration Système</h2></div>
         <div className="settings-list">
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            style={{ marginBottom: 16 }}
+            onClick={() => {
+              // Ici, on enverrait les toggles vers l'API
+              console.log("Configuration sauvegardée:", toggles);
+            }}
+          >
+            Enregistrer la configuration
+          </button>
           <div className="setting-item">
             <div className="setting-info"><h4>Passerelle Orange Money</h4><p>API officielle pour la réception des paiements.</p></div>
             <div className={`status-toggle${toggles.orange ? " active" : ""}`} role="button" tabIndex={0} aria-pressed={toggles.orange} onClick={() => toggle("orange")} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") toggle("orange"); }} />

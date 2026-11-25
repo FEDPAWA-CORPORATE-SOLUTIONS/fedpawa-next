@@ -1273,6 +1273,7 @@ function TabSupport() {
   const [tickets, setTickets] = useState<ApiTicket[] | null>(null);
   const [ticketsError, setTicketsError] = useState(false);
   const [adminMsgs, setAdminMsgs] = useState<ApiMailMessage[] | null>(null);
+  const [readIds, setReadIds] = useState<Set<number>>(new Set());
 
   useEffect(() => {
     let cancelled = false;
@@ -1281,6 +1282,9 @@ function TabSupport() {
         if (cancelled) return;
         const msgs = (d.data ?? []).filter((m) => m.sender_type === "admin").slice(-10).reverse();
         setAdminMsgs(msgs);
+        // Pas de champ lu/lu_at sur l'API mail/thread : suivi lu/non-lu côté client après affichage.
+        const ids = msgs.map((m) => m.id).filter((id): id is number => id !== undefined);
+        setReadIds(new Set(ids));
       })
       .catch(() => {
         if (!cancelled) setAdminMsgs([]);
@@ -1341,6 +1345,13 @@ function TabSupport() {
     return <span className="badge badge-warning">Ouvert</span>;
   };
 
+  const markRead = (id: number) => {
+    setReadIds((prev) => {
+      if (prev.has(id)) return prev;
+      return new Set([...prev, id]);
+    });
+  };
+
   return (
     <div className="db-tab-content active" id="tab-support">
       <div className="db-welcome"><div><h1>Support</h1><p>Une question ? Notre équipe est là pour vous aider.</p></div></div>
@@ -1391,33 +1402,53 @@ function TabSupport() {
                 Aucun message de l'administration pour le moment. Vos échanges apparaîtront ici.
               </p>
             )}
-            {adminMsgs?.map((m, i) => (
-              <div
-                key={m.id ?? i}
-                style={{
-                  background: "var(--color-bg-alt)",
-                  border: "1px solid var(--color-border)",
-                  borderLeft: "3px solid var(--color-primary)",
-                  borderRadius: 10,
-                  padding: "12px 14px",
-                }}
-              >
+            {adminMsgs?.map((m, i) => {
+              const id = m.id ?? i;
+              const lu = readIds.has(id);
+              return (
+                <div
+                  key={id}
+                  style={{
+                    background: "var(--color-bg-alt)",
+                    border: "1px solid var(--color-border)",
+                    borderLeft: `3px solid ${lu ? "var(--color-text-muted)" : "var(--color-primary)"}`,
+                    borderRadius: 10,
+                    padding: "12px 14px",
+                    cursor: "pointer",
+                  }}
+                  onClick={() => markRead(id)}
+                >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "center" }}>
-                  <strong style={{ fontSize: "0.82rem", color: "var(--color-primary)" }}>
-                    <span style={{ marginRight: 6 }}>🔵</span>Administration FEDPAWA
-                  </strong>
-                  <span style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>{fmtDateTime(m.created_at)}</span>
+                    <strong style={{ fontSize: "0.82rem", color: "var(--color-primary)" }}>
+                      <span style={{ marginRight: 6 }}>🔵</span>Administration FEDPAWA
+                    </strong>
+                    <span style={{ fontSize: "0.72rem", color: "var(--color-text-muted)" }}>{fmtDateTime(m.created_at)}</span>
+                    {!lu && (
+                      <span style={{ fontSize: "0.7rem", background: "var(--color-primary)", color: "#ffffff", borderRadius: 4, padding: "1px 6px" }}>
+                        Nouveau
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: "0.88rem", margin: "6px 0 0", color: "var(--color-text-main)" }}>{m.content}</p>
+                  {!lu && (
+                    <span style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: 4, display: "block" }}>
+                      Cliquez pour marquer comme lu
+                    </span>
+                  )}
                 </div>
-                <p style={{ fontSize: "0.88rem", margin: "6px 0 0", color: "var(--color-text-main)" }}>{m.content}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         {/* F7: historique des demandes du client */}
         <div id="ticketsHistory" style={{ marginTop: 28 }}>
           <h3 style={{ fontSize: "1.05rem", marginBottom: 12 }}>Mes demandes précédentes</h3>
-          <p className="db-hint">{tickets?.length ?? 0} demande(s)</p>
+          <p className="db-hint">
+            {tickets?.length ?? 0} demande(s) •{" "}
+            {tickets?.filter((t) => t.statut === "closed" || t.statut === "resolved").length ?? 0} résolue(s) •{" "}
+            {tickets?.filter((t) => t.statut === "en_cours" || t.statut === "in_progress").length ?? 0} en cours
+          </p>
           <div id="ticketsList" style={{ display: "grid", gap: 12 }}>
             {ticketsError && (
               <p style={{ color: "var(--color-text-muted)", fontSize: "0.9rem" }}>Historique indisponible.</p>
