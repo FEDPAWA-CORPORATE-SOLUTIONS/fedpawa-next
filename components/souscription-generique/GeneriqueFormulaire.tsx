@@ -14,7 +14,6 @@ import { type Locale, getPageDictionary } from "@/lib/i18n";
 import { apiAuthPost, fetchMe } from "@/lib/auth";
 import { isEmailNonVerifieError } from "@/lib/verification";
 import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
-import VerificationGateModal from "@/components/verification/VerificationGateModal";
 import { routesFor } from "@/lib/routes";
 
 // ---------------------------------------------------------------------------
@@ -1266,15 +1265,15 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           </div>
                         )}
 
-                        {/* Bouton de paiement avec montant */}
+                        {/* Bouton de validation finale — crée le dossier via l'API et redirige vers le flux Signature → Paiement */}
                         <button
                           type="button"
                           className="btn btn-primary btn-block"
                           style={{ marginTop: 16 }}
-                          onClick={() => domNext()}
+                          onClick={handleSubmit}
                         >
                           {spec.payButton?.label?.replace("{amount}", totalPrice.toLocaleString("fr-FR")) ||
-                           (spec.invoiceDetail || spec.invoice ? `Payer ${totalPrice.toLocaleString("fr-FR")} FCFA (Mobile Money)` : "Valider")}
+                           (spec.invoiceDetail || spec.invoice ? `Payer ${totalPrice.toLocaleString("fr-FR")} FCFA (Mobile Money)` : "Valider et souscrire")}
                         </button>
                       </section>
                     </div>
@@ -1384,30 +1383,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
         </div>
       )}
 
-      {step === "email" && (
-        <div className="tunnel-step-content active" data-step="email">
-          <section className="form-section">
-            <h2 className="form-section-title">
-              <span className="form-section-num">3</span> En attente de signature
-            </h2>
-            <p className="section-intro">
-              Votre dossier est en attente de signature. Un lien vous sera envoyÃ© par e-mail
-              pour procÃ©der Ã  la signature Ã©lectronique du contrat.
-            </p>
-            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                onClick={() => domPrev()}
-                className="btn btn-outline"
-              >
-                ← Retour
-              </button>
-            </div>
-          </section>
-        </div>
-      )}
 
-      <VerificationGateModal locale={locale} />
     </>
   );
 }

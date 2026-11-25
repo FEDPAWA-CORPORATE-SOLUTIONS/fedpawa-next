@@ -197,6 +197,9 @@ export default function SouscriptionNouveauFlux({
   const [paymentLinkSent, setPaymentLinkSent] = useState(false);
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
   const [signatureLinkSent, setSignatureLinkSent] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [paymentInitiated, setPaymentInitiated] = useState(false);
+  const [paymentTransactionId, setPaymentTransactionId] = useState<string | null>(null);
   const [auditEntries, setAuditEntries] = useState<{ timestamp: string; action: string; ip: string; details: Record<string, unknown> }[]>([]);
   const [pdfHash, setPdfHash] = useState<string | null>(null);
 
@@ -560,7 +563,7 @@ export default function SouscriptionNouveauFlux({
         pack: string;
         prix: number;
         message: string;
-      }>("/api/v1/souscription-nouveau-flux/draft", {
+      }>("/api/v1/souscription/draft", {
         email: form.email,
         pack: form.pack,
         nom: form.nomComplet,
@@ -606,7 +609,7 @@ export default function SouscriptionNouveauFlux({
         statut: string;
         hash_brouillon: string;
         message: string;
-      }>(`/api/v1/souscription-nouveau-flux/${draftId}/approve`, {
+      }>(`/api/v1/souscription/${draftId}/approve`, {
         approuve: true,
       });
       setStep("email");
@@ -646,7 +649,7 @@ export default function SouscriptionNouveauFlux({
         draft_id: number;
         signature_link: string;
         message: string;
-      }>(`/api/v1/souscription-nouveau-flux/${draftId}/email-link`, {
+      }>(`/api/v1/souscription/${draftId}/email-link`, {
         email: emailInput,
       });
       setFlowToken(res.flow_token);
@@ -677,7 +680,7 @@ export default function SouscriptionNouveauFlux({
         status: string;
         payment_link: string;
         message: string;
-      }>(`/api/v1/souscription-nouveau-flux/${draftId}/payment-link`, {});
+      }>(`/api/v1/souscription/${draftId}/payment-link`, {});
       setPaymentLinkSent(true);
       setStep("pay");
     } catch (err) {
@@ -694,6 +697,47 @@ export default function SouscriptionNouveauFlux({
     }
   };
 
+  const handlePay = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!draftId) return;
+    if (!phone || !operator) {
+      setPaymentError("Veuillez sélectionner un opérateur et saisir votre numéro de téléphone.");
+      return;
+    }
+    setLoading(true);
+    setPaymentError(null);
+    setPaymentInitiated(false);
+    try {
+      const res = await apiAuthPost<{
+        status: string;
+        statut: string;
+        transaction_id: string | null;
+        montant: number;
+        message: string;
+      }>(`/api/v1/souscription/${draftId}/pay`, {
+        phone,
+        operator,
+      });
+      setPaymentInitiated(true);
+      setPaymentTransactionId(res.transaction_id ?? null);
+      // Passer à l'étape succès après initiation du paiement
+      setTimeout(() => {
+        setStep("success");
+      }, 1500);
+    } catch (err) {
+      setPaymentError(
+        err instanceof ApiError
+          ? resolveFormError(err, "souscription", {
+              validation_generic: "Impossible d'initier le paiement. Réessayez.",
+              cat_unknown: "Erreur lors de l'initiation du paiement."
+            })
+          : "Erreur lors de l'initiation du paiement."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleRequestOtp = async () => {
     if (!draftId) return;
     setLoading(true);
@@ -704,7 +748,7 @@ export default function SouscriptionNouveauFlux({
         email: string;
         ttl_secondes: number;
         message: string;
-      }>(`/api/v1/souscription-nouveau-flux/${draftId}/request-otp`, {});
+      }>(`/api/v1/souscription/${draftId}/request-otp`, {});
       setOtpSent(true);
       otpTimerRef.current = setTimeout(() => {
         setError("Le code OTP a expiré. Demandez un nouveau code.");
@@ -742,7 +786,7 @@ export default function SouscriptionNouveauFlux({
         statut: string;
         hash_sha256: string;
         message: string;
-      }>(`/api/v1/souscription-nouveau-flux/${draftId}/sign`, {
+      }>(`/api/v1/souscription/${draftId}/sign`, {
         otp,
         signature_image: signatureImage,
         signature_metadata: signatureMetadata,
@@ -823,7 +867,7 @@ export default function SouscriptionNouveauFlux({
         transaction_id: string | null;
         montant: number;
         message: string;
-      }>(`/api/v1/souscription-nouveau-flux/${draftId}/resume`);
+      }>(`/api/v1/souscription/${draftId}/resume`);
       setSuccess(
         "Lien de reprise généré. Procédez au paiement pour finaliser votre souscription."
       );
@@ -1672,7 +1716,110 @@ export default function SouscriptionNouveauFlux({
             </div>
           </div>
         )}
-
+  
+        {/* ========================================================================
+            ÉTAPE PAIEMENT (Groupe 7)
+            ======================================================================== */}
+        {step === "pay" && (
+          <div className="tunnel-step-content active" data-step="pay">
+            <section className="form-section">
+              <h2 className="form-section-title">
+                <span className="form-section-num">5</span> Paiement sécurisé
+              </h2>
+              <p className="section-intro">
+                Votre contrat a été signé électroniquement. Procédez au paiement
+                pour activer votre service de domiciliation.
+              </p>
+              
+              <div style={{ background: "#f8fafc", borderRadius: 8, border: "1px solid #e2e8f0", padding: 20, marginBottom: 20 }}>
+                <h3 style={{ fontSize: "1rem", marginBottom: 10, color: "#15294D" }}>Récapitulatif</h3>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 6 }}>
+                  <strong>Forfait :</strong> {packLabel}
+                </p>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 6 }}>
+                  <strong>Montant :</strong> {fmtFCFA(total)} FCFA
+                </p>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 6 }}>
+                  <strong>Client :</strong> {form.nomComplet || "—"}
+                </p>
+                <p style={{ fontSize: "0.85rem", color: "#64748b", marginBottom: 6 }}>
+                  <strong>Entreprise :</strong> {form.denomination || "—"}
+                </p>
+                {hashSha256 && (
+                  <p style={{ fontSize: "0.8rem", color: "#64748b", fontFamily: "monospace", wordBreak: "break-all", marginBottom: 0 }}>
+                    <strong>Empreinte du contrat :</strong> {hashSha256}
+                  </p>
+                )}
+              </div>
+              
+              {paymentError && (
+                <div style={{ color: "#dc2626", padding: 12, background: "#fef2f2", borderRadius: 4, marginBottom: 16, fontSize: "0.85rem" }}>
+                  {paymentError}
+                </div>
+              )}
+              
+              {!paymentInitiated && (
+                <form onSubmit={handlePay} className="space-y-4" noValidate>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Opérateur de paiement
+                    </label>
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => setOperator("MTN")}
+                        className={`w-full border border-gray-300 rounded px-3 py-2 text-left ${operator === "MTN" ? "border-blue-500 bg-blue-50" : ""}`}
+                      >
+                        MTN Mobile Money
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setOperator("Orange")}
+                        className={`w-full border border-gray-300 rounded px-3 py-2 text-left ${operator === "Orange" ? "border-blue-500 bg-blue-50" : ""}`}
+                      >
+                        Orange Money
+                      </button>
+                    </div>
+                  </div>
+                  <div className="form-group">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Numéro de téléphone
+                    </label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+237 6XX XXX XXX"
+                      className="w-full border border-gray-300 rounded px-3 py-2"
+                      required
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={loading || !phone || !operator}
+                    className="btn btn-primary btn-block"
+                  >
+                    {loading ? "Paiement en cours…" : `Payer ${fmtFCFA(total)} FCFA`}
+                  </button>
+                </form>
+              )}
+              
+              {paymentInitiated && (
+                <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 8, padding: 16, marginTop: 16, color: "#166534" }}>
+                  <p style={{ margin: 0, fontSize: "0.85rem" }}>
+                    <strong>Paiement initié.</strong> Votre contrat sera activé dès confirmation du paiement par l'opérateur Mobile Money.
+                  </p>
+                  {paymentTransactionId && (
+                    <p style={{ margin: "6px 0 0", fontSize: "0.8rem", color: "#166534" }}>
+                      Transaction : {paymentTransactionId}
+                    </p>
+                  )}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+  
         {/* ========================================================================
             ÉCRAN DE SUCCÈS (Groupe 9)
             ======================================================================== */}
