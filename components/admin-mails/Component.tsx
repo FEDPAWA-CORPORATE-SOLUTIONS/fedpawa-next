@@ -68,6 +68,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   // ---------- États de navigation ----------
   const [view, setView] = useState<"liste" | "detail" | "nouveau" | "repondre">("liste");
   const [folder, setFolder] = useState<Folder>("inbox");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [categories, setCategories] = useState<UserCategory[]>([]);
   const [activeCategorieId, setActiveCategorieId] = useState<number | null>(null);
   const [selectedMailId, setSelectedMailId] = useState<number | null>(null);
@@ -399,7 +400,20 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     <div className="mail-container">
       {/* ============== BARRE LATÉRALE GAUCHE ============== */}
       <aside className="mail-sidebar">
+        {/* Logo FEDPAWA en haut */}
+        <div className="mail-sidebar-logo">
+          <div className="mail-logo-mark">FP</div>
+          <span className="mail-sidebar-brand">FEDPAWA</span>
+        </div>
         <div className="mail-sidebar-top">
+          <button
+            type="button"
+            className="mail-menu-toggle"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            aria-label="Menu"
+          >
+            ☰
+          </button>
           <button
             type="button"
             className="mail-compose-btn"
@@ -424,24 +438,36 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             onClick={() => setFolder("favoris")}
           >
             ⭐ Favoris
+            {count && count.non_lus > 0 && folder === "favoris" && (
+              <span className="mail-badge">{count.non_lus}</span>
+            )}
           </div>
           <div
             className={`mail-nav-item ${folder === "envoyes" ? "active" : ""}`}
             onClick={() => setFolder("envoyes")}
           >
             📤 Envoyés
+            {count && count.non_lus > 0 && folder === "envoyes" && (
+              <span className="mail-badge">{count.non_lus}</span>
+            )}
           </div>
           <div
             className={`mail-nav-item ${folder === "brouillons" ? "active" : ""}`}
             onClick={() => setFolder("brouillons")}
           >
             📝 Brouillons
+            {count && count.non_lus > 0 && folder === "brouillons" && (
+              <span className="mail-badge">{count.non_lus}</span>
+            )}
           </div>
           <div
             className={`mail-nav-item ${folder === "corbeille" ? "active" : ""}`}
             onClick={() => setFolder("corbeille")}
           >
             🗑️ Corbeille
+            {count && count.non_lus > 0 && folder === "corbeille" && (
+              <span className="mail-badge">{count.non_lus}</span>
+            )}
           </div>
         </nav>
         <div className="mail-sidebar-bottom">

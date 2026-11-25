@@ -4095,4 +4095,115 @@ html[data-mode="dark"] .global-loader-message {
   }
 }
 
+/* ==========================================================
+   FEDPAWA — Boîte de réception admin (Phase 1 — Barre latérale)
+   Styles pour le logo, le menu hamburger et les états actifs
+   ========================================================== */
+
+/* Logo FEDPAWA en haut de la sidebar */
+.mail-sidebar-logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 20px 12px;
+}
+
+.mail-logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-family: var(--font-serif);
+  font-weight: 800;
+  font-size: 1.5rem;
+  border-radius: 6px;
+  letter-spacing: -0.02em;
+}
+
+.mail-sidebar-brand {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--color-heading);
+  letter-spacing: 0.02em;
+}
+
+/* Bouton menu hamburger */
+.mail-menu-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-bg-main);
+  color: var(--color-heading);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  transition: var(--transition-fast);
+}
+
+.mail-menu-toggle:hover {
+  background: var(--color-bg-section);
+  color: var(--color-primary);
+}
+
+/* États actifs améliorés avec ombre légère */
+.mail-nav-item.active {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-card);
+  transform: translateX(2px);
+}
+
+.mail-nav-item.active:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Corbeille distincte avec couleur rouge */
+.mail-nav-item[style*="corbeille"] .mail-badge,
+.mail-badge {
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .mail-sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    padding: 8px;
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .mail-sidebar-top {
+    display: none;
+  }
+  .mail-nav {
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 4px;
+    gap: 4px;
+  }
+  .mail-nav-item {
+    white-space: nowrap;
+    padding: 6px 10px;
+  }
+  .mail-sidebar-bottom {
+    display: none;
+  }
+}
+
 
