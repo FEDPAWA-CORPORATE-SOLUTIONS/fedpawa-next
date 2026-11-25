@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="navy" data-mode="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paiement — Conseil Juridique et Fiscal — FEDPAWA</title>
+<style>
+  /* ===== Paiement Conseil Fiscal — Design System FEDPAWA ===== */
+  .page {
+    min-height: 100vh;
+    background-color: #FAF9F6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: #1E293B;
+    line-height: 1.7;
+    padding: 0;
+  }
+  .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+  .warning-banner {
+    background: #fef3c7;
+    border: 1px solid #8A6D1D;
+    color: #7a3e0d;
+    border-radius: 8px;
+    padding: 16px 24px;
+    margin-bottom: 32px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+  }
+  .warning-banner .warning-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .warning-banner strong { color: #7a3e0d; }
+  .section-header { margin-bottom: 32px; text-align: center; }
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.75rem; font-weight: 800; color: #0A1424; margin-bottom: 8px;
+  }
+  .section-subtitle { font-size: 0.95rem; color: #5A6478; }
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 768px) { .layout { grid-template-columns: 1fr; } }
+  .invoice-card, .payment-card {
+    background: #fff;
+    border: 1px solid #E2DDD5;
+    border-radius: 12px;
+    padding: 28px 24px;
+    box-shadow: 0 8px 30px rgba(10, 20, 36, 0.10);
+    height: fit-content;
+  }
+  .invoice-header {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 24px; padding-bottom: 16px;
+    border-bottom: 2px solid #15294D;
+  }
+  .invoice-brand {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem; font-weight: 800; color: #15294D; letter-spacing: 0.5px;
+  }
+  .invoice-doc-type {
+    font-size: 0.875rem; font-weight: 700; color: #D4AF37;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .invoice-details { margin-bottom: 24px; }
+  .invoice-field {
+    display: flex; justify-content: space-between;
+    font-size: 0.9rem; padding: 8px 0; border-bottom: 1px solid #E2DDD5;
+  }
+  .invoice-field .label { color: #5A6478; font-weight: 500; }
+  .invoice-field .value { color: #1E293B; font-weight: 600; }
+  .invoice-field .badge {
+    display: inline-block; padding: 4px 10px; border-radius: 6px;
+    font-size: 0.8rem; font-weight: 700; color: #8A6D1D;
+    background: #fefbeb; border: 1px solid #fde68a;
+  }
+  .invoice-total {
+    margin-top: 24px; padding-top: 16px;
+    border-top: 2px solid #15294D;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .invoice-total .label { font-size: 0.9rem; color: #5A6478; font-weight: 500; }
+  .invoice-total .value {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.5rem; font-weight: 800; color: #D4AF37;
+  }
+  .invoice-footer {
+    margin-top: 24px; padding-top: 16px; border-top: 1px solid #E2DDD5;
+  }
+  .invoice-footer .small { font-size: 0.75rem; color: #5A6478; line-height: 1.6; }
+  .payment-header { margin-bottom: 24px; }
+  .payment-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.25rem; font-weight: 700; color: #0A1424; margin-bottom: 6px;
+  }
+  .payment-subtitle { font-size: 0.875rem; color: #5A6478; }
+  .operators { display: flex; gap: 10px; margin-bottom: 24px; }
+  .operator-btn {
+    flex: 1; padding: 14px; border: 2px solid #E2DDD5;
+    border-radius: 10px; background: #fff; cursor: pointer;
+    transition: all 0.2s; text-align: left; display: flex;
+    align-items: center; gap: 10px;
+  }
+  .operator-btn img { width: 24px; height: 24px; }
+  .operator-btn span { font-weight: 600; color: #1E293B; font-size: 0.9rem; }
+  .operator-btn.active { border-color: #15294D; background: #eef2f8; }
+  .payment-form { display: flex; flex-direction: column; gap: 16px; }
+  .form-group { display: flex; flex-direction: column; gap: 6px; }
+  .form-group.mt-small { margin-top: 4px; }
+  .form-label { font-size: 0.875rem; font-weight: 600; color: #0A1424; }
+  .form-label .required { color: #C0392B; margin-left: 4px; }
+  .form-control {
+    width: 100%; padding: 12px 16px; font-size: 1rem;
+    border: 1px solid #E2DDD5; border-radius: 8px;
+    background: #fff; color: #1E293B;
+  }
+  .form-control:focus { outline: none; border-color: #15294D; box-shadow: 0 0 0 3px rgba(21, 41, 77, 0.1); }
+  .form-control.readonly { background: #F3F1EC; color: #5A6478; cursor: not-allowed; }
+  .btn-pay {
+    width: 100%; padding: 16px; font-size: 1rem; font-weight: 700;
+    border: none; border-radius: 10px; cursor: pointer; transition: all 0.2s;
+    background: linear-gradient(135deg, #15294D 0%, #0A1424 100%);
+    color: #fff; box-shadow: 0 6px 16px rgba(21, 41, 77, 0.30);
+  }
+  .btn-pay:hover:not(:disabled) { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(21, 41, 77, 0.45); }
+  .btn-pay:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .disclaimer { font-size: 0.75rem; color: #5A6478; line-height: 1.6; margin-top: 8px; }
+  .success-card {
+    text-align: center; padding: 60px 24px; max-width: 480px; margin: 0 auto;
+  }
+  .success-icon {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 64px; height: 64px; background: #f0fdf4; border: 1px solid #bbf7d0;
+    border-radius: 50%; color: #1E7D4F; margin-bottom: 20px;
+  }
+  .success-icon svg { width: 32px; height: 32px; }
+  .success-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.75rem; font-weight: 800; color: #0A1424; margin-bottom: 12px;
+  }
+  .success-text { font-size: 0.95rem; color: #5A6478; margin-bottom: 28px; line-height: 1.6; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 14px 28px; font-size: 1rem; font-weight: 700;
+    color: #fff; background: linear-gradient(135deg, #15294D 0%, #0A1424 100%);
+    border: none; border-radius: 10px; cursor: pointer; text-decoration: none;
+    transition: all 0.2s; box-shadow: 0 6px 16px rgba(21, 41, 77, 0.30);
+  }
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(21, 41, 77, 0.45); }
+</style>
+</head>
+<body>
+  <div class="page">
+    <div class="container">
+      <!-- Bannière d'avertissement -->
+      <div class="warning-banner">
+        <div class="warning-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M13 16h-1v-4h1v4z" />
+            <circle cx="12" cy="9" r="1" />
+          </svg>
+          <strong>Attention :</strong>
+        </div>
+        Cette page est une simulation de paiement pour les tests. Aucun prélèvement réel n'est effectué. Les données saisies ici ne sont pas enregistrées en production.
+      </div>
+
+      <div class="section-header">
+        <h1 class="section-title">Paiement — Conseil Juridique et Fiscal</h1>
+        <p class="section-subtitle">
+          Vérifiez votre facture et procédez au paiement par Mobile Money.
+        </p>
+      </div>
+
+      <div class="layout">
+        <!-- FACTURE (GAUCHE) -->
+        <div class="invoice-card">
+          <div class="invoice-header">
+            <div class="invoice-brand">FEDPAWA</div>
+            <div class="invoice-doc-type">Facture Proforma</div>
+          </div>
+          <div class="invoice-details">
+            <div class="invoice-field">
+              <span class="label">Numéro</span>
+              <span class="value">FAC-2026-001</span>
+            </div>
+            <div class="invoice-field">
+              <span class="label">Date</span>
+              <span class="value">23/11/2026</span>
+            </div>
+            <div class="invoice-field">
+              <span class="label">Service</span>
+              <span class="value">Conseil Juridique et Fiscal</span>
+            </div>
+            <div class="invoice-field">
+              <span class="label">Gamme</span>
+              <span class="value">Simplifiée — Starter</span>
+            </div>
+            <div class="invoice-field">
+              <span class="label">Périodicité</span>
+              <span class="value">Mensuel</span>
+            </div>
+            <div class="invoice-field">
+              <span class="label">Statut</span>
+              <span class="badge pending">En attente de paiement</span>
+            </div>
+          </div>
+          <div class="invoice-total">
+            <span class="label">Total à payer</span>
+            <span class="value">35 000 FCFA</span>
+          </div>
+          <div class="invoice-footer">
+            <p class="small">FEDPAWA CORPORATE SOLUTIONS SARL — NIU: M09261890362B — RCCM: CM-DLA-01-2026-B13-00767</p>
+          </div>
+        </div>
+
+        <!-- FORMULAIRE PAIEMENT (DROITE) -->
+        <div class="payment-card">
+          <div class="payment-header">
+            <h3 class="payment-title">Paiement Mobile Money</h3>
+            <p class="payment-subtitle">Sélectionnez votre opérateur et saisissez votre numéro.</p>
+          </div>
+          <div class="operators">
+            <button type="button" class="operator-btn active">
+              <img src="https://cdn-icons-png.flaticon.com/512/174/174875.png" alt="MTN Mobile Money" width="24" height="24" />
+              <span>MTN Mobile Money</span>
+            </button>
+            <button type="button" class="operator-btn">
+              <img src="https://cdn-icons-png.flaticon.com/512/174/174875.png" alt="Orange Money" width="24" height="24" />
+              <span>Orange Money</span>
+            </button>
+          </div>
+          <form>
+            <div class="form-group">
+              <label class="form-label">Numéro de téléphone <span class="required">*</span></label>
+              <input type="tel" class="form-control" placeholder="+237 6XX XXX XXX" value="+237 6" />
+            </div>
+            <div class="form-group mt-small">
+              <label class="form-label">Montant</label>
+              <input type="text" class="form-control readonly" value="35 000 FCFA" readonly />
+            </div>
+            <button type="submit" class="btn-pay">Payer 35 000 FCFA</button>
+            <p class="disclaimer">
+              En cliquant sur « Payer », vous autorisez le prélèvement du montant indiqué sur votre compte Mobile Money. Un reçu vous sera envoyé par e-mail.
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

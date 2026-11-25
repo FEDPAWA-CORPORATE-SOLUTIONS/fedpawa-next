@@ -7,7 +7,6 @@ import SignatureDossierClient from "@/components/espace-client/signature/Dossier
 // Route dynamique : rendu bloquant autorisé (cacheComponents) — le
 // usePathname du Header (layout) et le useParams de la page vivent
 // sous le <Suspense> ci-dessous / dans le composant client.
-export const instant = false;
 
 export default function SignatureDossierPage() {
   if (process.env.NEXT_PUBLIC_SIGNATURE_ENABLED !== "true") {

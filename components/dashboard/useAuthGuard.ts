@@ -77,8 +77,8 @@ export function useAuthGuard(
         if (!cancelled) apply(role);
       })
       .catch(() => {
-        // API injoignable : laisser la page visible (dégradation gracieuse)
-        if (!cancelled) setResult({ status: "allowed", role: null });
+        // API injoignable : accès bloqué (pas de dégradation gracieuse qui autoriserait à tort)
+        if (!cancelled) setResult({ status: "denied", role: null });
       });
 
     return () => {

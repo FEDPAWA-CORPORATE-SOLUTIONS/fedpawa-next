@@ -4,7 +4,7 @@
   "endpoint": "/api/v1/souscription/conseil-fiscal",
   "priceFixedFCFA": 35000,
   "priceLabel": "Forfait Régime Simplifié",
-  "contract": false,
+  "contract": true,
   "hideStepper": false,
   "totalSteps": 6,
   "formTitle": "Souscription Conseil Juridique et Fiscal",
@@ -57,11 +57,12 @@
     },
     {
       "id": 5,
-      "title": "Choix de la formule",
-      "description": "Sélectionnez le forfait adapté à votre régime fiscal et à votre volume d'activité.",
+      "title": "Choix de la gamme et du pack",
+      "description": "Sélectionnez la gamme adaptée à votre régime fiscal, puis le pack et la périodicité.",
       "fields": [
-        { "name": "formule", "label": "Formule", "type": "select", "placeholder": "Sélectionner la formule", "required": true, "errorRequired": "La formule est requise", "options": [ "Forfait Régime Simplifié — 35 000 FCFA / mois", "Forfait Régime du Réel / Corporate — Sur devis personnalisé" ] },
-        { "name": "periodicite", "label": "Périodicité", "type": "select", "placeholder": "Sélectionner la périodicité", "required": true, "errorRequired": "La périodicité est requise", "options": [ "Mensuel (Paiement chaque mois)", "Semestriel (6 mois)", "Annuel (12 mois — Bénéficiez de remises exclusives)" ] }
+        { "name": "gamme", "label": "Gamme", "type": "select", "placeholder": "Sélectionner la gamme", "required": true, "errorRequired": "La gamme est requise" },
+        { "name": "periodicite", "label": "Périodicité", "type": "select", "placeholder": "Sélectionner la périodicité", "required": true, "errorRequired": "La périodicité est requise", "options": [ "mensuel", "semestriel", "annuel" ] },
+        { "name": "pack", "label": "Pack", "type": "select", "placeholder": "Sélectionner le pack", "required": true, "errorRequired": "Le pack est requis" }
       ],
       "options": [
         { "id": "heures-supplementaires", "label": "Heures de bureau supplémentaires" },
@@ -71,46 +72,58 @@
     },
     {
       "id": 6,
-      "title": "Validation & Paiement",
-      "description": "Confirmez votre demande, validez les conditions et procédez au paiement.",
+      "title": "Validation",
+      "description": "Confirmez votre demande et validez les conditions avant de procéder au paiement.",
       "checkboxes": [
         { "name": "chkCgv", "label": "J'accepte expressément les Conditions Générales de Vente et la Politique de Confidentialité de FEDPAWA CORPORATE SOLUTIONS SARL.", "required": true, "errorRequired": "Vous devez accepter les CGV" },
         { "name": "chkCadre", "label": "Je reconnais que la prestation de conseil juridique et fiscal est régie par une convention de prestation de services.", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
         { "name": "chkExactitude", "label": "Je certifie sur l'honneur que les informations et documents fournis sont exacts, authentiques et sincères.", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
-      ],
-      "invoice": {
-        "label": "Facture proforma",
-        "serviceLine": "Conseil juridique et fiscal",
-        "amountFCFA": 35000
-      },
-      "invoiceDetail": {
-        "label": "Facture proforma",
-        "serviceLine": "Conseil juridique et fiscal",
-        "amountFCFA": 35000,
-        "companyName": "FEDPAWA CORPORATE SOLUTIONS SARL",
-        "companyNiu": "M09261890362B",
-        "companyRccm": "CM-DLA-01-2026-B13-00767",
-        "companyAddress": "Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun",
-        "companyPhone": "+237 691 70 48 02",
-        "companyEmail": "contact@fedpawa.com",
-        "invoiceLabel": "Facture proforma",
-        "invoiceNumLabel": "N°",
-        "invoiceDateLabel": "Date",
-        "billedToLabel": "Facturé à",
-        "serviceLabel": "Prestation",
-        "periodLabel": "Période",
-        "designationLabel": "Désignation",
-        "amountLabel": "Montant",
-        "totalLabel": "Total",
-        "footer": "Total à payer :",
-        "footerEnd": " FCFA"
-      },
-      "payButton": "Payer {amount} FCFA (Mobile Money)",
-      "devisMessage": "La formule \"Régime du Réel / Corporate\" est établie sur devis personnalisé. Nos équipes vous contacteront pour finaliser le montant et les modalités de paiement."
+      ]
     }
   ],
   "localStorageKey": "souscription_conseil_fiscal_draft_v1",
   "successMessage": "Votre dossier de conseil juridique et fiscal a bien été transmis à nos équipes.",
   "successLink": "Aller à mon Espace Client",
-  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville" ]
+  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville" ],
+  "gammes": [
+    {
+      "id": "simplifie",
+      "label": "Simplifié",
+      "badge": "RÉGIME SIMPLIFIÉ",
+      "title": "Gamme Simplifiée",
+      "desc": "Forfait adapté aux petites entreprises au régime simplifié.",
+      "packs": [
+        { "id": "starter", "label": "Starter", "priceFCFA": 35000, "badge": "Entrée de gamme", "usd": 58, "features": { "fr": [ "Conseil fiscal mensuel", "Déclarations TVA et IS", "Accompagnement comptable basique" ] } },
+        { "id": "pro", "label": "Pro", "priceFCFA": 65000, "badge": "Populaire", "usd": 108, "features": { "fr": [ "Conseil fiscal mensuel", "Déclarations TVA et IS", "Accompagnement comptable complet", "Audit fiscal annuel" ] } },
+        { "id": "premium", "label": "Premium", "priceFCFA": 120000, "badge": "Luxe", "usd": 200, "features": { "fr": [ "Conseil fiscal illimité", "Déclarations TVA et IS", "Accompagnement comptable complet", "Audit fiscal semestriel", "Optimisation fiscale" ] } }
+      ]
+    },
+    {
+      "id": "reel",
+      "label": "Réel / Corporate",
+      "badge": "RÉGIME RÉEL",
+      "title": "Gamme Réel / Corporate",
+      "desc": "Accompagnement sur mesure pour les entreprises au régime du réel.",
+      "packs": [
+        { "id": "corporate", "label": "Corporate", "priceFCFA": 200000, "badge": "Sur devis", "usd": 333, "features": { "fr": [ "Conseil fiscal dédié", "Gestion comptable complète", "Audit fiscal trimestriel", "Optimisation fiscale avancée", "Assistance contrôle fiscal" ] } }
+      ]
+    }
+  ],
+  "packs": [
+    { "id": "starter", "label": "Starter", "priceFCFA": 35000, "badge": "Entrée de gamme" },
+    { "id": "pro", "label": "Pro", "priceFCFA": 65000, "badge": "Populaire" },
+    { "id": "premium", "label": "Premium", "priceFCFA": 120000, "badge": "Luxe" },
+    { "id": "corporate", "label": "Corporate", "priceFCFA": 200000, "badge": "Sur devis" }
+  ],
+  "packDetails": {
+    "starter": { "id": "starter", "label": "Starter", "priceFCFA": 35000, "badge": "Entrée de gamme", "usd": 58, "features": { "fr": [ "Conseil fiscal mensuel", "Déclarations TVA et IS", "Accompagnement comptable basique" ] } },
+    "pro": { "id": "pro", "label": "Pro", "priceFCFA": 65000, "badge": "Populaire", "usd": 108, "features": { "fr": [ "Conseil fiscal mensuel", "Déclarations TVA et IS", "Accompagnement comptable complet", "Audit fiscal annuel" ] } },
+    "premium": { "id": "premium", "label": "Premium", "priceFCFA": 120000, "badge": "Luxe", "usd": 200, "features": { "fr": [ "Conseil fiscal illimité", "Déclarations TVA et IS", "Accompagnement comptable complet", "Audit fiscal semestriel", "Optimisation fiscale" ] } },
+    "corporate": { "id": "corporate", "label": "Corporate", "priceFCFA": 200000, "badge": "Sur devis", "usd": 333, "features": { "fr": [ "Conseil fiscal dédié", "Gestion comptable complète", "Audit fiscal trimestriel", "Optimisation fiscale avancée", "Assistance contrôle fiscal" ] } }
+  },
+  "periodicites": [
+    { "id": "mensuel", "label": "Mensuel", "months": 1 },
+    { "id": "semestriel", "label": "Semestriel", "months": 6 },
+    { "id": "annuel", "label": "Annuel", "months": 12 }
+  ]
 }

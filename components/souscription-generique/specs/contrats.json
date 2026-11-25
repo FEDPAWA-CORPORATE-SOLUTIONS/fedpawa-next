@@ -1,0 +1,124 @@
+{
+  "serviceId": "contrats",
+  "serviceName": "Rédaction de Contrats",
+  "endpoint": "/api/v1/souscription/contrats",
+  "priceFixedFCFA": 0,
+  "priceLabel": "Contrat sur devis",
+  "contract": true,
+  "hideStepper": false,
+  "totalSteps": 6,
+  "formTitle": "Souscription Rédaction de Contrats",
+  "formSubtitle": "Rédaction de contrats sur mesure avec FEDPAWA",
+  "steps": [
+    {
+      "id": 1,
+      "title": "Sélection du type de contrat",
+      "description": "Choisissez le type de contrat à rédiger.",
+      "radios": [
+        { "id": "commercial", "label": "Commercial", "desc": "Contrat de vente, prestation de services, fourniture" },
+        { "id": "travail", "label": "Travail", "desc": "Contrat de travail, CDI, CDD, apprentissage" },
+        { "id": "prestation", "label": "Prestation", "desc": "Contrat de prestation intellectuelle ou technique" },
+        { "id": "confidentialite", "label": "Confidentialité", "desc": "Accord de confidentialité (NDA)" },
+        { "id": "bail", "label": "Bail", "desc": "Bail commercial, professionnel, d'habitation" },
+        { "id": "distribution", "label": "Distribution", "desc": "Contrat de distribution, concession, franchise" },
+        { "id": "franchise", "label": "Franchise", "desc": "Contrat de franchise, licence de marque" },
+        { "id": "sous-traitance", "label": "Sous-traitance", "desc": "Contrat de sous-traitance, co-traitance" }
+      ],
+      "radiosRequired": true
+    },
+    {
+      "id": 2,
+      "title": "Questionnaire détaillé",
+      "description": "Précisez les informations sur votre entreprise et le contrat.",
+      "fields": [
+        { "name": "nomEntreprise", "label": "Nom de l'entreprise", "type": "text", "placeholder": "Exemple : FEDPAWA SARL", "required": true, "errorRequired": "Le nom de l'entreprise est requis" },
+        { "name": "objetSocial", "label": "Objet social", "type": "textarea", "placeholder": "Décrivez l'activité de votre entreprise.", "required": true, "errorRequired": "L'objet social est requis", "rows": 4 },
+        { "name": "formeJuridique", "label": "Forme juridique", "type": "select", "placeholder": "Sélectionner la forme juridique", "required": true, "errorRequired": "La forme juridique est requise", "options": [ "SARL", "SARLU", "SAS", "SASU", "SA", "Établissement (Nom propre)", "GIE (Groupement d'Intérêt Économique)" ] },
+        { "name": "rccm", "label": "RCCM", "type": "text", "placeholder": "Numéro RCCM", "required": true, "errorRequired": "Le RCCM est requis" },
+        { "name": "niu", "label": "NIU", "type": "text", "placeholder": "Numéro NIU", "required": true, "errorRequired": "Le NIU est requis" }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Options et personnalisation",
+      "description": "Choisissez les clauses optionnelles à inclure.",
+      "options": [
+        { "id": "non-concurrence", "label": "Non-concurrence", "desc": "Clause de non-concurrence post-contractuelle" },
+        { "id": "confidentialite", "label": "Confidentialité", "desc": "Clause de confidentialité et protection des données" },
+        { "id": "droit-resiliation", "label": "Droit de résiliation", "desc": "Conditions et modalités de résiliation du contrat" },
+        { "id": "garantie", "label": "Garantie", "desc": "Clauses de garantie et responsabilité" },
+        { "id": "penalites", "label": "Pénalités", "desc": "Pénalités de retard et dommages-intérêts" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Représentant légal",
+      "description": "Désignez le représentant légal qui signera le contrat.",
+      "fields": [
+        { "name": "civilite", "label": "Civilité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La civilité est requise", "options": [ "Monsieur", "Madame" ] },
+        { "name": "nomComplet", "label": "Nom complet", "type": "text", "placeholder": "Exemple : Jean Dupont", "required": true, "errorRequired": "Le nom complet est requis" },
+        { "name": "fonction", "label": "Fonction / Qualité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La fonction est requise", "options": [ "Gérant / Co-gérant", "Président / Director", "Directeur Général", "Fondateur / Promoteur", "Mandataire / Fondé de pouvoir" ] },
+        { "name": "nationalite", "label": "Nationalité", "type": "text", "placeholder": "Exemple : Camerounaise", "required": true, "errorRequired": "La nationalité est requise" },
+        { "name": "typePiece", "label": "Type de pièce d'identité", "type": "select", "placeholder": "Sélectionner le type", "required": true, "errorRequired": "Le type de pièce est requis", "options": [ "Carte Nationale d'Identité (CNI)", "Passeport", "Carte de Séjour / Titre de Résidence" ] },
+        { "name": "numPiece", "label": "Numéro de pièce d'identité", "type": "text", "placeholder": "Numéro de la pièce", "required": true, "errorRequired": "Le numéro de pièce est requis" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Coordonnées & notification",
+      "description": "Fournissez vos coordonnées pour le suivi de votre dossier.",
+      "fields": [
+        { "name": "email", "label": "Adresse e-mail", "type": "email", "placeholder": "vous@entreprise.com", "required": true, "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "errorRequired": "L'email est requis", "errorPattern": "Email invalide" },
+        { "name": "telephone", "label": "Téléphone principal", "type": "tel", "placeholder": "+237 6XX XXX XXX", "required": true, "pattern": "^\\+?[0-9\\s]{9,16}$", "errorRequired": "Le téléphone est requis", "errorPattern": "Téléphone invalide" },
+        { "name": "adresse", "label": "Adresse de résidence / Siège actuel", "type": "text", "placeholder": "Exemple : Immeuble X, Quartier Y, Douala", "required": true, "errorRequired": "L'adresse est requise" },
+        { "name": "ville", "label": "Ville", "type": "text", "placeholder": "Douala", "required": true, "errorRequired": "La ville est requise" },
+        { "name": "pays", "label": "Pays", "type": "select", "placeholder": "", "required": true, "errorRequired": "", "options": [ "Cameroun", "France", "Belgique", "Suisse", "Canada", "Autre" ], "default": "Cameroun" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Validation",
+      "description": "Confirmez votre demande et validez les conditions.",
+      "checkboxes": [
+        { "name": "chkCgv", "label": "J'accepte les Conditions Générales de Vente", "required": true, "errorRequired": "Vous devez accepter les CGV" },
+        { "name": "chkCadre", "label": "J'accepte le cadre contractuel", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
+        { "name": "chkExactitude", "label": "Je certifie l'exactitude des informations", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
+      ]
+    }
+  ],
+  "localStorageKey": "souscription_contrats_draft_v1",
+  "successMessage": "Votre dossier de rédaction de contrats a bien été transmis à nos équipes.",
+  "successLink": "Aller à mon Espace Client",
+  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville" ],
+  "priceFixedFCFA": 50000,
+  "priceLabel": "Contrat Standard — 50 000 FCFA HT",
+  "contract": true,
+  "payButton": "Payer {amount} FCFA (Mobile Money)",
+  "invoice": {
+    "label": "Facture proforma",
+    "serviceLine": "Rédaction de contrats — Acte juridique",
+    "amountFCFA": 50000
+  },
+  "invoiceDetail": {
+    "label": "Facture proforma",
+    "serviceLine": "Rédaction de contrats — Acte juridique",
+    "amountFCFA": 50000,
+    "companyName": "FEDPAWA CORPORATE SOLUTIONS SARL",
+    "companyNiu": "M09261890362B",
+    "companyRccm": "CM-DLA-01-2026-B13-00767",
+    "companyAddress": "Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun",
+    "companyPhone": "+237 691 70 48 02",
+    "companyEmail": "contact@fedpawa.com",
+    "invoiceLabel": "Facture proforma",
+    "invoiceNumLabel": "N°",
+    "invoiceDateLabel": "Date",
+    "billedToLabel": "Facturé à",
+    "serviceLabel": "Prestation",
+    "periodLabel": "Période",
+    "designationLabel": "Désignation",
+    "amountLabel": "Montant",
+    "totalLabel": "Total",
+    "footer": "Total à payer :",
+    "footerEnd": " FCFA"
+  }
+}

@@ -4,7 +4,7 @@
   "endpoint": "/api/v1/souscription/creation-entreprise",
   "priceFixedFCFA": 100000,
   "priceLabel": "Création d'entreprise — Constitution juridique",
-  "contract": false,
+  "contract": true,
   "hideStepper": false,
   "totalSteps": 6,
   "formTitle": "Création d'Entreprise — Souscription en Ligne",

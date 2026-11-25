@@ -26,6 +26,8 @@ export interface RouteMap {
   adminDashboard: string;
   adminDocument: string;
   verificationEmail: string;
+  paymentLink: (token: string) => string;
+  signatureLink: (token: string) => string;
 }
 
 /** Routes FR (racine). */
@@ -50,6 +52,8 @@ export const frRoutes: RouteMap = {
   adminDashboard: "/admin-dashboard",
   adminDocument: "/admin-document",
   verificationEmail: "/verification-email",
+  paymentLink: (token: string) => `/souscription-nouveau-flux/paiement/${token}`,
+  signatureLink: (token: string) => `/souscription-nouveau-flux/signature/${token}`,
 };
 
 /** Routes EN (miroir sous /en). */
@@ -75,6 +79,8 @@ export const enRoutes: RouteMap = {
   adminDashboard: "/en/admin-dashboard",
   adminDocument: "/en/admin-document",
   verificationEmail: "/en/verification-email",
+  paymentLink: (token: string) => `/en/souscription-nouveau-flux/paiement/${token}`,
+  signatureLink: (token: string) => `/en/souscription-nouveau-flux/signature/${token}`,
 };
 
 /** Routes pour une locale. */

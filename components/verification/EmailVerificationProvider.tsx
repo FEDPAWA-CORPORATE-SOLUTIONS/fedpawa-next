@@ -31,7 +31,7 @@ import {
   type VerificationStatus,
 } from "@/lib/verification";
 
-export interface ResendFeedback {
+export interface Feedback {
   type: "success" | "error" | "info";
   text: string;
   /** 429 deja_envoye : délai restant en secondes. */
@@ -49,13 +49,11 @@ export interface EmailVerificationContextValue {
   /** Re-appelle /auth/me ; renvoie le statut obtenu. */
   refresh: () => Promise<VerificationStatus>;
   refreshing: boolean;
-  resend: () => Promise<ResendFeedback>;
+  resend: () => Promise<Feedback>;
   resending: boolean;
-  resendFeedback: ResendFeedback | null;
-  clearResendFeedback: () => void;
-  /** Feedback après clic sur « J'ai vérifié mon e-mail ». */
-  verifyFeedback: ResendFeedback | null;
-  clearVerifyFeedback: () => void;
+  /** Feedback unique : resend ou verify. Un seul message à la fois. */
+  feedback: Feedback | null;
+  clearFeedback: () => void;
 }
 
 const EmailVerificationContext = createContext<EmailVerificationContextValue>({
@@ -68,10 +66,8 @@ const EmailVerificationContext = createContext<EmailVerificationContextValue>({
   refreshing: false,
   resend: async () => ({ type: "error", text: "" }),
   resending: false,
-  resendFeedback: null,
-  clearResendFeedback: () => {},
-  verifyFeedback: null,
-  clearVerifyFeedback: () => {},
+  feedback: null,
+  clearFeedback: () => {},
 });
 
 export function useEmailVerification(): EmailVerificationContextValue {
@@ -88,8 +84,7 @@ export default function EmailVerificationProvider({
   const [gateOpen, setGateOpen] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [resending, setResending] = useState(false);
-  const [resendFeedback, setResendFeedback] = useState<ResendFeedback | null>(null);
-const [verifyFeedback, setVerifyFeedback] = useState<ResendFeedback | null>(null);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
   const mounted = useRef(true);
 
   const refresh = useCallback(async (): Promise<VerificationStatus> => {
@@ -104,16 +99,26 @@ const [verifyFeedback, setVerifyFeedback] = useState<ResendFeedback | null>(null
         if (next === "verified") setGateOpen(false);
         // Feedback utilisateur après vérification manuelle (bouton « J'ai vérifié mon e-mail »).
         if (next === "verified") {
-          setVerifyFeedback({ type: "success", text: "E-mail vérifié avec succès. La modal va se fermer." });
+          setFeedback({
+            type: "success",
+            text: "E-mail vérifié avec succès. La modal va se fermer.",
+          });
         } else if (next === "unverified") {
-          setVerifyFeedback({ type: "error", text: "L'adresse e-mail n'est toujours pas vérifiée. Consultez votre boîte de réception et cliquez sur le lien de confirmation." });
+          setFeedback({
+            type: "error",
+            text:
+              "L'adresse e-mail n'est toujours pas vérifiée. Consultez votre boîte de réception et cliquez sur le lien de confirmation.",
+          });
         }
       }
       return next;
     } catch {
       // API injoignable : on garde l'état courant (dégradation gracieuse).
       if (mounted.current) {
-        setVerifyFeedback({ type: "error", text: "Impossible de contacter le serveur pour vérifier votre e-mail. Réessayez plus tard." });
+        setFeedback({
+          type: "error",
+          text: "Impossible de contacter le serveur pour vérifier votre e-mail. Réessayez plus tard.",
+        });
       }
       return status;
     } finally {
@@ -137,19 +142,19 @@ const [verifyFeedback, setVerifyFeedback] = useState<ResendFeedback | null>(null
 
   const requestGate = useCallback(() => setGateOpen(true), []);
 
-  const resend = useCallback(async (): Promise<ResendFeedback> => {
+  const resend = useCallback(async (): Promise<Feedback> => {
     setResending(true);
-    setResendFeedback(null);
+    setFeedback(null); // Efface tout feedback précédent
     try {
       await resendVerification();
-      const fb: ResendFeedback = {
+      const fb: Feedback = {
         type: "success",
         text: "ok",
       };
-      setResendFeedback(fb);
+      setFeedback(fb);
       return fb;
     } catch (err) {
-      let fb: ResendFeedback;
+      let fb: Feedback;
       if (err instanceof ApiError && err.status === 429) {
         const b = err.body as { code?: string; retry_after?: number } | null;
         fb = {
@@ -162,15 +167,14 @@ const [verifyFeedback, setVerifyFeedback] = useState<ResendFeedback | null>(null
       } else {
         fb = { type: "error", text: "ko" };
       }
-      setResendFeedback(fb);
+      setFeedback(fb);
       return fb;
     } finally {
       if (mounted.current) setResending(false);
     }
   }, []);
 
-  const clearResendFeedback = useCallback(() => setResendFeedback(null), []);
-  const clearVerifyFeedback = useCallback(() => setVerifyFeedback(null), []);
+  const clearFeedback = useCallback(() => setFeedback(null), []);
 
   const value: EmailVerificationContextValue = {
     status,
@@ -182,10 +186,8 @@ const [verifyFeedback, setVerifyFeedback] = useState<ResendFeedback | null>(null
     refreshing,
     resend,
     resending,
-    resendFeedback,
-    clearResendFeedback,
-    verifyFeedback,
-    clearVerifyFeedback,
+    feedback,
+    clearFeedback,
   };
 
   return (

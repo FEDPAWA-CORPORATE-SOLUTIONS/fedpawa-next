@@ -28,10 +28,8 @@ export default function VerificationGateModal({ locale = "fr" }: { locale?: Loca
     refreshing,
     resend,
     resending,
-    resendFeedback,
-    clearResendFeedback,
-    verifyFeedback,
-    clearVerifyFeedback,
+    feedback,
+    clearFeedback,
   } = useEmailVerification();
 
   const visible = status === "unverified" || (gateOpen && status !== "anonymous" && status !== "verified");
@@ -50,23 +48,23 @@ export default function VerificationGateModal({ locale = "fr" }: { locale?: Loca
   if (!visible) return null;
 
   const feedbackText =
-    resendFeedback == null
+    feedback == null
       ? null
-      : resendFeedback.type === "success"
+      : feedback.type === "success"
         ? t.resendOk
-        : resendFeedback.type === "info"
-          ? t.resendWait.replace("{s}", String(resendFeedback.retryAfter ?? "60"))
-          : resendFeedback.text === "needLogin"
+        : feedback.type === "info"
+          ? t.resendWait.replace("{s}", String(feedback.retryAfter ?? "60"))
+          : feedback.text === "needLogin"
             ? t.resendNeedLogin
             : t.resendKo;
 
   const handleResend = async () => {
-    clearResendFeedback();
+    clearFeedback();
     await resend();
   };
 
   const handleChecked = async () => {
-    clearVerifyFeedback();
+    clearFeedback();
     // Re-lit /auth/me : si email_verified passe à true, le provider
     // repasse en "verified" et cette modal disparaît d'elle-même.
     await refresh();
@@ -91,13 +89,8 @@ export default function VerificationGateModal({ locale = "fr" }: { locale?: Loca
         <h2>{t.gateTitle}</h2>
         <p>{t.gateText}</p>
         {feedbackText && (
-          <p className={"fp-verif-gate-feedback fp-verif-" + resendFeedback?.type}>
+          <p className={"fp-verif-gate-feedback fp-verif-" + feedback?.type}>
             {feedbackText}
-          </p>
-        )}
-        {verifyFeedback && (
-          <p className={"fp-verif-gate-feedback fp-verif-" + verifyFeedback.type}>
-            {verifyFeedback.text}
           </p>
         )}
         <div className="fp-verif-gate-actions">

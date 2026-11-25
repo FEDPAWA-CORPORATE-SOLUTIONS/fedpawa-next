@@ -30,7 +30,8 @@ export type PageSlug =
   | "souscriptionConseilFiscal"
   | "souscriptionContrats"
   | "souscriptionOapi"
-  | "notification_popup";
+  | "notification_popup"
+  | "generiqueFormulaire";
 
 /** Contenu propre à une page (clés libres, valeurs texte). */
 export type PageDict = Record<string, string>;

@@ -27,6 +27,7 @@ import { souscriptionCreationFr, souscriptionCreationEn } from "./pages/souscrip
 import { souscriptionConseilFiscalFr, souscriptionConseilFiscalEn } from "./pages/souscription-conseil-fiscal";
 import { souscriptionContratsFr, souscriptionContratsEn } from "./pages/souscription-contrats";
 import { souscriptionOapiFr, souscriptionOapiEn } from "./pages/souscription-oapi";
+import { generiqueFormulaireFr, generiqueFormulaireEn } from "./pages/generique-formulaire";
 
 /** Dictionnaires FR par page — remplis vague par vague. */
 export const frPageDicts: PageSlugs = {
@@ -54,6 +55,7 @@ export const frPageDicts: PageSlugs = {
   souscriptionConseilFiscal: souscriptionConseilFiscalFr,
   souscriptionContrats: souscriptionContratsFr,
   souscriptionOapi: souscriptionOapiFr,
+  generiqueFormulaire: generiqueFormulaireFr,
 };
 
 /** Dictionnaires EN par page — remplis vague par vague. */
@@ -82,4 +84,5 @@ export const enPageDicts: PageSlugs = {
   souscriptionConseilFiscal: souscriptionConseilFiscalEn,
   souscriptionContrats: souscriptionContratsEn,
   souscriptionOapi: souscriptionOapiEn,
+  generiqueFormulaire: generiqueFormulaireEn,
 };

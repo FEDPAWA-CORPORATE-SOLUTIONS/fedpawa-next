@@ -31,6 +31,11 @@ export default function SouscriptionStepper({
     }
   }, [currentStep, totalSteps]);
 
+  const stepClass = (n: number) =>
+    `progress-step ${n === currentStep ? "active" : ""} ${
+      n < currentStep ? "completed" : ""
+    }`;
+
   return (
     <div className={`progress-wrapper ${className || ""}`}>
       <div className="container">
@@ -52,14 +57,10 @@ export default function SouscriptionStepper({
           </div>
           {stepLabels.map((label, i) => {
             const n = i + 1;
-            const isActive = n === currentStep;
-            const isCompleted = n < currentStep;
             return (
               <div
                 key={n}
-                className={`progress-step ${isActive ? "active" : ""} ${
-                  isCompleted ? "completed" : ""
-                }`}
+                className={stepClass(n)}
                 data-step={n}
                 onClick={
                   onStepClick && n < currentStep
@@ -73,8 +74,8 @@ export default function SouscriptionStepper({
                 <div className="progress-dot">{n}</div>
                 <span className="progress-label">{label}</span>
               </div>
-            )}
-          }
+            );
+          })}
         </div>
       </div>
     </div>

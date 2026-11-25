@@ -1,0 +1,116 @@
+{
+  "serviceId": "oapi",
+  "serviceName": "Protection OAPI",
+  "endpoint": "/api/v1/souscription/oapi",
+  "priceFixedFCFA": 200000,
+  "priceLabel": "Protect Brand & Tech — De 200 000 à 900 000 FCFA / dossier",
+  "contract": true,
+  "hideStepper": false,
+  "totalSteps": 6,
+  "formTitle": "Souscription Protection OAPI",
+  "formSubtitle": "Protégez votre propriété intellectuelle avec FEDPAWA",
+  "steps": [
+    {
+      "id": 1,
+      "title": "Type d'actif",
+      "description": "Sélectionnez le type de propriété intellectuelle à protéger.",
+      "fields": [
+        { "name": "typeActif", "label": "Type d'actif", "type": "select", "placeholder": "Sélectionner le type d'actif", "required": true, "errorRequired": "Le type d'actif est requis", "options": [ "Marque", "Logo", "Logiciel", "Dessin et Modèle", "Brevet" ] },
+        { "name": "nomActif", "label": "Nom de la marque/logo", "type": "text", "placeholder": "Ex: FEDPAWA App", "required": true, "errorRequired": "Le nom de la marque/logo est requis" },
+        { "name": "classeNice", "label": "Classe de Nice", "type": "text", "placeholder": "Ex: Classe 35, 42", "required": true, "errorRequired": "La classe de Nice est requise" },
+        { "name": "descriptionProduits", "label": "Description des produits/services", "type": "textarea", "placeholder": "Décrivez les produits ou services concernés.", "required": true, "errorRequired": "La description des produits/services est requise", "rows": 4 }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Détails de l'actif",
+      "description": "Précisez la date de première utilisation et déposez le visuel.",
+      "fields": [
+        { "name": "datePremiereUtilisation", "label": "Date de première utilisation", "type": "date", "placeholder": "", "required": true, "errorRequired": "La date de première utilisation est requise" }
+      ],
+      "files": [
+        { "id": "fichierLogo", "title": "Fichier du logo", "hint": "Déposez le visuel de votre marque ou logo", "accept": "image/*,application/pdf", "required": true }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Représentant légal",
+      "description": "Désignez le représentant légal du demandeur.",
+      "fields": [
+        { "name": "civilite", "label": "Civilité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La civilité est requise", "options": [ "Monsieur", "Madame" ] },
+        { "name": "nomComplet", "label": "Nom complet", "type": "text", "placeholder": "Exemple : Jean Dupont", "required": true, "errorRequired": "Le nom complet est requis" },
+        { "name": "fonction", "label": "Fonction / Qualité", "type": "select", "placeholder": "Sélectionner", "required": true, "errorRequired": "La fonction est requise", "options": [ "Gérant / Co-gérant", "Président / Director", "Directeur Général", "Fondateur / Promoteur", "Mandataire / Fondé de pouvoir" ] },
+        { "name": "nationalite", "label": "Nationalité", "type": "text", "placeholder": "Exemple : Camerounaise", "required": true, "errorRequired": "La nationalité est requise" },
+        { "name": "typePiece", "label": "Type de pièce d'identité", "type": "select", "placeholder": "Sélectionner le type", "required": true, "errorRequired": "Le type de pièce est requis", "options": [ "Carte Nationale d'Identité (CNI)", "Passeport", "Carte de Séjour / Titre de Résidence" ] },
+        { "name": "numPiece", "label": "Numéro de pièce d'identité", "type": "text", "placeholder": "Numéro de la pièce", "required": true, "errorRequired": "Le numéro de pièce est requis" }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Coordonnées & notification",
+      "description": "Fournissez vos coordonnées pour le suivi de votre dossier.",
+      "fields": [
+        { "name": "email", "label": "Adresse e-mail", "type": "email", "placeholder": "vous@entreprise.com", "required": true, "pattern": "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$", "errorRequired": "L'email est requis", "errorPattern": "Email invalide" },
+        { "name": "telephone", "label": "Téléphone principal", "type": "tel", "placeholder": "+237 6XX XXX XXX", "required": true, "pattern": "^\\+?[0-9\\s]{9,16}$", "errorRequired": "Le téléphone est requis", "errorPattern": "Téléphone invalide" },
+        { "name": "adresse", "label": "Adresse de résidence / Siège actuel", "type": "text", "placeholder": "Exemple : Immeuble X, Quartier Y, Douala", "required": true, "errorRequired": "L'adresse est requise" },
+        { "name": "ville", "label": "Ville", "type": "text", "placeholder": "Douala", "required": true, "errorRequired": "La ville est requise" },
+        { "name": "pays", "label": "Pays", "type": "select", "placeholder": "", "required": true, "errorRequired": "", "options": [ "Cameroun", "France", "Belgique", "Suisse", "Canada", "Autre" ], "default": "Cameroun" }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Choix de la formule",
+      "description": "Sélectionnez la formule de protection adaptée.",
+      "fields": [
+        { "name": "formule", "label": "Formule", "type": "select", "placeholder": "Sélectionner la formule", "required": true, "errorRequired": "La formule est requise", "options": [ "Protect Brand & Tech — De 200 000 à 900 000 FCFA / dossier" ] },
+        { "name": "periodicite", "label": "Périodicité", "type": "select", "placeholder": "Sélectionner la périodicité", "required": true, "errorRequired": "La périodicité est requise", "options": [ "Mensuel (Paiement chaque mois)", "Semestriel (6 mois)", "Annuel (12 mois — Bénéficiez de remises exclusives)" ] }
+      ],
+      "options": [
+        { "id": "recherche-anterieure", "label": "Recherche d'antériorité (marque, logo, nom commercial)", "desc": "Vérification d'antériorité auprès de la base OAPI avant dépôt" },
+        { "id": "suivi-procedure", "label": "Suivi de procédure et renouvellement", "desc": "Suivi complet de votre dossier jusqu'à l'obtention du titre et gestion des renouvellements" }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Validation",
+      "description": "Confirmez votre demande et validez les conditions.",
+      "checkboxes": [
+        { "name": "chkCgv", "label": "J'accepte les Conditions Générales de Vente", "required": true, "errorRequired": "Vous devez accepter les CGV" },
+        { "name": "chkCadre", "label": "J'accepte le cadre contractuel", "required": true, "errorRequired": "Vous devez accepter le cadre contractuel" },
+        { "name": "chkExactitude", "label": "Je certifie l'exactitude des informations", "required": true, "errorRequired": "Vous devez certifier l'exactitude des informations" }
+      ]
+    }
+  ],
+  "localStorageKey": "souscription_oapi_draft_v1",
+  "successMessage": "Votre dossier de protection OAPI a bien été transmis à nos équipes.",
+  "successLink": "Aller à mon Espace Client",
+  "autoFillFromMe": [ "nomComplet", "civilite", "nationalite", "email", "telephone", "adresse", "ville" ],
+  "payButton": "Payer {amount} FCFA (Mobile Money)",
+  "invoice": {
+    "label": "Facture proforma",
+    "serviceLine": "Protection OAPI — Dépôt de marque/logo/actif",
+    "amountFCFA": 200000
+  },
+  "invoiceDetail": {
+    "label": "Facture proforma",
+    "serviceLine": "Protection OAPI — Dépôt de marque/logo/actif",
+    "amountFCFA": 200000,
+    "companyName": "FEDPAWA CORPORATE SOLUTIONS SARL",
+    "companyNiu": "M09261890362B",
+    "companyRccm": "CM-DLA-01-2026-B13-00767",
+    "companyAddress": "Douala - Logpom (Immeuble Pharmacie de Logpom), Cameroun",
+    "companyPhone": "+237 691 70 48 02",
+    "companyEmail": "contact@fedpawa.com",
+    "invoiceLabel": "Facture proforma",
+    "invoiceNumLabel": "N°",
+    "invoiceDateLabel": "Date",
+    "billedToLabel": "Facturé à",
+    "serviceLabel": "Prestation",
+    "periodLabel": "Période",
+    "designationLabel": "Désignation",
+    "amountLabel": "Montant",
+    "totalLabel": "Total",
+    "footer": "Total à payer :",
+    "footerEnd": " FCFA"
+  }
+}

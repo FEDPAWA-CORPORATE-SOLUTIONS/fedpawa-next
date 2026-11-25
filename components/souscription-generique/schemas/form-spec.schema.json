@@ -1,0 +1,162 @@
+{
+  "$schema": "https://json-schema.org/draft/07/schema#",
+  "$id": "https://fedpawa.com/schemas/form-spec.json",
+  "title": "FEDPAWA Form Specification Schema",
+  "description": "Schéma de validation pour les spécifications de formulaires FEDPAWA générés par GeneriqueFormulaire.",
+  "type": "object",
+  "required": [
+    "serviceId", "serviceName", "endpoint", "totalSteps", "formTitle",
+    "formSubtitle", "steps", "localStorageKey", "successMessage", "successLink"
+  ],
+  "properties": {
+    "serviceId": { "type": "string", "description": "Identifiant unique du service (ex: creation-entreprise)" },
+    "serviceName": { "type": "string", "description": "Nom lisible du service" },
+    "endpoint": { "type": "string", "format": "uri-reference", "description": "Endpoint API de soumission" },
+    "priceFixedFCFA": { "type": "integer", "minimum": 0, "description": "Prix fixe en FCFA (null si prix variable)" },
+    "priceLabel": { "type": "string", "description": "Libellé du prix affiché" },
+    "contract": { "type": "boolean", "description": "Génère un contrat de signature électronique (domiciliation uniquement)" },
+    "totalSteps": { "type": "integer", "minimum": 1, "maximum": 20, "description": "Nombre total d'étapes du wizard" },
+    "formTitle": { "type": "string", "description": "Titre principal du formulaire" },
+    "formSubtitle": { "type": "string", "description": "Sous-titre du formulaire" },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title"],
+        "properties": {
+          "id": { "type": "integer", "minimum": 1 },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "label", "type"],
+              "properties": {
+                "name": { "type": "string" },
+                "label": { "type": "string" },
+                "type": { "type": "string", "enum": ["text", "number", "email", "tel", "textarea", "select", "date"] },
+                "placeholder": { "type": "string" },
+                "required": { "type": "boolean" },
+                "pattern": { "type": "string" },
+                "options": { "type": "array", "items": { "type": "string" } },
+                "errorRequired": { "type": "string" },
+                "errorPattern": { "type": "string" },
+                "rows": { "type": "integer", "minimum": 1 },
+                "default": { "type": "string" },
+                "accept": { "type": "string" },
+                "dependsOn": {
+                  "type": "object",
+                  "description": "Champ conditionnel : ce champ s'affiche si le champ cible a la valeur spécifiée",
+                  "properties": {
+                    "field": { "type": "string" },
+                    "value": { "type": "string" }
+                  },
+                  "required": ["field", "value"]
+                },
+                "requiredIf": {
+                  "type": "object",
+                  "description": "Le champ est requis si le champ cible a la valeur spécifiée",
+                  "properties": {
+                    "field": { "type": "string" },
+                    "value": { "type": "string" }
+                  },
+                  "required": ["field", "value"]
+                }
+              }
+            }
+          },
+          "files": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "title", "hint", "accept"],
+              "properties": {
+                "id": { "type": "string" },
+                "title": { "type": "string" },
+                "hint": { "type": "string" },
+                "accept": { "type": "string" },
+                "required": { "type": "boolean" }
+              }
+            }
+          },
+          "radios": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "label"],
+              "properties": {
+                "id": { "type": "string" },
+                "label": { "type": "string" },
+                "desc": { "type": "string" }
+              }
+            }
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["id", "label"],
+              "properties": {
+                "id": { "type": "string" },
+                "label": { "type": "string" },
+                "desc": { "type": "string" }
+              }
+            }
+          },
+          "checkboxes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["name", "label"],
+              "properties": {
+                "name": { "type": "string" },
+                "label": { "type": "string" },
+                "required": { "type": "boolean" },
+                "errorRequired": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "invoice": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "serviceLine": { "type": "string" },
+        "amountFCFA": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["label", "serviceLine", "amountFCFA"]
+    },
+    "payButton": {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" }
+      },
+      "required": ["label"]
+    },
+    "checkboxes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "label"],
+        "properties": {
+          "name": { "type": "string" },
+          "label": { "type": "string" },
+          "required": { "type": "boolean" },
+          "errorRequired": { "type": "string" }
+        }
+      }
+    },
+    "localStorageKey": { "type": "string" },
+    "successMessage": { "type": "string" },
+    "successLink": { "type": "string" },
+    "autoFillFromMe": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "devisMessage": { "type": "string" }
+  }
+}
