@@ -114,6 +114,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [creerCategorieOuvert, setCreerCategorieOuvert] = useState(false);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [defaultCategoryId, setDefaultCategoryId] = useState<number | null>(null);
+  const [draggingCategoryId, setDraggingCategoryId] = useState<number | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<UserCategory | null>(null);
 
   // ---------- Chargement des mails ----------
