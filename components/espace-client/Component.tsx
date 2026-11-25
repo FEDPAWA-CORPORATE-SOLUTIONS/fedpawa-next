@@ -425,7 +425,7 @@ function TabDashboard() {
             </>
           )}
         </div>
-        <div className="overview-card">
+      <div className="overview-card">
           <h3>Dernier Courrier Reçu</h3>
           {courriers.length > 0 ? (
             <>
@@ -436,6 +436,9 @@ function TabDashboard() {
                 {courriers[0].statut === "scanné" ? "Courrier numérisé" : "Réception enregistrée"}
               </div>
               <span className="badge badge-success">Scanné & Archivé</span>
+              <a href="/espace-client/courriers" className="btn btn-outline btn-sm" style={{ marginTop: 8, display: "block", fontSize: "0.75rem" }}>
+                Voir tous les courriers
+              </a>
             </>
           ) : (
             <>
@@ -476,7 +479,12 @@ function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
       contrats: "/souscription/contrats",
       fiscalite: "/souscription/conseil-fiscal",
     };
-    return `${serviceRoute[svc] ?? routes.tunnel}?service=${encodeURIComponent(svc)}&pack=${encodeURIComponent(packId)}`;
+    const targetRoute = serviceRoute[svc];
+    if (!targetRoute) {
+      toast("Aucune route de souscription configurée pour ce pack.", "warning");
+      return "#";
+    }
+    return `${targetRoute}?service=${encodeURIComponent(svc)}&pack=${encodeURIComponent(packId)}`;
   };
 
   const resilierAbonnement = async () => {
@@ -563,7 +571,10 @@ function TabAbonnement({ routes }: { routes: ReturnType<typeof routesFor> }) {
             {resiliating ? "Résiliation…" : "Résilier mon abonnement"}
           </button>
         )}
-        <button className="btn btn-outline" type="button" onClick={() => setShowPacks((v) => !v)}>
+        <button className="btn btn-outline" type="button" onClick={() => {
+          setShowPacks(true);
+          toast("La modification de pack nécessite le backend. Contactez l'administration.", "info");
+        }}>
           Changer de pack / Ajouter des options
         </button>
 
@@ -903,7 +914,10 @@ function TabDocuments() {
             accept=".pdf,.png,.jpg,.jpeg"
             onChange={(e) => {
               if (e.target.files) {
-                const newFiles = Array.from(e.target.files);
+                const newFiles = Array.from(e.target.files).slice(0, 2);
+                if (e.target.files.length > 2) {
+                  toast("Seuls les 2 premiers fichiers seront pris en compte.", "warning");
+                }
                 setSelectedFiles((prev) => [...prev, ...newFiles]);
               }
             }}
@@ -1124,6 +1138,7 @@ function TabProfil() {
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!window.confirm("Confirmer la modification du profil ?")) return;
     setSaving(true);
     try {
       const c = data?.client;
@@ -1256,6 +1271,33 @@ function TabProfil() {
           </table>
         </div>
       )}
+      {/* Sécurité : changement de mot de passe */}
+      <div className="db-section" style={{ marginTop: 20 }}>
+        <h2 style={{ fontSize: "1rem", marginBottom: 10 }}>Sécurité — Changement de mot de passe</h2>
+        <p className="db-hint" style={{ marginBottom: 12 }}>Cette fonctionnalité nécessite une implémentation backend. Un toast confirme la demande en attendant.</p>
+        <form id="passwordForm" onSubmit={(e) => {
+          e.preventDefault();
+          toast("Demande de changement de mot de passe envoyée (à connecter au backend).", "info");
+        }}>
+          <div className="form-grid">
+            <div className="form-group">
+              <label htmlFor="profil-old-password">Ancien mot de passe</label>
+              <input type="password" id="profil-old-password" name="oldPassword" className="form-control" required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="profil-new-password">Nouveau mot de passe</label>
+              <input type="password" id="profil-new-password" name="newPassword" className="form-control" required />
+            </div>
+            <div className="form-group">
+              <label htmlFor="profil-confirm-password">Confirmer le nouveau mot de passe</label>
+              <input type="password" id="profil-confirm-password" name="confirmPassword" className="form-control" required />
+            </div>
+          </div>
+          <button type="submit" className="btn btn-primary" style={{ marginTop: 10 }}>
+            Changer le mot de passe
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
@@ -1274,6 +1316,8 @@ function TabSupport() {
   const [ticketsError, setTicketsError] = useState(false);
   const [adminMsgs, setAdminMsgs] = useState<ApiMailMessage[] | null>(null);
   const [readIds, setReadIds] = useState<Set<number>>(new Set());
+  const [replyingAdminMsgId, setReplyingAdminMsgId] = useState<number | null>(null);
+  const [replyAdminText, setReplyAdminText] = useState("");
 
   useEffect(() => {
     let cancelled = false;
@@ -1350,6 +1394,21 @@ function TabSupport() {
       if (prev.has(id)) return prev;
       return new Set([...prev, id]);
     });
+  };
+
+  const replyToAdminMsg = async (msgId: number) => {
+    if (!replyAdminText.trim()) return;
+    try {
+      await apiAuthPost("/api/v1/support", {
+        sujet: "Réponse à un message de l'administration",
+        message: replyAdminText.trim(),
+      });
+      toast("Réponse envoyée.", "success");
+      setReplyingAdminMsgId(null);
+      setReplyAdminText("");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Échec de l'envoi.", "error");
+    }
   };
 
   return (
@@ -1430,10 +1489,50 @@ function TabSupport() {
                     )}
                   </div>
                   <p style={{ fontSize: "0.88rem", margin: "6px 0 0", color: "var(--color-text-main)" }}>{m.content}</p>
-                  {!lu && (
-                    <span style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: 4, display: "block" }}>
-                      Cliquez pour marquer comme lu
-                    </span>
+                  {replyingAdminMsgId === id ? (
+                    <div style={{ marginTop: 8, display: "flex", gap: 4, alignItems: "center" }}>
+                      <input
+                        type="text"
+                        value={replyAdminText}
+                        onChange={(e) => setReplyAdminText(e.target.value)}
+                        placeholder="Votre réponse..."
+                        style={{ padding: "4px 8px", fontSize: "0.75rem", flex: 1 }}
+                      />
+                      <button
+                        type="button"
+                        className="btn btn-primary btn-sm"
+                        onClick={() => replyToAdminMsg(id)}
+                        disabled={!replyAdminText.trim()}
+                      >
+                        Envoyer
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        onClick={() => {
+                          setReplyingAdminMsgId(null);
+                          setReplyAdminText("");
+                        }}
+                      >
+                        Annuler
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      {!lu && (
+                        <span style={{ fontSize: "0.7rem", color: "var(--color-text-muted)", marginTop: 4, display: "block" }}>
+                          Cliquez pour marquer comme lu
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        style={{ fontSize: "0.75rem", marginTop: 8 }}
+                        onClick={() => setReplyingAdminMsgId(id)}
+                      >
+                        Répondre
+                      </button>
+                    </>
                   )}
                 </div>
               );

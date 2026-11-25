@@ -289,13 +289,8 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   );
 
   const downloadMailAttachment = async (url: string, filename: string) => {
-    const token = getToken();
     try {
-      const res = await fetch(url, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) throw new Error(`Échec du téléchargement (${res.status})`);
-      const blob = await res.blob();
+      const blob = await apiAuthGetBlob(url);
       const objectUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = objectUrl;

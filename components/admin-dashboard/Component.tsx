@@ -15,7 +15,9 @@ import CloseTag from "./CloseTag";
 import { useCallback, useEffect, useState } from "react";
 import {
   apiAuthGet,
+  apiAuthGetBlob,
   apiAuthPost,
+  apiAuthPostForm,
 } from "@/lib/auth";
 import { getFriendlyErrorMessage } from "@/lib/errors";
 import type {
@@ -95,10 +97,44 @@ export default function AdminDashboard({
   documentViewerPath = "/admin-document",
 }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<TabId>("dashboard");
+  const { loading: globalLoading } = useAdminData();
 
   return (
     <DashboardUIProvider>
       <div className="db-layout">
+        {globalLoading && (
+          <div
+            style={{
+              position: "fixed",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: "rgba(0,0,0,0.25)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              zIndex: 9999,
+            }}
+          >
+            <div
+              style={{
+                background: "var(--color-bg-main)",
+                padding: 24,
+                borderRadius: 8,
+                border: "1px solid var(--color-border)",
+                boxShadow: "var(--shadow-card)",
+              }}
+            >
+              <div style={{ fontSize: "0.95rem", color: "var(--color-heading)", fontWeight: 600 }}>
+                Chargement…
+              </div>
+              <p style={{ fontSize: "0.8rem", color: "var(--color-text-muted)", marginTop: 6 }}>
+                Les données du dashboard sont en cours de récupération.
+              </p>
+            </div>
+          </div>
+        )}
         <aside className="db-sidebar">
           <nav className="db-nav">
             {NAV_ITEMS.map((item) => (
@@ -311,7 +347,7 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
             <div className="alert-content">
               <h4>{kycPending} dossier(s) KYC à valider</h4>
               <p>Des clients attendent la validation de leurs pièces.</p>
-              <a href="#" className="alert-action" onClick={(e) => { e.preventDefault(); onSwitch("kyc"); }}>Examiner →</a>
+              <button type="button" className="alert-action" onClick={() => onSwitch("kyc")}>Examiner →</button>
             </div>
           </div>
         )}
@@ -321,7 +357,7 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
             <div className="alert-content">
               <h4>{ticketsOpen} ticket(s) support ouvert(s)</h4>
               <p>Répondez rapidement aux demandes clients.</p>
-              <a href="#" className="alert-action" onClick={(e) => { e.preventDefault(); onSwitch("tickets"); }}>Consulter →</a>
+              <button type="button" className="alert-action" onClick={() => onSwitch("tickets")}>Consulter →</button>
             </div>
           </div>
         )}
@@ -331,7 +367,7 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
             <div className="alert-content">
               <h4>{msgsClients} message(s) client(s) reçu(s)</h4>
               <p>Boîte de réception interne.</p>
-              <a href="#" className="alert-action" onClick={(e) => { e.preventDefault(); onSwitch("messages"); }}>Ouvrir la messagerie →</a>
+              <button type="button" className="alert-action" onClick={() => onSwitch("messages")}>Ouvrir la messagerie →</button>
             </div>
           </div>
         )}
@@ -341,7 +377,7 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
             <div className="alert-content">
               <h4>{contactNouveau} message(s) de contact non lu(s)</h4>
               <p>Consultez-les dans l'onglet Support Client.</p>
-              <a href="#" className="alert-action" onClick={(e) => { e.preventDefault(); onSwitch("tickets"); }}>Voir →</a>
+              <button type="button" className="alert-action" onClick={() => onSwitch("tickets")}>Voir →</button>
             </div>
           </div>
         )}
@@ -350,6 +386,52 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
             <p style={{ color: "var(--color-text-muted)" }}>Aucune action requise. Tout est à jour.</p>
           </div>
         )}
+      </div>
+      {/* Tendances d'activité (P2 — M25) */}
+      <div className="db-section" style={{ marginTop: 40 }}>
+        <h2 style={{ fontSize: "1.2rem", marginBottom: 16 }}>Tendances d'activité</h2>
+        <p className="db-hint" style={{ marginBottom: 16 }}>
+          Indicateurs d'activité sur les 6 derniers mois (données de démonstration).
+        </p>
+        <div style={{ display: "flex", gap: 24, flexWrap: "wrap" }}>
+          {[
+            { label: "Nouveaux clients", value: 65 },
+            { label: "Tickets créés", value: 42 },
+            { label: "Paiements reçus", value: 28 },
+            { label: "KYC validés", value: 18 },
+          ].map((item) => (
+            <div
+              key={item.label}
+              style={{
+                flex: 1,
+                minWidth: 140,
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+              }}
+            >
+              <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>{item.label}</div>
+              <div
+                style={{
+                  height: 8,
+                  background: "var(--color-border)",
+                  borderRadius: 4,
+                  overflow: "hidden",
+                  width: "100%",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    background: "var(--color-primary)",
+                    width: `${Math.min(100, (item.value / 100) * 100)}%`,
+                  }}
+                />
+              </div>
+              <div style={{ fontSize: "0.85rem", fontWeight: 600 }}>{item.value}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -361,6 +443,7 @@ function TabOverview({ onSwitch }: { onSwitch: (tab: TabId) => void }) {
 
 function TabClients() {
   const { lists, loading, error } = useAdminData();
+  const { toast } = useToast();
   const [search, setSearch] = useState("");
   const clients: ApiAdminClient[] = lists?.clients ?? [];
   const filtered = search
@@ -421,10 +504,10 @@ function TabClients() {
             </div>
             <div className="db-table-wrap">
               <table className="db-table">
-                <thead><tr><th>ID</th><th>Nom / Représentant</th><th>Raison Sociale</th><th>Email</th><th>Statut</th><th>Détails complets</th></tr></thead>
+                <thead><tr><th>ID</th><th>Nom / Représentant</th><th>Raison Sociale</th><th>Email</th><th>Statut</th><th>Détails complets</th><th>Action</th></tr></thead>
                                 <tbody>
                                   {filtered.length === 0 ? (
-                                    <EmptyRow cols={6} msg="Aucun client enregistré" />
+                                    <EmptyRow cols={7} msg="Aucun client enregistré" />
                                   ) : (
                                     filtered.map((c) => (
                                       <tr key={c.id}>
@@ -441,6 +524,16 @@ function TabClients() {
                                           >
                                             Voir les détails
                                           </a>
+                                        </td>
+                                        <td>
+                                          <button
+                                            type="button"
+                                            className="btn btn-outline btn-sm"
+                                            style={{ padding: "4px 10px", fontSize: "0.75rem" }}
+                                            onClick={() => toast(`Action ${c.statut === "actif" ? "suspendre" : "activer"} à implémenter (backend).`, "info")}
+                                          >
+                                            {c.statut === "actif" ? "Suspendre" : "Activer"}
+                                          </button>
                                         </td>
                                       </tr>
                                     )))
@@ -461,6 +554,7 @@ function TabClients() {
 
 function TabAbonnements() {
   const { lists, loading, error } = useAdminData();
+  const { toast } = useToast();
   const abonnements: ApiAdminSubscription[] = lists?.abonnements ?? [];
 
   return (
@@ -484,7 +578,20 @@ function TabAbonnements() {
                       <td>{a.pack ?? "—"}</td>
                       <td>{fmtDate(a.date_fin)}</td>
                       <td><StatutBadge statut={a.statut} /></td>
-                      <td>—</td>
+                      <td>
+                        {a.statut === "actif" ? (
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            style={{ padding: "4px 10px", fontSize: "0.75rem" }}
+                            onClick={() => toast("Résiliation d'abonnement à implémenter (backend).", "info")}
+                          >
+                            Résilier
+                          </button>
+                        ) : (
+                          <span className="text-muted">—</span>
+                        )}
+                      </td>
                     </tr>
                   ))
                 )}
@@ -503,37 +610,122 @@ function TabAbonnements() {
 
 function TabPaiements() {
   const { lists, loading, error } = useAdminData();
+  const { toast } = useToast();
   const paiements: ApiAdminPaiement[] = lists?.paiements ?? [];
+  const [paiementSearch, setPaiementSearch] = useState("");
+  const [paiementFilter, setPaiementFilter] = useState("");
+
+  const filteredPaiements = paiements.filter((p) => {
+    const matchesSearch = (p.client_nom ?? "").toLowerCase().includes(paiementSearch.toLowerCase()) || (p.statut ?? "").toLowerCase().includes(paiementSearch.toLowerCase());
+    const matchesFilter = !paiementFilter || p.statut === paiementFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <div className="db-tab-content active" id="tab-paiements">
       <div className="db-welcome"><div><h1>Paiements & Factures</h1><p>Historique financier et génération de factures.</p></div></div>
       <div className="db-section">
+        <div className="db-section-header">
+          <h2>Historique des Paiements</h2>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => {
+              const csv = ["ID,Client,Montant,Mode,Date,Statut"];
+              filteredPaiements.forEach((p) => {
+                csv.push([
+                  p.transaction_id || `PAY-${p.id}`,
+                  p.client_nom || "",
+                  fmtFCFA(p.montant),
+                  p.mode_paiement || "",
+                  fmtDate(p.date),
+                  p.statut || "",
+                ].join(","));
+              });
+              const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "paiements.csv";
+              a.click();
+              URL.revokeObjectURL(url);
+          }}>
+            Export CSV
+          </button>
+        </div>
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
         {!loading && !error && (
-          <div className="db-table-wrap">
-            <table className="db-table">
-              <thead><tr><th>Réf. Paiement</th><th>Client</th><th>Montant</th><th>Mode</th><th>Date</th><th>Statut</th><th>Facture</th></tr></thead>
-              <tbody>
-                {paiements.length === 0 ? (
-                  <EmptyRow cols={7} msg="Aucun paiement" />
-                ) : (
-                  paiements.map((p) => (
-                    <tr key={p.id}>
-                      <td>{p.transaction_id || `PAY-${p.id}`}</td>
-                      <td>{p.client_nom || "—"}</td>
-                      <td>{fmtFCFA(p.montant)}</td>
-                      <td>{p.mode_paiement ?? "—"}</td>
-                      <td>{fmtDate(p.date)}</td>
-                      <td><StatutBadge statut={p.statut} /></td>
-                      <td>{p.statut === "recu" ? "Générée" : "—"}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+              <label>
+                <input
+                  type="search"
+                  placeholder="Rechercher un paiement..."
+                  value={paiementSearch}
+                  onChange={(e) => setPaiementSearch(e.target.value)}
+                  className="form-control"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                />
+              </label>
+              <label>
+                <select
+                  value={paiementFilter}
+                  onChange={(e) => setPaiementFilter(e.target.value as any)}
+                  className="form-control"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                >
+                  <option value="">Tous les statuts</option>
+                  <option value="recu">Reçu</option>
+                  <option value="en_attente">En attente</option>
+                  <option value="echec">Échec</option>
+                </select>
+              </label>
+              <p className="db-hint" style={{ margin: 0, fontSize: "0.85rem" }}>{filteredPaiements.length} paiement(s)</p>
+            </div>
+            <div className="db-table-wrap">
+              <table className="db-table">
+                <thead><tr><th>Réf. Paiement</th><th>Client</th><th>Montant</th><th>Mode</th><th>Date</th><th>Statut</th><th>Facture</th></tr></thead>
+                <tbody>
+                  {filteredPaiements.length === 0 ? (
+                    <EmptyRow cols={7} msg="Aucun paiement" />
+                  ) : (
+                    filteredPaiements.map((p) => (
+                      <tr key={p.id}>
+                        <td>{p.transaction_id || `PAY-${p.id}`}</td>
+                        <td>{p.client_nom || "—"}</td>
+                        <td>{fmtFCFA(p.montant)}</td>
+                        <td>{p.mode_paiement ?? "—"}</td>
+                        <td>{fmtDate(p.date)}</td>
+                        <td><StatutBadge statut={p.statut} /></td>
+                        <td>{p.statut === "recu" ? (
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            style={{ padding: "4px 8px", fontSize: "0.75rem" }}
+                            onClick={() => {
+                              apiAuthGetBlob(`/api/v1/document?type=facture&id=${p.id}`)
+                                .then((blob: Blob) => {
+                                  const url = URL.createObjectURL(blob);
+                                  const a = document.createElement("a");
+                                  a.href = url;
+                                  a.download = `facture-${p.id}.pdf`;
+                                  a.click();
+                                  URL.revokeObjectURL(url);
+                                })
+                                .catch(() => toast("Téléchargement impossible.", "error"));
+                            }}
+                          >
+                            PDF
+                          </button>
+                        ) : "—"}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
@@ -553,6 +745,15 @@ function TabCourriers() {
   const [dateReception, setDateReception] = useState("");
   const [notify, setNotify] = useState(true);
   const [sending, setSending] = useState(false);
+  const [courrierSearch, setCourrierSearch] = useState("");
+  const [courrierFilter, setCourrierFilter] = useState("");
+  const [scanFile, setScanFile] = useState<File | null>(null);
+
+  const filteredCourriers = courriers.filter((co) => {
+    const matchesSearch = (co.client_nom ?? "").toLowerCase().includes(courrierSearch.toLowerCase()) || (co.statut ?? "").toLowerCase().includes(courrierSearch.toLowerCase());
+    const matchesFilter = !courrierFilter || co.statut === courrierFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -562,18 +763,29 @@ function TabCourriers() {
     }
     setSending(true);
     try {
-      // POST /api/v1/admin/courrier/add : client_id + scan_path requis (CourrierAddRequest).
-      // scan_path = upload réel via POST /api/v1/courrier/upload si un fichier est fourni ;
-      // sinon chemin d'archive « (courrier enregistré sans scan) » par parité add() legacy.
-      await apiAuthPost("/api/v1/admin/courrier/add", {
-        client_id: Number(clientId),
-        scan_path: "(courrier enregistré sans scan)",
-        date_reception: dateReception || undefined,
-        notify,
-      });
+      if (scanFile) {
+        // Upload réel du scan avec le courrier (FormData multipart)
+        const fd = new FormData();
+        fd.append("client_id", String(clientId));
+        fd.append("date_reception", dateReception || "");
+        fd.append("notify", String(notify));
+        fd.append("scan", scanFile, scanFile.name);
+        await apiAuthPostForm("/api/v1/admin/courrier/add", fd);
+      } else {
+        // POST /api/v1/admin/courrier/add : client_id + scan_path requis (CourrierAddRequest).
+        // scan_path = upload réel via POST /api/v1/courrier/upload si un fichier est fourni ;
+        // sinon chemin d'archive « (courrier enregistré sans scan) » par parité add() legacy.
+        await apiAuthPost("/api/v1/admin/courrier/add", {
+          client_id: Number(clientId),
+          scan_path: "(courrier enregistré sans scan)",
+          date_reception: dateReception || undefined,
+          notify,
+        });
+      }
       toast("Courrier enregistré.", "success");
       setClientId("");
       setDateReception("");
+      setScanFile(null);
       reload();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Erreur d'enregistrement.", "error");
@@ -619,10 +831,22 @@ function TabCourriers() {
               />
             </div>
             <div className="form-group full">
-              <label>Téléverser le scan</label>
-              <div style={{ border: "2px dashed var(--color-border-strong)", padding: 20, textAlign: "center", color: "var(--color-text-muted)", cursor: "pointer" }}>
-                Cliquez pour parcourir ou glissez-déposez le fichier ici
-              </div>
+              <label htmlFor="courrier-scan">Téléverser le scan</label>
+              <label
+                htmlFor="courrier-scan"
+                style={{ border: "2px dashed var(--color-border-strong)", padding: 20, textAlign: "center", color: "var(--color-text-muted)", cursor: "pointer", display: "block", marginTop: 8 }}
+              >
+                <input
+                  id="courrier-scan"
+                  type="file"
+                  accept=".pdf,.png,.jpg,.jpeg"
+                  hidden
+                  onChange={(e) => {
+                    if (e.target.files?.[0]) setScanFile(e.target.files[0]);
+                  }}
+                />
+                {scanFile ? `Fichier : ${scanFile.name}` : "Cliquez pour parcourir ou glissez-déposez le fichier ici"}
+              </label>
             </div>
             <div className="form-group full">
               <label style={{ display: "flex", alignItems: "center", gap: 8, textTransform: "none", letterSpacing: 0 }}>
@@ -638,13 +862,39 @@ function TabCourriers() {
       <div className="db-section">
         <div className="db-section-header">
           <h2>Historique des Courriers</h2>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+            <label>
+              <input
+                type="search"
+                placeholder="Rechercher un courrier..."
+                value={courrierSearch}
+                onChange={(e) => setCourrierSearch(e.target.value)}
+                className="form-control"
+                style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+              />
+            </label>
+            <label>
+              <select
+                value={courrierFilter}
+                onChange={(e) => setCourrierFilter(e.target.value as any)}
+                className="form-control"
+                style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+              >
+                <option value="">Tous les statuts</option>
+                <option value="scanné">Numérisé</option>
+                <option value="en_attente">En attente</option>
+                <option value="archivé">Archivé</option>
+              </select>
+            </label>
+            <p className="db-hint" style={{ margin: 0, fontSize: "0.85rem" }}>{filteredCourriers.length} courrier(s)</p>
+          </div>
           <button
             type="button"
             className="btn btn-outline btn-sm"
             style={{ fontSize: "0.85rem" }}
             onClick={() => {
               const csv = ["ID,Date,Client,Statut"];
-              courriers.forEach(co => {
+              filteredCourriers.forEach(co => {
                 csv.push([
                   co.id,
                   fmtDate(co.date_reception),
@@ -671,10 +921,10 @@ function TabCourriers() {
             <table className="db-table">
               <thead><tr><th>Date</th><th>Client</th><th>Expéditeur / Type</th><th>Statut</th><th>Actions</th></tr></thead>
               <tbody>
-                {courriers.length === 0 ? (
+                {filteredCourriers.length === 0 ? (
                   <EmptyRow cols={5} msg="Aucun courrier" />
                 ) : (
-                  courriers.map((co) => (
+                  filteredCourriers.map((co) => (
                     <tr key={co.id}>
                       <td>{fmtDate(co.date_reception)}</td>
                       <td>{co.client_nom || "—"}</td>
@@ -714,6 +964,14 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
   const { lists, loading, error } = useAdminData();
   const { toast } = useToast();
   const contrats: ApiAdminContrat[] = lists?.contrats ?? [];
+  const [contratSearch, setContratSearch] = useState("");
+  const [contratFilter, setContratFilter] = useState("");
+
+  const filteredContrats = contrats.filter((ct) => {
+    const matchesSearch = (ct.client_nom ?? "").toLowerCase().includes(contratSearch.toLowerCase()) || (ct.type ?? "").toLowerCase().includes(contratSearch.toLowerCase());
+    const matchesFilter = !contratFilter || ct.type === contratFilter;
+    return matchesSearch && matchesFilter;
+  });
 
   // --- Flux L012 : otp-request → otp-verify → GET template → TinyMCE → update ---
   const [otpModalOpen, setOtpModalOpen] = useState(false);
@@ -807,39 +1065,69 @@ function TabContrats({ documentViewerPath = "/admin-document" }: { documentViewe
         {loading ? <LoadingLine /> : null}
         {error ? <ErrorLine message={error} /> : null}
         {!loading && !error && (
-          <div className="db-table-wrap">
-            <table className="db-table">
-              <thead><tr><th>ID Contrat</th><th>Client</th><th>Type de Service</th><th>État Signature</th><th>Fichier</th></tr></thead>
-              <tbody>
-                {contrats.length === 0 ? (
-                  <EmptyRow cols={5} msg="Aucun contrat" />
-                ) : (
-                  contrats.map((ct) => (
-                    <tr key={ct.id}>
-                      <td>CT-{String(ct.id).padStart(3, "0")}</td>
-                      <td>{ct.client_nom || "—"}</td>
-                      <td>{ct.type ?? "—"}</td>
-                      <td><StatutBadge statut="actif" /></td>
-                      <td>
-                        {ct.doc_exists ? (
-                          <a
-                            href={`${documentViewerPath}?type=contrat&id=${ct.id}`}
-                            target="_blank"
-                            rel="noopener"
-                            className="action-link"
-                          >
-                            Consulter PDF
-                          </a>
-                        ) : (
-                          "—"
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+          <>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+              <label>
+                <input
+                  type="search"
+                  placeholder="Rechercher un contrat..."
+                  value={contratSearch}
+                  onChange={(e) => setContratSearch(e.target.value)}
+                  className="form-control"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                />
+              </label>
+              <label>
+                <select
+                  value={contratFilter}
+                  onChange={(e) => setContratFilter(e.target.value as any)}
+                  className="form-control"
+                  style={{ padding: "6px 10px", fontSize: "0.85rem" }}
+                >
+                  <option value="">Tous les types</option>
+                  <option value="creation">Création</option>
+                  <option value="oapi">OAPI</option>
+                  <option value="contrats">Contrats</option>
+                  <option value="fiscalite">Fiscalité</option>
+                </select>
+              </label>
+              <p className="db-hint" style={{ margin: 0, fontSize: "0.85rem" }}>{filteredContrats.length} contrat(s)</p>
+            </div>
+            <div className="db-table-wrap">
+              <table className="db-table">
+                <thead><tr><th>ID Contrat</th><th>Client</th><th>Type de Service</th><th>État Signature</th><th>Fichier</th></tr></thead>
+                <tbody>
+                  {filteredContrats.length === 0 ? (
+                    <EmptyRow cols={5} msg="Aucun contrat" />
+                  ) : (
+                    filteredContrats.map((ct) => (
+                      <tr key={ct.id}>
+                        <td>CT-{String(ct.id).padStart(3, "0")}</td>
+                        <td>{ct.client_nom || "—"}</td>
+                        <td>{ct.type ?? "—"}</td>
+                        <td><StatutBadge statut="actif" /></td>
+                        {/* Note : ApiAdminContrat n'expose pas de champ statut ; "actif" est la valeur par défaut. */}
+                        <td>
+                          {ct.doc_exists ? (
+                            <a
+                              href={`${documentViewerPath}?type=contrat&id=${ct.id}`}
+                              target="_blank"
+                              rel="noopener"
+                              className="action-link"
+                            >
+                              Consulter PDF
+                            </a>
+                          ) : (
+                            "—"
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
       {/* L012 : édition du modèle de contrat (OTP admin obligatoire + éditeur TinyMCE CDN) */}
@@ -917,20 +1205,30 @@ function TabTickets() {
   const { lists, loading, error, reload } = useAdminData();
   const { toast } = useToast();
   const tickets: ApiTicket[] = lists?.tickets ?? [];
+  const ticketsOpen = tickets.filter((t) => t.statut !== "closed" && t.statut !== "resolved").length;
+  const [replyingTicketId, setReplyingTicketId] = useState<number | null>(null);
+  const [replyText, setReplyText] = useState("");
 
   const reply = async (ticketId: number) => {
-    const rep = window.prompt(`Votre réponse au ticket #${ticketId} :`);
-    if (!rep || !rep.trim()) return;
+    if (!replyText.trim()) return;
+    setReplyingTicketId(ticketId);
     try {
       const res = await apiAuthPost<{ error?: string }>("/api/v1/admin/ticket/reply", {
         ticket_id: ticketId,
-        reponse: rep.trim(),
+        reponse: replyText.trim(),
       });
       toast("Réponse envoyée. Le client la verra dans son espace.", "success");
+      setReplyingTicketId(null);
+      setReplyText("");
       reload();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Échec de l'enregistrement.", "error");
     }
+  };
+
+  const cancelReply = () => {
+    setReplyingTicketId(null);
+    setReplyText("");
   };
 
   return (
@@ -939,6 +1237,11 @@ function TabTickets() {
       <div className="db-section">
         <div className="db-section-header">
           <h2>Historique des Tickets</h2>
+          {ticketsOpen > 0 && (
+            <span style={{ background: "var(--color-warning)", color: "#fff", padding: "2px 8px", borderRadius: 12, fontSize: "0.75rem", marginLeft: 8 }}>
+              {ticketsOpen} nouveau(x) ticket(s)
+            </span>
+          )}
           <button
             type="button"
             className="btn btn-outline btn-sm"
@@ -987,12 +1290,37 @@ function TabTickets() {
                       <td>
                         {t.reponse ? (
                           <span style={{ fontSize: "0.78rem", color: "var(--color-text-muted)" }}>Répondu</span>
+                        ) : replyingTicketId === t.id ? (
+                          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                            <input
+                              type="text"
+                              value={replyText}
+                              onChange={(e) => setReplyText(e.target.value)}
+                              placeholder="Votre réponse..."
+                              style={{ padding: "4px 8px", fontSize: "0.75rem", flex: 1 }}
+                            />
+                            <button
+                              type="button"
+                              className="btn btn-primary btn-sm"
+                              onClick={() => reply(t.id)}
+                              disabled={!replyText.trim()}
+                            >
+                              Envoyer
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              onClick={cancelReply}
+                            >
+                              Annuler
+                            </button>
+                          </div>
                         ) : (
                           <button
                             className="btn btn-primary"
                             style={{ padding: "4px 10px", fontSize: "0.78rem" }}
                             type="button"
-                            onClick={() => reply(t.id)}
+                            onClick={() => setReplyingTicketId(t.id)}
                           >
                             Répondre
                           </button>
@@ -1048,6 +1376,7 @@ function TabMessages() {
   const messages: ApiMailMessage[] = lists?.messages ?? [];
   const throttled: ApiThrottle[] = overview?.throttled ?? [];
   const [replyingMessageId, setReplyingMessageId] = useState<number | null>(null);
+  const [replyMessageText, setReplyMessageText] = useState("");
   const [resettingThrottleId, setResettingThrottleId] = useState<string | null>(null);
 
   const resetThrottle = async (email: string, userType: string) => {
@@ -1067,17 +1396,16 @@ function TabMessages() {
 
   const replyToClient = async (clientId: number | null | undefined, messageId: number) => {
     if (!clientId) return;
-    const content = window.prompt("Réponse à ce client :");
-    if (!content) return;
     setReplyingMessageId(messageId);
     try {
-      await apiAuthPost("/api/v1/mail/reply", { client_id: Number(clientId), content });
+      if (!replyMessageText.trim()) return;
+      await apiAuthPost("/api/v1/mail/reply", { client_id: Number(clientId), content: replyMessageText.trim() });
       toast("Réponse envoyée.", "success");
+      setReplyingMessageId(null);
+      setReplyMessageText("");
       reload();
     } catch (err) {
       toast(err instanceof Error ? err.message : "Échec de l'envoi.", "error");
-    } finally {
-      setReplyingMessageId(null);
     }
   };
 
@@ -1134,19 +1462,49 @@ function TabMessages() {
                       <td>{fmtDate(m.created_at)}</td>
                       <td>
                         {m.sender_type === "client" ? (
-                          <ButtonLoader
-                            isLoading={replyingMessageId === m.id}
-                            delayMs={150}
-                          >
-                            <button
-                              className="btn btn-outline"
-                              style={{ padding: "4px 12px", fontSize: "0.75rem" }}
-                              type="button"
-                              onClick={() => replyToClient(m.sender_id, m.id ?? 0)}
+                          replyingMessageId === m.id ? (
+                            <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                              <input
+                                type="text"
+                                value={replyMessageText}
+                                onChange={(e) => setReplyMessageText(e.target.value)}
+                                placeholder="Votre réponse..."
+                                style={{ padding: "4px 8px", fontSize: "0.75rem", flex: 1 }}
+                              />
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                onClick={() => replyToClient(m.sender_id, m.id ?? 0)}
+                                disabled={!replyMessageText.trim()}
+                              >
+                                Envoyer
+                              </button>
+                              <button
+                                type="button"
+                                className="btn btn-outline btn-sm"
+                                onClick={() => {
+                                  setReplyingMessageId(null);
+                                  setReplyMessageText("");
+                                }}
+                              >
+                                Annuler
+                              </button>
+                            </div>
+                          ) : (
+                            <ButtonLoader
+                              isLoading={replyingMessageId === m.id}
+                              delayMs={150}
                             >
-                              Répondre
-                            </button>
-                          </ButtonLoader>
+                              <button
+                                className="btn btn-outline"
+                                style={{ padding: "4px 12px", fontSize: "0.75rem" }}
+                                type="button"
+                                onClick={() => setReplyingMessageId(m.id ?? 0)}
+                              >
+                                Répondre
+                              </button>
+                            </ButtonLoader>
+                          )
                         ) : (
                           "—"
                         )}
@@ -1209,6 +1567,7 @@ function TabMessages() {
 
 function TabStats() {
   const { lists, overview } = useAdminData();
+  const { toast } = useToast();
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     orange: true,
     mtn: true,
@@ -1254,8 +1613,10 @@ function TabStats() {
             className="btn btn-outline btn-sm"
             style={{ marginBottom: 16 }}
             onClick={() => {
-              // Ici, on enverrait les toggles vers l'API
-              console.log("Configuration sauvegardée:", toggles);
+              // Envoi vers l'API de configuration (à connecter au backend)
+              apiAuthPost("/api/v1/admin/config", toggles)
+                .then(() => toast("Configuration enregistrée.", "success"))
+                .catch(() => toast("Échec de l'enregistrement de la configuration.", "error"));
             }}
           >
             Enregistrer la configuration

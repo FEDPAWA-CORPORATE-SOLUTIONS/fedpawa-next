@@ -333,11 +333,46 @@ export default function AdminPublications({
             </label>
             <label className="apub-wide">
               <span>{t.fieldContenu}</span>
-              <textarea
-                rows={8}
-                value={form.contenu}
-                onChange={(e) => setForm({ ...form, contenu: e.target.value })}
-              />
+              <div style={{ border: "1px solid var(--color-border)", borderRadius: 4, minHeight: 200, display: "flex", alignItems: "flex-start" }}>
+                <div style={{ padding: 8, borderRight: "1px solid var(--color-border)", display: "flex", flexDirection: "column", gap: 4 }}>
+                  <button
+                    type="button"
+                    onClick={() => document.execCommand("bold", false, undefined)}
+                    title="Gras"
+                    style={{ padding: 4, border: "1px solid var(--color-border)", background: "var(--color-bg-main)", cursor: "pointer", fontSize: "0.8rem" }}
+                  >
+                    B
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => document.execCommand("italic", false, undefined)}
+                    title="Italique"
+                    style={{ padding: 4, border: "1px solid var(--color-border)", background: "var(--color-bg-main)", cursor: "pointer", fontSize: "0.8rem" }}
+                  >
+                    I
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const url = window.prompt("Lien URL :");
+                      if (url) document.execCommand("createLink", false, url);
+                    }}
+                    title="Lien"
+                    style={{ padding: 4, border: "1px solid var(--color-border)", background: "var(--color-bg-main)", cursor: "pointer", fontSize: "0.8rem" }}
+                  >
+                    🔗
+                  </button>
+                </div>
+                <div
+                  contentEditable
+                  style={{ flex: 1, padding: 8, outline: "none", fontFamily: "inherit", fontSize: "0.9rem" }}
+                  dangerouslySetInnerHTML={{ __html: form.contenu ?? "" }}
+                  onInput={(e) => setForm({ ...form, contenu: (e.target as HTMLDivElement).innerHTML })}
+                />
+              </div>
+              <p style={{ fontSize: "0.75rem", color: "var(--color-text-muted)", marginTop: 4 }}>
+                Éditeur riche — le contenu HTML est conservé tel quel.
+              </p>
             </label>
           </div>
 
