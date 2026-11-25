@@ -1,9 +1,9 @@
 "use client";
 
 // ==========================================================
-// FEDPAWA — Boîte de réception admin (look Gmail)
+// FEDPAWA — Boîte de réception admin (adaptée au design system du site)
 // Barre latérale, recherche centrale, onglets catégories dynamiques,
-// liste de mails en 2 lignes, vue détail style Gmail,
+// liste de mails en 2 lignes, vue détail style site FEDPAWA,
 // envoi / réponse / suppression / favori / création de catégories.
 // Données : repli sur DEMO_MAILS si l'API répond 404.
 // ==========================================================
@@ -120,7 +120,6 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   }, [loadEnvoyes]);
 
   useEffect(() => {
-    // Charger les catégories au montage
     adminFetchUserCategories()
       .then(setCategories)
       .catch(() => setCategories([]));
@@ -397,84 +396,84 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
   // ---------- Rendu ----------
   return (
-    <div className="gmail-container">
+    <div className="mail-container">
       {/* ============== BARRE LATÉRALE GAUCHE ============== */}
-      <aside className="gmail-sidebar">
-        <div className="gmail-sidebar-top">
+      <aside className="mail-sidebar">
+        <div className="mail-sidebar-top">
           <button
             type="button"
-            className="gmail-compose-btn"
+            className="mail-compose-btn"
             onClick={ouvrirNouveau}
             disabled={busy}
           >
-            Compose +{" "}
+            Nouveau message +{" "}
           </button>
         </div>
-        <nav className="gmail-nav">
+        <nav className="mail-nav">
           <div
-            className={`gmail-nav-item ${folder === "inbox" ? "active" : ""}`}
+            className={`mail-nav-item ${folder === "inbox" ? "active" : ""}`}
             onClick={() => setFolder("inbox")}
           >
-            📥 Inbox
+            📥 Boîte de réception
             {count && count.non_lus > 0 && folder === "inbox" && (
-              <span className="gmail-badge">{count.non_lus}</span>
+              <span className="mail-badge">{count.non_lus}</span>
             )}
           </div>
           <div
-            className={`gmail-nav-item ${folder === "favoris" ? "active" : ""}`}
+            className={`mail-nav-item ${folder === "favoris" ? "active" : ""}`}
             onClick={() => setFolder("favoris")}
           >
             ⭐ Favoris
           </div>
           <div
-            className={`gmail-nav-item ${folder === "envoyes" ? "active" : ""}`}
+            className={`mail-nav-item ${folder === "envoyes" ? "active" : ""}`}
             onClick={() => setFolder("envoyes")}
           >
             📤 Envoyés
           </div>
           <div
-            className={`gmail-nav-item ${folder === "brouillons" ? "active" : ""}`}
+            className={`mail-nav-item ${folder === "brouillons" ? "active" : ""}`}
             onClick={() => setFolder("brouillons")}
           >
             📝 Brouillons
           </div>
           <div
-            className={`gmail-nav-item ${folder === "corbeille" ? "active" : ""}`}
+            className={`mail-nav-item ${folder === "corbeille" ? "active" : ""}`}
             onClick={() => setFolder("corbeille")}
           >
             🗑️ Corbeille
           </div>
         </nav>
-        <div className="gmail-sidebar-bottom">
-          <Link className="gmail-back-link" href={routes.adminDashboard}>
+        <div className="mail-sidebar-bottom">
+          <Link className="mail-back-link" href={routes.adminDashboard}>
             ← {t.backDashboard || "Retour dashboard"}
           </Link>
         </div>
       </aside>
 
       {/* ============== CONTENU PRINCIPAL ============== */}
-      <main className="gmail-main">
+      <main className="mail-main">
         {/* Barre de recherche centrale */}
-        <div className="gmail-search-bar">
-          <div className="gmail-search-logo">FEDPAWA</div>
+        <div className="mail-search-bar">
+          <div className="mail-search-logo">FEDPAWA</div>
           <input
             type="search"
-            className="gmail-search-input"
-            placeholder="Search in mail"
+            className="mail-search-input"
+            placeholder="Rechercher dans les courriels"
             value={recherche}
             onChange={(e) => setRecherche(e.target.value)}
           />
-          <button className="gmail-search-filters" title="Filtres">
+          <button className="mail-search-filters" title="Filtres">
             ⋮
           </button>
         </div>
 
         {/* Onglets catégories (dynamiques depuis l'API) */}
-        <div className="gmail-tabs">
+        <div className="mail-tabs">
           {categories.map((categorie) => (
             <button
               key={categorie.id}
-              className={`gmail-tab ${activeCategorieId === categorie.id ? "active" : ""}`}
+              className={`mail-tab ${activeCategorieId === categorie.id ? "active" : ""}`}
               style={{ borderLeft: `3px solid ${categorie.couleur}` }}
               onClick={() => setActiveCategorieId(categorie.id)}
             >
@@ -482,7 +481,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               {!categorie.est_systeme && (
                 <button
                   type="button"
-                  className="gmail-tab-delete"
+                  className="mail-tab-delete"
                   onClick={(e) => {
                     e.stopPropagation();
                     supprimerCategorie(categorie.id);
@@ -494,7 +493,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             </button>
           ))}
           <button
-            className="gmail-tab gmail-tab-add"
+            className="mail-tab mail-tab-add"
             onClick={ouvrirCreerCategorie}
           >
             + Créer une catégorie
@@ -503,36 +502,36 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* Modal création catégorie */}
         {creerCategorieOuvert && (
-          <div className="gmail-modal-overlay" onClick={annulerCreerCategorie}>
-            <div className="gmail-modal" onClick={(e) => e.stopPropagation()}>
+          <div className="mail-modal-overlay" onClick={annulerCreerCategorie}>
+            <div className="mail-modal" onClick={(e) => e.stopPropagation()}>
               <h3>Nouvelle catégorie</h3>
-              <div className="gmail-modal-field">
+              <div className="mail-modal-field">
                 <label>Nom de la catégorie</label>
                 <input
                   type="text"
-                  className="gmail-compose-input"
+                  className="mail-compose-input"
                   value={nouvelleCategorie.nom}
                   onChange={(e) => setNouvelleCategorie({ ...nouvelleCategorie, nom: e.target.value })}
                   placeholder="ex: Utilisateurs premium"
                   autoFocus
                 />
               </div>
-              <div className="gmail-modal-field">
+              <div className="mail-modal-field">
                 <label>Couleur</label>
                 <input
                   type="color"
-                  className="gmail-compose-input gmail-color-input"
+                  className="mail-compose-input mail-color-input"
                   value={nouvelleCategorie.couleur}
                   onChange={(e) => setNouvelleCategorie({ ...nouvelleCategorie, couleur: e.target.value })}
                 />
               </div>
-              <div className="gmail-modal-actions">
-                <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerCreerCategorie}>
+              <div className="mail-modal-actions">
+                <button type="button" className="btn btn-outline" onClick={annulerCreerCategorie}>
                   Annuler
                 </button>
                 <button
                   type="button"
-                  className="gmail-btn gmail-btn-primary"
+                  className="btn btn-primary"
                   onClick={creerCategorie}
                   disabled={busy || !nouvelleCategorie.nom.trim()}
                 >
@@ -545,7 +544,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* Filtres rapides */}
         {view === "liste" && (
-          <div className="gmail-filters">
+          <div className="mail-filters">
             <label>
               <input
                 type="checkbox"
@@ -555,7 +554,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               Non lus uniquement
             </label>
             <select
-              className="gmail-filter-select"
+              className="mail-filter-select"
               value={page}
               onChange={(e) => setPage(parseInt(e.target.value, 10))}
             >
@@ -570,51 +569,51 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* ============== VUE : LISTE DE MAILS ============== */}
         {view === "liste" && !detail && (
-          <section className="gmail-list-section">
-            <div className="gmail-toolbar">
-              <input type="checkbox" className="gmail-select-all" />
-              <span className="gmail-count">
+          <section className="mail-list-section">
+            <div className="mail-toolbar">
+              <input type="checkbox" className="mail-select-all" />
+              <span className="mail-count">
                 {mailsDisplay.length} mail{mailsDisplay.length > 1 ? "s" : ""}
               </span>
-              {sendSuccess && <span className="gmail-success">{sendSuccess}</span>}
-              {sendError && <span className="gmail-error">{sendError}</span>}
+              {sendSuccess && <span className="mail-success">{sendSuccess}</span>}
+              {sendError && <span className="mail-error">{sendError}</span>}
             </div>
 
-            {(loading && !resp) || (error && <p className="gmail-error">{error}</p>)}
+            {(loading && !resp) || (error && <p className="mail-error">{error}</p>)}
 
             {!loading && resp && mailsDisplay.length === 0 && (
-              <p className="gmail-empty">Aucun mail dans ce dossier.</p>
+              <p className="mail-empty">Aucun courriel dans ce dossier.</p>
             )}
 
             {!loading && mailsDisplay.length > 0 && (
-              <table className="gmail-mail-table">
+              <table className="mail-table">
                 <thead>
                   <tr>
-                    <th className="gmail-th-checkbox"><input type="checkbox" /></th>
-                    <th className="gmail-th-star">★</th>
-                    <th className="gmail-th-from">De</th>
-                    <th className="gmail-th-subject">Sujet</th>
-                    <th className="gmail-th-preview">Contenu</th>
-                    <th className="gmail-th-date">Heure</th>
+                    <th className="mail-th-checkbox"><input type="checkbox" /></th>
+                    <th className="mail-th-star">★</th>
+                    <th className="mail-th-from">De</th>
+                    <th className="mail-th-subject">Sujet</th>
+                    <th className="mail-th-preview">Contenu</th>
+                    <th className="mail-th-date">Heure</th>
                   </tr>
                 </thead>
                 <tbody>
                   {mailsDisplay.map((m) => (
                     <tr
                       key={m.id}
-                      className={`gmail-mail-row ${!m.lu ? "gmail-unread" : ""} ${selectedMailId === m.id ? "gmail-selected" : ""}`}
+                      className={`mail-row ${!m.lu ? "mail-unread" : ""} ${selectedMailId === m.id ? "mail-selected" : ""}`}
                       onClick={() => ouvrir(m.id)}
                     >
-                      <td className="gmail-td-checkbox">
+                      <td className="mail-td-checkbox">
                         <input type="checkbox" />
                       </td>
-                      <td className="gmail-td-star">☆</td>
-                      <td className="gmail-td-from">{m.expediteur}</td>
-                      <td className="gmail-td-subject">{m.sujet}</td>
-                      <td className="gmail-td-preview">
+                      <td className="mail-td-star">☆</td>
+                      <td className="mail-td-from">{m.expediteur}</td>
+                      <td className="mail-td-subject">{m.sujet}</td>
+                      <td className="mail-td-preview">
                         {m.corps_texte ? m.corps_texte.slice(0, 60) : "—"}
                       </td>
-                      <td className="gmail-td-date">{fmtDate(m.recu_le, locale)}</td>
+                      <td className="mail-td-date">{fmtDate(m.recu_le, locale)}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -622,7 +621,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             )}
 
             {resp && resp.meta && resp.meta.derniere_page > 1 && (
-              <div className="gmail-pagination">
+              <div className="mail-pagination">
                 <button
                   disabled={page <= 1}
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -643,11 +642,11 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* ============== VUE : DÉTAIL D'UN MAIL ============== */}
         {view === "detail" && detail && (
-          <section className="gmail-detail-section">
-            <div className="gmail-detail-header">
+          <section className="mail-detail-section">
+            <div className="mail-detail-header">
               <button
                 type="button"
-                className="gmail-btn gmail-btn-outline"
+                className="btn btn-outline"
                 onClick={fermerDetail}
               >
                 ← Retour
@@ -655,7 +654,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               {!detail.lu && (
                 <button
                   type="button"
-                  className="gmail-btn gmail-btn-outline"
+                  className="btn btn-outline"
                   onClick={() => marquerLu(detail.id)}
                 >
                   Marquer comme lu
@@ -663,14 +662,14 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               )}
               <button
                 type="button"
-                className="gmail-btn gmail-btn-outline"
+                className="btn btn-outline"
                 onClick={() => basculerFavori(detail.id)}
               >
-                {detail.lu ? "⭐" : "☆"} Favori
+                {detail.lu ? "⭐" : "☆"} Favoris
               </button>
               <button
                 type="button"
-                className="gmail-btn gmail-btn-outline"
+                className="btn btn-outline"
                 onClick={() => ouvrirReponse(detail.id, detail.sujet)}
                 disabled={busy || replyingTo !== null}
               >
@@ -678,36 +677,36 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </button>
               <button
                 type="button"
-                className="gmail-btn gmail-btn-outline gmail-btn-delete"
+                className="btn btn-outline mail-btn-delete"
                 onClick={() => supprimerMail(detail.id)}
               >
                 🗑️ Supprimer
               </button>
             </div>
 
-            <h1 className="gmail-detail-title">{detail.sujet}</h1>
+            <h1 className="mail-detail-title">{detail.sujet}</h1>
 
-            <div className="gmail-detail-meta">
-              <span className="gmail-meta-item">
+            <div className="mail-detail-meta">
+              <span className="mail-meta-item">
                 <strong>De:</strong> {detail.expediteur}
               </span>
-              <span className="gmail-meta-item">
+              <span className="mail-meta-item">
                 <strong>À:</strong>
                 {(detail.destinataires ?? []).join(", ") || "—"}
               </span>
               {detail.copie && detail.copie.length > 0 && (
-                <span className="gmail-meta-item">
+                <span className="mail-meta-item">
                   <strong>CC:</strong> {detail.copie.join(", ")}
                 </span>
               )}
-              <span className="gmail-meta-item">
+              <span className="mail-meta-item">
                 <strong>Reçu le:</strong> {fmtDate(detail.recu_le, locale)}
               </span>
             </div>
 
-            <div className="gmail-detail-body">
+            <div className="mail-detail-body">
               {detail.pieces_jointes && detail.pieces_jointes.length > 0 && (
-                <div className="gmail-attachments">
+                <div className="mail-attachments">
                   <strong>Pièces jointes:</strong>
                   <ul>
                     {detail.pieces_jointes.map((pj, i) => (
@@ -716,7 +715,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                         {pj.url && (
                           <button
                             type="button"
-                            className="gmail-btn gmail-btn-outline gmail-btn-sm"
+                            className="btn btn-outline mail-btn-sm"
                             onClick={() => downloadMailAttachment(pj.url, pj.nom)}
                           >
                             Télécharger
@@ -728,7 +727,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 </div>
               )}
               {corpsAssaini ? (
-                <div className="gmail-detail-content" dangerouslySetInnerHTML={{ __html: corpsAssaini }} />
+                <div className="mail-detail-content" dangerouslySetInnerHTML={{ __html: corpsAssaini }} />
               ) : (
                 <p>{detail.corps_texte || "—"}</p>
               )}
@@ -738,43 +737,43 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* ============== VUE : RÉPONDRE ============== */}
         {view === "repondre" && replyingTo !== null && (
-          <section className="gmail-compose-section">
-            <div className="gmail-compose-header">
-              <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerReponse}>
+          <section className="mail-compose-section">
+            <div className="mail-compose-header">
+              <button type="button" className="btn btn-outline" onClick={annulerReponse}>
                 ← Retour
               </button>
-              <h1 className="gmail-compose-title">Répondre</h1>
+              <h1 className="mail-compose-title">Répondre</h1>
             </div>
-            {sendError && <p className="gmail-error">{sendError}</p>}
-            {sendSuccess && <p className="gmail-success">{sendSuccess}</p>}
+            {sendError && <p className="mail-error">{sendError}</p>}
+            {sendSuccess && <p className="mail-success">{sendSuccess}</p>}
             <form onSubmit={(e) => { e.preventDefault(); repondre(); }}>
-              <div className="gmail-compose-field">
+              <div className="mail-compose-field">
                 <label>Sujet</label>
                 <input
                   type="text"
-                  className="gmail-compose-input"
+                  className="mail-compose-input"
                   value={replyDraft.sujet}
                   onChange={(e) => setReplyDraft({ ...replyDraft, sujet: e.target.value })}
                   required
                 />
               </div>
-              <div className="gmail-compose-field">
+              <div className="mail-compose-field">
                 <label>Corps</label>
                 <textarea
-                  className="gmail-compose-textarea"
+                  className="mail-compose-textarea"
                   value={replyDraft.corps}
                   onChange={(e) => setReplyDraft({ ...replyDraft, corps: e.target.value })}
                   rows={10}
                   required
                 ></textarea>
               </div>
-              <div className="gmail-compose-actions">
-                <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerReponse}>
+              <div className="mail-compose-actions">
+                <button type="button" className="btn btn-outline" onClick={annulerReponse}>
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="gmail-btn gmail-btn-primary"
+                  className="btn btn-primary"
                   disabled={busy || !replyDraft.sujet || !replyDraft.corps}
                 >
                   {busy ? "Envoi en cours..." : "Envoyer la réponse"}
@@ -786,32 +785,32 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* ============== VUE : NOUVEAU MAIL ============== */}
         {view === "nouveau" && (
-          <section className="gmail-compose-section">
-            <div className="gmail-compose-header">
-              <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerNouveau}>
+          <section className="mail-compose-section">
+            <div className="mail-compose-header">
+              <button type="button" className="btn btn-outline" onClick={annulerNouveau}>
                 ← Retour
               </button>
-              <h1 className="gmail-compose-title">Nouveau Message</h1>
+              <h1 className="mail-compose-title">Nouveau message</h1>
             </div>
-            {sendError && <p className="gmail-error">{sendError}</p>}
-            {sendSuccess && <p className="gmail-success">{sendSuccess}</p>}
+            {sendError && <p className="mail-error">{sendError}</p>}
+            {sendSuccess && <p className="mail-success">{sendSuccess}</p>}
             <form onSubmit={(e) => { e.preventDefault(); envoyerMail(); }}>
-              <div className="gmail-compose-field">
-                <label>Recipients</label>
+              <div className="mail-compose-field">
+                <label>Destinataire</label>
                 <input
                   type="email"
-                  className="gmail-compose-input"
+                  className="mail-compose-input"
                   value={formDest}
                   onChange={(e) => setFormDest(e.target.value)}
                   placeholder="exemple@domaine.com"
                   required
                 />
               </div>
-              <div className="gmail-compose-field">
+              <div className="mail-compose-field">
                 <label>Copie (CC)</label>
                 <input
                   type="text"
-                  className="gmail-compose-input"
+                  className="mail-compose-input"
                   value={formCopie.join(", ")}
                   onChange={(e) => {
                     const emails = e.target.value
@@ -824,29 +823,29 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   placeholder="copie1@domaine.com, copie2@domaine.com"
                 />
               </div>
-              <div className="gmail-compose-field">
-                <label>Subject</label>
+              <div className="mail-compose-field">
+                <label>Sujet</label>
                 <input
                   type="text"
-                  className="gmail-compose-input"
+                  className="mail-compose-input"
                   value={formSujet}
                   onChange={(e) => setFormSujet(e.target.value)}
                   required
                 />
               </div>
-              <div className="gmail-compose-field gmail-compose-body-field">
-                <label>Body</label>
+              <div className="mail-compose-field mail-compose-body-field">
+                <label>Corps du message</label>
                 <textarea
-                  className="gmail-compose-textarea"
+                  className="mail-compose-textarea"
                   value={formTexte}
                   onChange={(e) => setFormTexte(e.target.value)}
                   rows={10}
                   required
                 ></textarea>
-                <div className="gmail-attach-area">
+                <div className="mail-attach-area">
                   <button
                     type="button"
-                    className="gmail-btn gmail-btn-outline gmail-btn-sm"
+                    className="btn btn-outline mail-btn-sm"
                     onClick={() => document.getElementById("attach-files")?.click()}
                   >
                     📎 Joindre des fichiers
@@ -863,13 +862,13 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                     }}
                   />
                   {formPiecesJointes.length > 0 && (
-                    <div className="gmail-attached-list">
+                    <div className="mail-attached-list">
                       {formPiecesJointes.map((f, i) => (
-                        <div key={i} className="gmail-attached-item">
+                        <div key={i} className="mail-attached-item">
                           {f.name} ({fmtTaille(f.size)})
                           <button
                             type="button"
-                            className="gmail-btn gmail-btn-outline gmail-btn-sm"
+                            className="btn btn-outline mail-btn-sm"
                             onClick={() =>
                               setFormPiecesJointes(formPiecesJointes.filter((_, j) => j !== i))
                             }
@@ -882,13 +881,13 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   )}
                 </div>
               </div>
-              <div className="gmail-compose-actions">
-                <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerNouveau}>
+              <div className="mail-compose-actions">
+                <button type="button" className="btn btn-outline" onClick={annulerNouveau}>
                   Annuler
                 </button>
                 <button
                   type="submit"
-                  className="gmail-btn gmail-btn-primary"
+                  className="btn btn-primary"
                   disabled={busy || !formDest || !formSujet || !formTexte}
                 >
                   {busy ? "Envoi en cours…" : "Envoyer"}
@@ -898,7 +897,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
           </section>
         )}
 
-        {detailLoading && <p className="gmail-loading">Chargement…</p>}
+        {detailLoading && <p className="mail-loading">Chargement…</p>}
       </main>
     </div>
   );
