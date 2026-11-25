@@ -69,6 +69,8 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [view, setView] = useState<"liste" | "detail" | "nouveau" | "repondre">("liste");
   const [folder, setFolder] = useState<Folder>("inbox");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const [categories, setCategories] = useState<UserCategory[]>([]);
   const [activeCategorieId, setActiveCategorieId] = useState<number | null>(null);
   const [selectedMailId, setSelectedMailId] = useState<number | null>(null);
@@ -482,14 +484,19 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
         {/* Barre de recherche centrale */}
         <div className="mail-search-bar">
           <div className="mail-search-logo">FEDPAWA</div>
-          <input
-            type="search"
-            className="mail-search-input"
-            placeholder="Rechercher dans les courriels"
-            value={recherche}
-            onChange={(e) => setRecherche(e.target.value)}
-          />
-          <button className="mail-search-filters" title="Filtres">
+          <div className="mail-search-wrapper">
+            <span className="mail-search-icon">🔍</span>
+            <input
+              type="search"
+              className={`mail-search-input ${searchFocused ? 'mail-search-focused' : ''}`}
+              placeholder="Rechercher dans les courriels"
+              value={recherche}
+              onChange={(e) => setRecherche(e.target.value)}
+              onFocus={() => setSearchFocused(true)}
+              onBlur={() => setSearchFocused(false)}
+            />
+          </div>
+          <button className="mail-search-filters" title="Filtres avancés" onClick={() => setFiltersOpen(!filtersOpen)}>
             ⋮
           </button>
         </div>
