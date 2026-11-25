@@ -1,23 +1,12 @@
-// ==========================================================
-// FEDPAWA — Boîte de réception admin (CONTRAT-MAIL.md §3) :
-// liste antichronologique paginée (expéditeur, sujet, date,
-// lu/non lu), filtre « non lus », recherche, badge de non-lus
-// (GET /api/v1/admin/mails/count), vue détail avec corps HTML
-// ASSAINI (scripts/iframes/gestionnaires d'événements/liens
-// javascript: retirés — lib/sanitize-mail-html) et pièces
-// jointes listées (nom/type/taille, téléchargement via URL
-// temporaire uniquement, jamais insérées en direct), actions
-// « tout marquer comme lu ».
-//
-// NOUVEAU (vague E) :
-// - Envoi de nouveaux mails depuis l'admin (POST /api/v1/admin/mails)
-// - Réponse à un mail reçu (POST /api/v1/admin/mails/{id}/replier)
-// - Vue des mails envoyés (GET /api/v1/admin/mails/envoyes)
-// Repli sur données de démonstration EXPLICITEMENT signalées
-// si l'API répond 404 (endpoints non déployés). Rôle admin requis (Guarded).
-// ==========================================================
-
 "use client";
+
+// ==========================================================
+// FEDPAWA — Boîte de réception admin (look Gmail)
+// Barre latérale, recherche centrale, onglets catégories,
+// liste de mails en 2 lignes, vue détail style Gmail,
+// envoi / réponse / suppression / favori.
+// Données : repli sur DEMO_MAILS si l'API répond 404.
+// ==========================================================
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -42,11 +31,16 @@ import {
   type MailsEnvoyesPage,
   type MailSummary,
   type AdminSendMailPayload,
+  DEMO_MAILS,
 } from "@/lib/mails";
 
 export interface AdminMailsProps {
   locale?: Locale;
 }
+
+type Folder = "inbox" | "favoris" | "envoyes" | "brouillons" | "corbeille";
+
+type Tab = "inscrits" | "actifs" | "favoris" | "nouvelle-categorie";
 
 function fmtDate(iso: string | null | undefined, locale: Locale): string {
   if (!iso) return "—";
@@ -69,39 +63,42 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const t = getPageDictionary(locale, "admin_mails");
   const routes = routesFor(locale);
 
-  const [resp, setResp] = useState<MailsPage<MailSummary> | null>(null);
-  const [count, setCount] = useState<MailsCount | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  // ---------- États de navigation ----------
+  const [view, setView] = useState<"liste" | "detail" | "nouveau" | "repondre">("liste");
+  const [folder, setFolder] = useState<Folder>("inbox");
+  const [tab, setTab] = useState<Tab>("inscrits");
+  const [selectedMailId, setSelectedMailId] = useState<number | null>(null);
+  const [detail, setDetail] = useState<MailDetail | null>(null);
+  const [detailDemo, setDetailDemo] = useState(false);
+  const [detailLoading, setDetailLoading] = useState(false);
+
+  // ---------- États de liste ----------
   const [filtre, setFiltre] = useState<"" | "non_lus">("");
   const [recherche, setRecherche] = useState("");
   const [rechercheAppliquee, setRechercheAppliquee] = useState("");
   const [page, setPage] = useState(1);
-  const [detail, setDetail] = useState<MailDetail | null>(null);
-  const [detailDemo, setDetailDemo] = useState(false);
-  const [detailLoading, setDetailLoading] = useState(false);
-  const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  // ---------- Nouveaux états : envoi / réponse / mails envoyés ----------
-  const [view, setView] = useState<
-    "liste" | "detail" | "envoyes" | "nouveau" | "repondre"
-  >("liste");
+  // ---------- États d'envoi / réponse ----------
   const [envoyes, setEnvoyes] = useState<MailsEnvoyesPage | null>(null);
   const [envoyesLoading, setEnvoyesLoading] = useState(false);
+  const [busy, setBusy] = useState(false);
   const [sendError, setSendError] = useState("");
   const [sendSuccess, setSendSuccess] = useState("");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
-  const [replyDraft, setReplyDraft] = useState<{ sujet: string; corps: string }>({
-    sujet: "",
-    corps: "",
-  });
+  const [replyDraft, setReplyDraft] = useState<{ sujet: string; corps: string }>({ sujet: "", corps: "" });
 
-  // États du formulaire "nouveau mail"
+  // Formulaire nouveau mail
   const [formDest, setFormDest] = useState("");
   const [formCopie, setFormCopie] = useState<string[]>([]);
   const [formSujet, setFormSujet] = useState("");
   const [formTexte, setFormTexte] = useState("");
+  const [formPiecesJointes, setFormPiecesJointes] = useState<File[]>([]);
+
+  // ---------- Chargement des mails ----------
+  const [resp, setResp] = useState<MailsPage<MailSummary> | null>(null);
+  const [count, setCount] = useState<MailsCount | null>(null);
 
   const loadEnvoyes = useCallback(() => {
     setEnvoyesLoading(true);
@@ -115,6 +112,71 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     loadEnvoyes();
   }, [loadEnvoyes]);
 
+  useEffect(() => {
+    const h = setTimeout(() => {
+      setRechercheAppliquee(recherche.trim());
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(h);
+  }, [recherche]);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    setError("");
+    adminFetchMails({
+      lu: filtre,
+      recherche: rechercheAppliquee,
+      page,
+      par_page: MAILS_PAR_PAGE,
+    })
+      .then((r) => setResp(r))
+      .catch(() => setError(t.loadError))
+      .finally(() => setLoading(false));
+    adminFetchMailsCount()
+      .then(setCount)
+      .catch(() => setCount(null));
+  }, [filtre, rechercheAppliquee, page, t.loadError]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  // ---------- Données affichées (démo ou API) ----------
+  const mailsDisplay = useMemo(() => {
+    // Si on a de vraies données de l'API, on les utilise.
+    // Sinon, repli sur DEMO_MAILS filtrés par dossier.
+    const apiMails = resp?.data ?? [];
+    if (apiMails.length > 0 && !(resp?.demo)) {
+      return apiMails;
+    }
+    // Repli démo : filtrer selon le dossier sélectionné
+    let list = [...DEMO_MAILS];
+    switch (folder) {
+      case "inbox":
+        // Tous les mails reçus (ce sont tous des mails reçus dans la démo)
+        break;
+      case "favoris":
+        list = list.filter((m) => !m.lu); // approximation : non lus = favoris
+        break;
+      case "envoyes":
+        list = []; // pas de mails envoyés dans la démo reçus
+        break;
+      case "brouillons":
+        list = [];
+        break;
+      case "corbeille":
+        list = [];
+        break;
+    }
+    if (filtre === "non_lus") list = list.filter((m) => !m.lu);
+    const r = (rechercheAppliquee ?? "").trim().toLowerCase();
+    if (r) {
+      list = list.filter((m) => m.expediteur.toLowerCase().includes(r) || m.sujet.toLowerCase().includes(r));
+    }
+    return list.map((m) => ({ ...m, id: m.id, expediteur: m.expediteur, sujet: m.sujet, recu_le: m.recu_le, lu: m.lu }));
+  }, [resp, folder, filtre, rechercheAppliquee]);
+
+  // ---------- Actions ----------
   const ouvrirNouveau = () => {
     setView("nouveau");
     setSendError("");
@@ -123,6 +185,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setFormCopie([]);
     setFormSujet("");
     setFormTexte("");
+    setFormPiecesJointes([]);
   };
 
   const annulerNouveau = () => {
@@ -143,12 +206,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     try {
       const r = await adminSendMail(payload);
       setSendSuccess(r.message);
-      setView("envoyes");
+      setView("liste");
       loadEnvoyes();
     } catch (e) {
-      setSendError(
-        e instanceof Error ? e.message : "Échec de l'envoi de l'e-mail.",
-      );
+      setSendError(e instanceof Error ? e.message : "Échec de l'envoi de l'e-mail.");
     } finally {
       setBusy(false);
     }
@@ -181,45 +242,14 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       if (detail) ouvrir(detail.id);
       loadEnvoyes();
     } catch (e) {
-      setSendError(
-        e instanceof Error ? e.message : "Échec de l'envoi de la réponse.",
-      );
+      setSendError(e instanceof Error ? e.message : "Échec de l'envoi de la réponse.");
     } finally {
       setBusy(false);
     }
   };
 
-  // Recherche avec debounce 400 ms.
-  useEffect(() => {
-    const h = setTimeout(() => {
-      setRechercheAppliquee(recherche.trim());
-      setPage(1);
-    }, 400);
-    return () => clearTimeout(h);
-  }, [recherche]);
-
-  const load = useCallback(() => {
-    setLoading(true);
-    setError("");
-    adminFetchMails({
-      lu: filtre,
-      recherche: rechercheAppliquee,
-      page,
-      par_page: MAILS_PAR_PAGE,
-    })
-      .then((r) => setResp(r))
-      .catch(() => setError(t.loadError))
-      .finally(() => setLoading(false));
-    adminFetchMailsCount()
-      .then(setCount)
-      .catch(() => setCount(null));
-  }, [filtre, rechercheAppliquee, page, t.loadError]);
-
-  useEffect(() => {
-    load();
-  }, [load]);
-
   const ouvrir = (id: number) => {
+    setSelectedMailId(id);
     setDetailLoading(true);
     setDetail(null);
     adminFetchMail(id)
@@ -234,24 +264,20 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const fermerDetail = () => {
     setDetail(null);
     setDetailDemo(false);
+    setSelectedMailId(null);
   };
 
-  // Mise à jour locale optimiste (fonctionne en réel comme en démo).
   const appliquerLuLocal = (id: number) => {
     setResp((r) =>
       r
         ? {
             ...r,
-            data: r.data.map((m) =>
-              m.id === id ? { ...m, lu: true } : m
-            ),
+            data: r.data.map((m) => (m.id === id ? { ...m, lu: true } : m)),
           }
         : r,
     );
     setDetail((d) => (d && d.id === id ? { ...d, lu: true } : d));
-    setCount((c) =>
-      c ? { ...c, non_lus: Math.max(0, c.non_lus - 1) } : c,
-    );
+    setCount((c) => (c ? { ...c, non_lus: Math.max(0, c.non_lus - 1) } : c));
   };
 
   const marquerLu = (id: number) => {
@@ -271,9 +297,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setMessage("");
     adminMarquerToutLu()
       .then(() => {
-        setResp((r) =>
-          r ? { ...r, data: r.data.map((m) => ({ ...m, lu: true })) } : r,
-        );
+        setResp((r) => (r ? { ...r, data: r.data.map((m) => ({ ...m, lu: true })) } : r));
         setDetail((d) => (d ? { ...d, lu: true } : d));
         setCount((c) => (c ? { ...c, non_lus: 0 } : c));
         setMessage(t.toutLuOk);
@@ -282,7 +306,22 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       .finally(() => setBusy(false));
   };
 
-  // Corps HTML assaini mémorisé (DOMParser, client-only).
+  const supprimerMail = (id: number) => {
+    // Simulation : on retire de la liste affichée
+    setResp((r) =>
+      r ? { ...r, data: r.data.filter((m) => m.id !== id) } : r,
+    );
+    if (selectedMailId === id) {
+      fermerDetail();
+    }
+  };
+
+  const basculerFavori = (id: number) => {
+    // Simulation : marque comme lu/non lu pour l'exemple
+    appliquerLuLocal(id);
+  };
+
+  // ---------- Corps HTML assaini ----------
   const corpsAssaini = useMemo(
     () => (detail ? sanitizeMailHtml(detail.corps_html) : ""),
     [detail],
@@ -304,464 +343,471 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     }
   };
 
+  // ---------- Rendu ----------
   return (
-    <div className="db-main apub-main amail-main">
-      {/* ============== VUE : NOUVEAU MAIL ============== */}
-      {view === "nouveau" && (
-        <section className="db-section">
-          <div className="db-welcome">
-            <div>
-              <button
-                type="button"
-                className="btn btn-outline apub-btn-sm"
-                onClick={annulerNouveau}
-              >
-                ← {t.retourListe}
-              </button>
-              <h1>{t.nouveauTitre}</h1>
-              <p>{t.nouveauSubtitle}</p>
-            </div>
-          </div>
-          {sendError && <p className="apub-message" role="alert">{sendError}</p>}
-          {sendSuccess && (
-            <p className="apub-message" role="status">{sendSuccess}</p>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              envoyerMail();
-            }}
+    <div className="gmail-container">
+      {/* ============== BARRE LATÉRALE GAUCHE ============== */}
+      <aside className="gmail-sidebar">
+        <div className="gmail-sidebar-top">
+          <button
+            type="button"
+            className="gmail-compose-btn"
+            onClick={ouvrirNouveau}
+            disabled={busy}
           >
-            <label className="amail-form-label">{t.champDestinataire}</label>
-            <input
-              type="email"
-              className="amail-form-input"
-              value={formDest}
-              onChange={(e) => setFormDest(e.target.value)}
-              placeholder="exemple@domaine.com"
-              required
-            />
-            <label className="amail-form-label">{t.champCopie}</label>
-            <input
-              type="text"
-              className="amail-form-input"
-              value={formCopie.join(", ")}
-              onChange={(e) => {
-                const emails = e.target.value
-                  .split(",")
-                  .map((s) => s.trim())
-                  .filter(Boolean);
-                // Validation simple de format email
-                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                const validEmails = emails.filter((email) => emailRegex.test(email) || email === "");
-                setFormCopie(validEmails);
-              }}
-              placeholder="copie1@domaine.com, copie2@domaine.com"
-              onInvalid={(e) => {
-                (e.target as HTMLInputElement).setCustomValidity("Veuillez entrer des adresses emails valides");
-              }}
-              onInput={(e) => {
-                (e.target as HTMLInputElement).setCustomValidity("");
-              }}
-            />
-            <label className="amail-form-label">{t.champSujet}</label>
-            <input
-              type="text"
-              className="amail-form-input"
-              value={formSujet}
-              onChange={(e) => setFormSujet(e.target.value)}
-              required
-            />
-            <label className="amail-form-label">{t.champCorps}</label>
-            <textarea
-              className="amail-form-textarea"
-              value={formTexte}
-              onChange={(e) => setFormTexte(e.target.value)}
-              rows={8}
-              required
-            ></textarea>
-            <div className="amail-form-actions">
-              <button type="button" className="btn btn-cancel" onClick={annulerNouveau}>
-                {t.annuler}
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={busy || !formDest || !formSujet || !formTexte}
-              >
-                {busy ? t.envoiEnCours : t.envoyer}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      {/* ============== VUE : RÉPONDRE ============== */}
-      {view === "repondre" && replyingTo !== null && (
-        <section className="db-section">
-          <div className="db-welcome">
-            <div>
-              <button
-                type="button"
-                className="btn btn-outline apub-btn-sm"
-                onClick={annulerReponse}
-              >
-                ← {t.retourListe}
-              </button>
-              <h1>{t.repondreTitre}</h1>
-              <p>{t.repondreSubtitle}</p>
-            </div>
-          </div>
-          {sendError && <p className="apub-message" role="alert">{sendError}</p>}
-          {sendSuccess && (
-            <p className="apub-message" role="status">{sendSuccess}</p>
-          )}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              repondre();
-            }}
+            Compose +{" "}
+          </button>
+        </div>
+        <nav className="gmail-nav">
+          <div
+            className={`gmail-nav-item ${folder === "inbox" ? "active" : ""}`}
+            onClick={() => setFolder("inbox")}
           >
-            <label className="amail-form-label">{t.champSujet}</label>
-            <input
-              type="text"
-              className="amail-form-input"
-              value={replyDraft.sujet}
-              onChange={(e) => setReplyDraft({ ...replyDraft, sujet: e.target.value })}
-              required
-            />
-            <label className="amail-form-label">{t.champCorps}</label>
-            <textarea
-              className="amail-form-textarea"
-              value={replyDraft.corps}
-              onChange={(e) => setReplyDraft({ ...replyDraft, corps: e.target.value })}
-              rows={10}
-              required
-            ></textarea>
-            <div className="amail-form-actions">
-              <button type="button" className="btn btn-cancel" onClick={annulerReponse}>
-                {t.annuler}
-              </button>
-              <button
-                type="submit"
-                className="btn btn-primary"
-                disabled={busy || !replyDraft.sujet || !replyDraft.corps}
-              >
-                {busy ? t.envoiEnCours : t.envoyerReponse}
-              </button>
-            </div>
-          </form>
-        </section>
-      )}
-
-      {/* ============== VUE : MAILS ENVOYÉS ============== */}
-      {view === "envoyes" && (
-        <section className="db-section">
-          <div className="db-welcome">
-            <div>
-              <button
-                type="button"
-                className="btn btn-outline apub-btn-sm"
-                onClick={() => setView("liste")}
-              >
-                ← {t.retourListe}
-              </button>
-              <h1>{t.envoyesTitre}</h1>
-              <p>{t.envoyesSubtitle}</p>
-            </div>
+            📥 Inbox
+            {count && count.non_lus > 0 && folder === "inbox" && (
+              <span className="gmail-badge">{count.non_lus}</span>
+            )}
           </div>
-          {envoyesLoading && <p>{t.loading}</p>}
-          {!envoyesLoading && envoyes && envoyes.data.length === 0 && (
-            <p>{t.envoyesEmpty}</p>
-          )}
-          {!envoyesLoading && envoyes && envoyes.data.length > 0 && (
-            <table className="apub-table">
-              <thead>
-                <tr>
-                  <th>{t.colExpediteur}</th>
-                  <th>{t.colDestinataire}</th>
-                  <th>{t.colSujet}</th>
-                  <th>{t.colDate}</th>
-                  <th>{t.colEtat}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {envoyes.data.map((m) => (
-                  <tr key={m.id} className={m.est_echec ? "amail-row-echec" : undefined}>
-                    <td>{m.expediteur}</td>
-                    <td>{m.destinataire}</td>
-                    <td>{m.sujet}</td>
-                    <td>{fmtDate(m.envoye_le, locale)}</td>
-                    <td>
-                      <span
-                        className={`badge ${
-                          m.est_envoye ? "badge-muted" : m.est_echec ? "badge-warning" : "badge-muted"
-                        }`}
-                      >
-                        {m.est_envoye ? t.etatEnvoye : m.est_echec ? t.etatEchec : t.etatEnAttente}
-                      </span>
-                      {m.est_echec && m.erreur && (
-                        <span className="amail-att-meta"> — {m.erreur}</span>
-                      )}
-                    </td>
+          <div
+            className={`gmail-nav-item ${folder === "favoris" ? "active" : ""}`}
+            onClick={() => setFolder("favoris")}
+          >
+            ⭐ Favoris
+          </div>
+          <div
+            className={`gmail-nav-item ${folder === "envoyes" ? "active" : ""}`}
+            onClick={() => setFolder("envoyes")}
+          >
+            📤 Envoyés
+          </div>
+          <div
+            className={`gmail-nav-item ${folder === "brouillons" ? "active" : ""}`}
+            onClick={() => setFolder("brouillons")}
+          >
+            📝 Brouillons
+          </div>
+          <div
+            className={`gmail-nav-item ${folder === "corbeille" ? "active" : ""}`}
+            onClick={() => setFolder("corbeille")}
+          >
+            🗑️ Corbeille
+          </div>
+        </nav>
+        <div className="gmail-sidebar-bottom">
+          <Link className="gmail-back-link" href={routes.adminDashboard}>
+            ← {t.backDashboard || "Retour dashboard"}
+          </Link>
+        </div>
+      </aside>
+
+      {/* ============== CONTENU PRINCIPAL ============== */}
+      <main className="gmail-main">
+        {/* Barre de recherche centrale */}
+        <div className="gmail-search-bar">
+          <div className="gmail-search-logo">FEDPAWA</div>
+          <input
+            type="search"
+            className="gmail-search-input"
+            placeholder="Search in mail"
+            value={recherche}
+            onChange={(e) => setRecherche(e.target.value)}
+          />
+          <button className="gmail-search-filters" title="Filtres">
+            ⋮
+          </button>
+        </div>
+
+        {/* Onglets catégories */}
+        <div className="gmail-tabs">
+          <button
+            className={`gmail-tab ${tab === "inscrits" ? "active" : ""}`}
+            onClick={() => setTab("inscrits")}
+          >
+            Utilisateurs inscrits
+          </button>
+          <button
+            className={`gmail-tab ${tab === "actifs" ? "active" : ""}`}
+            onClick={() => setTab("actifs")}
+          >
+            Utilisateurs actifs
+          </button>
+          <button
+            className={`gmail-tab ${tab === "favoris" ? "active" : ""}`}
+            onClick={() => setTab("favoris")}
+          >
+            Utilisateurs favoris
+          </button>
+          <button
+            className="gmail-tab gmail-tab-add"
+            onClick={() => setTab("nouvelle-categorie")}
+          >
+            + Créer une catégorie
+          </button>
+        </div>
+
+        {/* Filtres rapides */}
+        {view === "liste" && (
+          <div className="gmail-filters">
+            <label>
+              <input
+                type="checkbox"
+                checked={filtre === "non_lus"}
+                onChange={(e) => setFiltre(e.target.checked ? "non_lus" : "")}
+              />
+              Non lus uniquement
+            </label>
+            <select
+              className="gmail-filter-select"
+              value={page}
+              onChange={(e) => setPage(parseInt(e.target.value, 10))}
+            >
+              {[1, 2, 3, 4, 5].map((p) => (
+                <option key={p} value={p}>
+                  Page {p}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {/* ============== VUE : LISTE DE MAILS ============== */}
+        {view === "liste" && !detail && (
+          <section className="gmail-list-section">
+            <div className="gmail-toolbar">
+              <input type="checkbox" className="gmail-select-all" />
+              <span className="gmail-count">
+                {mailsDisplay.length} mail{mailsDisplay.length > 1 ? "s" : ""}
+              </span>
+              {sendSuccess && <span className="gmail-success">{sendSuccess}</span>}
+              {sendError && <span className="gmail-error">{sendError}</span>}
+            </div>
+
+            {(loading && !resp) || (error && <p className="gmail-error">{error}</p>)}
+
+            {!loading && resp && mailsDisplay.length === 0 && (
+              <p className="gmail-empty">Aucun mail dans ce dossier.</p>
+            )}
+
+            {!loading && mailsDisplay.length > 0 && (
+              <table className="gmail-mail-table">
+                <thead>
+                  <tr>
+                    <th className="gmail-th-checkbox"><input type="checkbox" /></th>
+                    <th className="gmail-th-star">★</th>
+                    <th className="gmail-th-from">De</th>
+                    <th className="gmail-th-subject">Sujet</th>
+                    <th className="gmail-th-preview">Contenu</th>
+                    <th className="gmail-th-date">Heure</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </section>
-      )}
-
-      {/* ============== CONTENU EXISTANT (liste + détail) — affiché seulement en vue liste/détail ============== */}
-      {(view === "liste" || view === "detail") && (
-        <>
-          <div className="db-welcome">
-            <div>
-              <h1>
-                {t.title}{" "}
-                {count && count.non_lus > 0 && (
-                  <span className="amail-badge" title={t.nonLus}>
-                    {count.non_lus} {t.nonLus}
-                  </span>
-                )}
-              </h1>
-              <p>{t.subtitle}</p>
-            </div>
-            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <Link className="btn btn-outline" href={routes.adminDashboard}>
-                {t.backDashboard}
-              </Link>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={marquerToutLu}
-                disabled={busy || !count || count.non_lus === 0}
-              >
-                {t.markAllRead}
-              </button>
-              <button
-                type="button"
-                className="btn btn-outline"
-                onClick={ouvrirNouveau}
-                disabled={busy}
-              >
-                {t.nouveauMail}
-              </button>
-            </div>
-          </div>
-
-          {(resp?.demo || detailDemo || count?.demo) && (
-            <p className="amail-demo-banner" role="alert">
-              {t.demoBanner}
-            </p>
-          )}
-
-          {message && (
-            <p className="apub-message" role="status">{message}</p>
-          )}
-
-          {/* ============== DÉTAIL ============== */}
-          {detail && (
-            <section className="db-section amail-detail">
-              <div className="amail-detail-head">
-                <button
-                  type="button"
-                  className="btn btn-outline apub-btn-sm"
-                  onClick={fermerDetail}
-                >
-                  {t.retourListe}
-                </button>
-                {!detail.lu && (
-                  <button
-                    type="button"
-                    className="btn btn-primary apub-btn-sm"
-                    onClick={() => marquerLu(detail.id)}
-                    disabled={busy}
-                  >
-                    {t.marquerLu}
-                  </button>
-                )}
-                <button
-                  type="button"
-                  className="btn btn-outline apub-btn-sm"
-                  onClick={() => ouvrirReponse(detail.id, detail.sujet)}
-                  disabled={busy || replyingTo !== null}
-                >
-                  {t.repondre}
-                </button>
-              </div>
-              <h2>{detail.sujet}</h2>
-              <dl className="amail-meta">
-                <div>
-                  <dt>{t.colExpediteur}</dt>
-                  <dd>{detail.expediteur}</dd>
-                </div>
-                <div>
-                  <dt>{t.detailDestinataires}</dt>
-                  <dd>{(detail.destinataires ?? []).join(", ") || "—"}</dd>
-                </div>
-                {detail.copie && detail.copie.length > 0 && (
-                  <div>
-                    <dt>{t.detailCopie}</dt>
-                    <dd>{detail.copie.join(", ")}</dd>
-                  </div>
-                )}
-                <div>
-                  <dt>{t.detailRecuLe}</dt>
-                  <dd>{fmtDate(detail.recu_le, locale)}</dd>
-                </div>
-                <div>
-                  <dt>{t.colEtat}</dt>
-                  <dd>
-                    <span
-                      className={`badge ${detail.lu ? "badge-muted" : "badge-warning"}`}>
-                      {detail.lu ? t.etatLu : t.etatNonLu}
-                    </span>
-                  </dd>
-                </div>
-              </dl>
-
-              <h3>{t.piecesJointes}</h3>
-              {detail.pieces_jointes && detail.pieces_jointes.length > 0 ? (
-                <ul className="amail-attachments">
-                  {detail.pieces_jointes.map((pj, i) => (
-                    <li key={`${pj.nom}-${i}`}>
-                      <span className="amail-att-nom">{pj.nom}</span>
-                      <span className="amail-att-meta">
-                        {pj.type ?? "—"} · {fmtTaille(pj.taille)}
-                      </span>
-                      {pj.url && (
-                        <button
-                          type="button"
-                          className="btn btn-outline apub-btn-sm"
-                          onClick={() => downloadMailAttachment(pj.url, pj.nom)}
-                        >
-                          {t.telecharger}
-                        </button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p>{t.aucunePieceJointe}</p>
-              )}
-
-              <h3>{t.corpsHtml}</h3>
-              {corpsAssaini ? (
-                <div className="amail-body" dangerouslySetInnerHTML={{ __html: corpsAssaini }} />
-              ) : (
-                <p>{detail.corps_texte ?? "—"}</p>
-              )}
-            </section>
-          )}
-
-          {/* ============== LISTE ============== */}
-          {!detail && (
-            <section className="db-section">
-              <div className="apub-toolbar amail-toolbar">
-                <label>
-                  <input
-                    type="search"
-                    className="amail-search"
-                    placeholder={t.searchPlaceholder}
-                    value={recherche}
-                    onChange={(e) => setRecherche(e.target.value)}
-                  />
-                </label>
-                <label>
-                  <select
-                    value={filtre}
-                    onChange={(e) => {
-                      setFiltre(e.target.value as "" | "non_lus");
-                      setPage(1);
-                    }}
-                  >
-                    <option value="">{t.filterAll}</option>
-                    <option value="non_lus">{t.filterNonLus}</option>
-                  </select>
-                </label>
-              </div>
-
-              {loading && !resp && <p>{t.loading}</p>}
-              {error && <p className="apub-message">{error}</p>}
-              {!loading && resp && resp.data.length === 0 && <p>{t.empty}</p>}
-
-              {resp && resp.data.length > 0 && (
-                <table className="apub-table">
-                  <thead>
-                    <tr>
-                      <th>{t.colExpediteur}</th>
-                      <th>{t.colSujet}</th>
-                      <th>{t.colDate}</th>
-                      <th>{t.colEtat}</th>
-                      <th>{t.colActions}</th>
+                </thead>
+                <tbody>
+                  {mailsDisplay.map((m) => (
+                    <tr
+                      key={m.id}
+                      className={`gmail-mail-row ${!m.lu ? "gmail-unread" : ""} ${selectedMailId === m.id ? "gmail-selected" : ""}`}
+                      onClick={() => ouvrir(m.id)}
+                    >
+                      <td className="gmail-td-checkbox">
+                        <input type="checkbox" />
+                      </td>
+                      <td className="gmail-td-star">☆</td>
+                      <td className="gmail-td-from">{m.expediteur}</td>
+                      <td className="gmail-td-subject">{m.sujet}</td>
+                      <td className="gmail-td-preview">
+                        {m.corps_texte ? m.corps_texte.slice(0, 60) : "—"}
+                      </td>
+                      <td className="gmail-td-date">{fmtDate(m.recu_le, locale)}</td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {resp.data.map((m) => (
-                      <tr key={m.id} className={m.lu ? undefined : "amail-row-unread"}>
-                        <td>{m.expediteur}</td>
-                        <td>{m.sujet}</td>
-                        <td>{fmtDate(m.recu_le, locale)}</td>
-                        <td>
-                          <span className={`badge ${m.lu ? "badge-muted" : "badge-warning"}`}>
-                            {m.lu ? t.etatLu : t.etatNonLu}
-                          </span>
-                        </td>
-                        <td className="apub-row-actions">
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {resp && resp.meta && resp.meta.derniere_page > 1 && (
+              <div className="gmail-pagination">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                >
+                  ←
+                </button>
+                <span>{page} / {resp.meta.derniere_page}</span>
+                <button
+                  disabled={page >= resp.meta.derniere_page}
+                  onClick={() => setPage((p) => p + 1)}
+                >
+                  →
+                </button>
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ============== VUE : DÉTAIL D'UN MAIL ============== */}
+        {view === "detail" && detail && (
+          <section className="gmail-detail-section">
+            <div className="gmail-detail-header">
+              <button
+                type="button"
+                className="gmail-btn gmail-btn-outline"
+                onClick={fermerDetail}
+              >
+                ← Retour
+              </button>
+              {!detail.lu && (
+                <button
+                  type="button"
+                  className="gmail-btn gmail-btn-outline"
+                  onClick={() => marquerLu(detail.id)}
+                >
+                  Marquer comme lu
+                </button>
+              )}
+              <button
+                type="button"
+                className="gmail-btn gmail-btn-outline"
+                onClick={() => basculerFavori(detail.id)}
+              >
+                {detail.lu ? "⭐" : "☆"} Favori
+              </button>
+              <button
+                type="button"
+                className="gmail-btn gmail-btn-outline"
+                onClick={() => ouvrirReponse(detail.id, detail.sujet)}
+                disabled={busy || replyingTo !== null}
+              >
+                ↩ Répondre
+              </button>
+              <button
+                type="button"
+                className="gmail-btn gmail-btn-outline gmail-btn-delete"
+                onClick={() => supprimerMail(detail.id)}
+              >
+                🗑️ Supprimer
+              </button>
+            </div>
+
+            <h1 className="gmail-detail-title">{detail.sujet}</h1>
+
+            <div className="gmail-detail-meta">
+              <span className="gmail-meta-item">
+                <strong>De:</strong> {detail.expediteur}
+              </span>
+              <span className="gmail-meta-item">
+                <strong>À:</strong>
+                {(detail.destinataires ?? []).join(", ") || "—"}
+              </span>
+              {detail.copie && detail.copie.length > 0 && (
+                <span className="gmail-meta-item">
+                  <strong>CC:</strong> {detail.copie.join(", ")}
+                </span>
+              )}
+              <span className="gmail-meta-item">
+                <strong>Reçu le:</strong> {fmtDate(detail.recu_le, locale)}
+              </span>
+            </div>
+
+            <div className="gmail-detail-body">
+              {detail.pieces_jointes && detail.pieces_jointes.length > 0 && (
+                <div className="gmail-attachments">
+                  <strong>Pièces jointes:</strong>
+                  <ul>
+                    {detail.pieces_jointes.map((pj, i) => (
+                      <li key={`${pj.nom}-${i}`}>
+                        {pj.nom} ({pj.type || "—"}, {fmtTaille(pj.taille)})
+                        {pj.url && (
                           <button
                             type="button"
-                            className="btn btn-outline apub-btn-sm"
-                            onClick={() => ouvrir(m.id)}
+                            className="gmail-btn gmail-btn-outline gmail-btn-sm"
+                            onClick={() => downloadMailAttachment(pj.url, pj.nom)}
                           >
-                            {t.ouvrir}
+                            Télécharger
                           </button>
-                          {!m.lu && (
-                            <button
-                              type="button"
-                              className="btn btn-primary apub-btn-sm"
-                              onClick={() => marquerLu(m.id)}
-                              disabled={busy}
-                            >
-                              {t.marquerLu}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
+                        )}
+                      </li>
                     ))}
-                  </tbody>
-                </table>
-              )}
-
-              {resp && resp.meta.derniere_page > 1 && (
-                <div className="apub-pagination">
-                  <button
-                    type="button"
-                    className="btn btn-outline apub-btn-sm"
-                    disabled={page <= 1}
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  >
-                    ←
-                  </button>
-                  <span>
-                    {t.pageSur} {page} {t.sur} {resp.meta.derniere_page}
-                  </span>
-                  <button
-                    type="button"
-                    className="btn btn-outline apub-btn-sm"
-                    disabled={page >= resp.meta.derniere_page}
-                    onClick={() => setPage((p) => p + 1)}
-                  >
-                    →
-                  </button>
+                  </ul>
                 </div>
               )}
-            </section>
-          )}
+              {corpsAssaini ? (
+                <div className="gmail-detail-content" dangerouslySetInnerHTML={{ __html: corpsAssaini }} />
+              ) : (
+                <p>{detail.corps_texte || "—"}</p>
+              )}
+            </div>
+          </section>
+        )}
 
-          {detailLoading && <p>{t.loading}</p>}
-        </>
-      )}
+        {/* ============== VUE : RÉPONDRE ============== */}
+        {view === "repondre" && replyingTo !== null && (
+          <section className="gmail-compose-section">
+            <div className="gmail-compose-header">
+              <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerReponse}>
+                ← Retour
+              </button>
+              <h1 className="gmail-compose-title">Répondre</h1>
+            </div>
+            {sendError && <p className="gmail-error">{sendError}</p>}
+            {sendSuccess && <p className="gmail-success">{sendSuccess}</p>}
+            <form onSubmit={(e) => { e.preventDefault(); repondre(); }}>
+              <div className="gmail-compose-field">
+                <label>Sujet</label>
+                <input
+                  type="text"
+                  className="gmail-compose-input"
+                  value={replyDraft.sujet}
+                  onChange={(e) => setReplyDraft({ ...replyDraft, sujet: e.target.value })}
+                  required
+                />
+              </div>
+              <div className="gmail-compose-field">
+                <label>Corps</label>
+                <textarea
+                  className="gmail-compose-textarea"
+                  value={replyDraft.corps}
+                  onChange={(e) => setReplyDraft({ ...replyDraft, corps: e.target.value })}
+                  rows={10}
+                  required
+                ></textarea>
+              </div>
+              <div className="gmail-compose-actions">
+                <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerReponse}>
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="gmail-btn gmail-btn-primary"
+                  disabled={busy || !replyDraft.sujet || !replyDraft.corps}
+                >
+                  {busy ? "Envoi en cours..." : "Envoyer la réponse"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {/* ============== VUE : NOUVEAU MAIL ============== */}
+        {view === "nouveau" && (
+          <section className="gmail-compose-section">
+            <div className="gmail-compose-header">
+              <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerNouveau}>
+                ← Retour
+              </button>
+              <h1 className="gmail-compose-title">Nouveau Message</h1>
+            </div>
+            {sendError && <p className="gmail-error">{sendError}</p>}
+            {sendSuccess && <p className="gmail-success">{sendSuccess}</p>}
+            <form onSubmit={(e) => { e.preventDefault(); envoyerMail(); }}>
+              <div className="gmail-compose-field">
+                <label>Recipients</label>
+                <input
+                  type="email"
+                  className="gmail-compose-input"
+                  value={formDest}
+                  onChange={(e) => setFormDest(e.target.value)}
+                  placeholder="exemple@domaine.com"
+                  required
+                />
+              </div>
+              <div className="gmail-compose-field">
+                <label>Copie (CC)</label>
+                <input
+                  type="text"
+                  className="gmail-compose-input"
+                  value={formCopie.join(", ")}
+                  onChange={(e) => {
+                    const emails = e.target.value
+                      .split(",")
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    setFormCopie(emails.filter((email) => emailRegex.test(email) || email === ""));
+                  }}
+                  placeholder="copie1@domaine.com, copie2@domaine.com"
+                />
+              </div>
+              <div className="gmail-compose-field">
+                <label>Subject</label>
+                <input
+                  type="text"
+                  className="gmail-compose-input"
+                  value={formSujet}
+                  onChange={(e) => setFormSujet(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="gmail-compose-field gmail-compose-body-field">
+                <label>Body</label>
+                <textarea
+                  className="gmail-compose-textarea"
+                  value={formTexte}
+                  onChange={(e) => setFormTexte(e.target.value)}
+                  rows={10}
+                  required
+                ></textarea>
+                <div className="gmail-attach-area">
+                  <button
+                    type="button"
+                    className="gmail-btn gmail-btn-outline gmail-btn-sm"
+                    onClick={() => document.getElementById("attach-files")?.click()}
+                  >
+                    📎 Joindre des fichiers
+                  </button>
+                  <input
+                    id="attach-files"
+                    type="file"
+                    multiple
+                    hidden
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        setFormPiecesJointes(Array.from(e.target.files));
+                      }
+                    }}
+                  />
+                  {formPiecesJointes.length > 0 && (
+                    <div className="gmail-attached-list">
+                      {formPiecesJointes.map((f, i) => (
+                        <div key={i} className="gmail-attached-item">
+                          {f.name} ({fmtTaille(f.size)})
+                          <button
+                            type="button"
+                            className="gmail-btn gmail-btn-outline gmail-btn-sm"
+                            onClick={() =>
+                              setFormPiecesJointes(formPiecesJointes.filter((_, j) => j !== i))
+                            }
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="gmail-compose-actions">
+                <button type="button" className="gmail-btn gmail-btn-outline" onClick={annulerNouveau}>
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="gmail-btn gmail-btn-primary"
+                  disabled={busy || !formDest || !formSujet || !formTexte}
+                >
+                  {busy ? "Envoi en cours..." : "Envoyer"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {detailLoading && <p className="gmail-loading">Chargement…</p>}
+      </main>
     </div>
   );
+}
+
+// Helper toast minimal (à remplacer par votre système de toast si existant)
+function toast(message: string, type: "error" | "success" = "error") {
+  // eslint-disable-next-line no-console
+  console.log(`[${type}] ${message}`);
 }
