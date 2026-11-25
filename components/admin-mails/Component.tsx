@@ -105,6 +105,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   // ---------- États création catégorie ----------
   const [nouvelleCategorie, setNouvelleCategorie] = useState<{ nom: string; couleur: string }>({ nom: "", couleur: "#1a73e8" });
   const [creerCategorieOuvert, setCreerCategorieOuvert] = useState(false);
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [defaultCategoryId, setDefaultCategoryId] = useState<number | null>(null);
+  const [draggingCategoryId, setDraggingCategoryId] = useState<number | null>(null);
+  const [categoryToDelete, setCategoryToDelete] = useState<UserCategory | null>(null);
 
   // ---------- Chargement des mails ----------
   const [resp, setResp] = useState<MailsPage<MailSummary> | null>(null);
@@ -360,19 +364,30 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   };
 
   const supprimerCategorie = async (id: number) => {
-    if (!window.confirm("Supprimer cette catégorie ?")) return;
+    const cat = categories.find((c) => c.id === id);
+    if (!cat) return;
+    setCategoryToDelete(cat);
+  };
+
+  const confirmerSuppressionCategorie = async () => {
+    if (!categoryToDelete) return;
     setBusy(true);
     try {
-      await adminDeleteUserCategory(id);
-      setCategories((prev) => prev.filter((c) => c.id !== id));
-      if (activeCategorieId === id) {
+      await adminDeleteUserCategory(categoryToDelete.id);
+      setCategories((prev) => prev.filter((c) => c.id !== categoryToDelete!.id));
+      if (activeCategorieId === categoryToDelete!.id) {
         setActiveCategorieId(null);
       }
+      setCategoryToDelete(null);
     } catch (e) {
       setSendError(e instanceof Error ? e.message : "Échec de la suppression.");
     } finally {
       setBusy(false);
     }
+  };
+
+  const annulerSuppressionCategorie = () => {
+    setCategoryToDelete(null);
   };
 
   // ---------- Corps HTML assaini ----------
@@ -503,28 +518,59 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
         {/* Onglets catégories (dynamiques depuis l'API) */}
         <div className="mail-tabs">
-          {categories.map((categorie) => (
-            <button
-              key={categorie.id}
-              className={`mail-tab ${activeCategorieId === categorie.id ? "active" : ""}`}
-              style={{ borderLeft: `3px solid ${categorie.couleur}` }}
-              onClick={() => setActiveCategorieId(categorie.id)}
-            >
-              {categorie.nom}
-              {!categorie.est_systeme && (
-                <button
-                  type="button"
-                  className="mail-tab-delete"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    supprimerCategorie(categorie.id);
-                  }}
-                >
-                  ✕
-                </button>
-              )}
-            </button>
-          ))}
+          {categories.map((categorie) => {
+            const isDefault = defaultCategoryId === categorie.id;
+            const isDragging = draggingCategoryId === categorie.id;
+            return (
+              <button
+                key={categorie.id}
+                className={`mail-tab ${activeCategorieId === categorie.id ? "active" : ""} ${draggingCategoryId === categorie.id ? "mail-tab-dragging" : ""}`}
+                style={{
+                  borderLeft: `3px solid ${categorie.couleur}`,
+                  backgroundColor: isDefault ? "rgba(21, 41, 77, 0.1)" : "transparent",
+                }}
+                onClick={() => setActiveCategorieId(categorie.id)}
+                onMouseDown={() => setDraggingCategoryId(categorie.id)}
+                onMouseUp={() => setDraggingCategoryId(null)}
+                onMouseLeave={() => setDraggingCategoryId(null)}
+                draggable={true}
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("text/category-id", categorie.id.toString());
+                  setDraggingCategoryId(categorie.id);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => {
+                  const draggedId = parseInt(e.dataTransfer.getData("text/category-id"));
+                  if (draggedId && draggedId !== categorie.id) {
+                    // Réordonner les catégories
+                    const newOrder = [...categories].filter((c) => c.id !== draggedId);
+                    const insertIndex = newOrder.findIndex((c) => c.id === categorie.id);
+                    newOrder.splice(insertIndex, 0, categories.find((c) => c.id === draggedId)!);
+                    setCategories(newOrder);
+                    setDraggingCategoryId(null);
+                  }
+                }}
+              >
+                {categorie.nom}
+                {categorie.non_lus_count > 0 && (
+                  <span className="mail-badge">{categorie.non_lus_count}</span>
+                )}
+                {isDefault && <span className="mail-badge-default">⭐</span>}
+                {!categorie.est_systeme && (
+                  <button
+                    type="button"
+                    className="mail-tab-delete"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCategoryToDelete(categorie);
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </button>
+            )
+          })}
           <button
             className="mail-tab mail-tab-add"
             onClick={ouvrirCreerCategorie}
@@ -569,6 +615,32 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   disabled={busy || !nouvelleCategorie.nom.trim()}
                 >
                   {busy ? "Création…" : "Créer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal confirmation suppression catégorie */}
+        {categoryToDelete && (
+          <div className="mail-modal-overlay" onClick={annulerSuppressionCategorie}>
+            <div className="mail-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>Supprimer la catégorie</h3>
+              <p className="mail-modal-field">
+                Êtes-vous sûr de vouloir supprimer la catégorie
+                <strong>{categoryToDelete.nom}</strong> ?
+              </p>
+              <div className="mail-modal-actions">
+                <button type="button" className="btn btn-outline" onClick={annulerSuppressionCategorie}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline mail-btn-delete"
+                  onClick={confirmerSuppressionCategorie}
+                  disabled={busy}
+                >
+                  {busy ? "Suppression…" : "Supprimer"}
                 </button>
               </div>
             </div>
@@ -850,7 +922,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                       .split(",")
                       .map((s) => s.trim())
                       .filter(Boolean);
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
                     setFormCopie(emails.filter((email) => emailRegex.test(email) || email === ""));
                   }}
                   placeholder="copie1@domaine.com, copie2@domaine.com"
