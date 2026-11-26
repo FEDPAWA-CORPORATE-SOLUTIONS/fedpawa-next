@@ -106,6 +106,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [imapSyncing, setImapSyncing] = useState(false);
   const [imapUnreadCount, setImapUnreadCount] = useState(0);
   const [lastMailCount, setLastMailCount] = useState(0);
+  const [keyboardFocusedIndex, setKeyboardFocusedIndex] = useState<number | null>(null);
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
@@ -189,7 +190,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     return () => clearTimeout(h);
   }, [recherche]);
 
-  // Fermeture des vues avec la touche Échap
+  // Fermeture des vues avec la touche Échap + navigation clavier dans la liste
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
@@ -198,10 +199,30 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
         else if (view === "repondre") annulerReponse();
         else if (view === "transfert") annulerTransfert();
       }
+      // Navigation clavier uniquement dans la liste de mails
+      if (view === "liste" && mailsDisplay.length > 0) {
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          setKeyboardFocusedIndex((prev) =>
+            prev === null || prev >= mailsDisplay.length - 1 ? 0 : prev + 1,
+          );
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          setKeyboardFocusedIndex((prev) =>
+            prev === null || prev <= 0 ? mailsDisplay.length - 1 : prev - 1,
+          );
+        } else if (e.key === "Enter" && keyboardFocusedIndex !== null) {
+          e.preventDefault();
+          ouvrir(mailsDisplay[keyboardFocusedIndex].id);
+        } else if (e.key === "Delete" && keyboardFocusedIndex !== null) {
+          e.preventDefault();
+          supprimerMail(mailsDisplay[keyboardFocusedIndex].id, mailsDisplay[keyboardFocusedIndex].sujet);
+        }
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [view]);
+  }, [view, mailsDisplay, keyboardFocusedIndex, fermerDetail, annulerNouveau, annulerReponse, annulerTransfert, ouvrir, supprimerMail]);
 
   const load = useCallback(() => {
     setLoading(true);
