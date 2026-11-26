@@ -104,6 +104,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [imapLoading, setImapLoading] = useState(false);
   const [imapError, setImapError] = useState("");
   const [imapSyncing, setImapSyncing] = useState(false);
+  const [imapUnreadCount, setImapUnreadCount] = useState(0);
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
@@ -249,6 +250,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     }
   }, [folder, imapAccount, loadImapMails]);
 
+  useEffect(() => {
+    setImapUnreadCount(imapMails.filter((m) => !m.lu).length);
+  }, [imapMails]);
+
   // ---------- Brouillons auto-save (localStorage) ----------
   const DRAFT_KEY = "fedpawa_mail_draft";
 
@@ -313,6 +318,18 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     corps_texte: "",
   }), []);
 
+  // ---------- Conversion MailEnvoye → format d'affichage ----------
+  const envoyeToMailSummary = useCallback((e: MailEnvoye): MailSummary => ({
+    id: e.id,
+    expediteur: e.expediteur,
+    destinataires: e.destinataire ? [e.destinataire] : [],
+    sujet: e.sujet,
+    recu_le: e.envoye_le ?? new Date().toISOString(),
+    lu: true,
+    nb_pieces_jointes: e.pieces_jointes?.length ?? 0,
+    corps_texte: e.corps_texte ?? "",
+  }), []);
+
   // ---------- Données affichées ----------
   const mailsDisplay = useMemo(() => {
     const apiMails = resp?.data ?? [];
@@ -345,7 +362,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
         list = list.filter((m) => !m.lu);
         break;
       case "envoyes":
-        list = [];
+        list = (envoyes?.data ?? []).map(envoyeToMailSummary);
         break;
       case "brouillons":
         list = [];
@@ -750,8 +767,8 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             onClick={() => setFolder("inbox")}
           >
             <FiInbox size={18} /> Boîte de réception
-            {count && count.non_lus > 0 && folder === "inbox" && (
-              <span className="mail-badge">{count.non_lus}</span>
+            {count && Math.max(count.non_lus || 0, imapUnreadCount) > 0 && folder === "inbox" && (
+              <span className="mail-badge">{Math.max(count.non_lus || 0, imapUnreadCount)}</span>
             )}
           </div>
           <div
