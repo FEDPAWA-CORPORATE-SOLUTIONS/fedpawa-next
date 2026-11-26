@@ -20,6 +20,7 @@ import {
   FiStar,
   FiSend,
   FiMail,
+  FiSwitch,
   FiTrash2,
   FiSearch,
   FiMoreVertical,
@@ -102,6 +103,9 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [imapMails, setImapMails] = useState<ImapMessage[]>([]);
   const [imapLoading, setImapLoading] = useState(false);
   const [imapError, setImapError] = useState("");
+
+  // ---------- Sélection de compte IMAP ----------
+  const [imapAccount, setImapAccount] = useState<1 | 2>(1);
 
   // ---------- Sélection multiple ----------
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -220,7 +224,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setImapLoading(true);
     setImapError("");
     try {
-      const messages = await adminFetchImapMails(1);
+      const messages = await adminFetchImapMails(imapAccount);
       setImapMails(messages);
     } catch (e) {
       setImapError(e instanceof Error ? e.message : "Échec du chargement des mails IMAP.");
@@ -228,7 +232,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     } finally {
       setImapLoading(false);
     }
-  }, []);
+  }, [imapAccount]);
 
   const rafraîchirImap = useCallback(() => {
     loadImapMails();
@@ -238,7 +242,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     if (folder === "inbox") {
       loadImapMails();
     }
-  }, [folder, loadImapMails]);
+  }, [folder, imapAccount, loadImapMails]);
 
   // ---------- Brouillons auto-save (localStorage) ----------
   const DRAFT_KEY = "fedpawa_mail_draft";
@@ -987,6 +991,16 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 title="Recharger les mails depuis le serveur IMAP"
               >
                 {imapLoading ? "Actualisation…" : "⟳ Actualiser"}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline mail-btn-sm"
+                onClick={() => setImapAccount(imapAccount === 1 ? 2 : 1)}
+                disabled={imapLoading}
+                title={`Basculer vers le compte ${imapAccount === 1 ? 2 : 1}`}
+              >
+                <FiSwitch size={18} />
+                Compte {imapAccount}
               </button>
             </div>
 
