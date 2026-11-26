@@ -199,7 +199,7 @@ function emptyState(spec: FormSpec): Record<string, any> {
   state.gamme = "";
   state.pack = "";
   state.periodicite = "";
-  state.statutStructure = "";
+  state.statutStructure = "existante";
   state.formeAutre = "";
   state.rccm = "";
   state.niu = "";
@@ -396,36 +396,41 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
       const d = JSON.parse(raw);
-      const hasContent =
-        d.step > 1 ||
-        (Array.isArray(d.options) && d.options.length > 0) ||
-        Object.values(d).some((v: any) => typeof v === "string" && v.trim() !== "");
-      if (hasContent) setSavedDraft(d);
-      else localStorage.removeItem(DRAFT_KEY);
+      const empty = emptyState(spec);
+      // Clés ignorées dans la comparaison de vide (métadonnées ou champs spéciaux)
+      const ignoredKeys = ["step", "savedAt", "options", "files", "statutStructure"];
+      const isEmpty = Object.entries(d).every(([k, v]) => {
+        if (ignoredKeys.includes(k)) return true;
+        const ev = empty[k];
+        if (ev === undefined) return true;
+        if (Array.isArray(ev)) return JSON.stringify(ev) === JSON.stringify(v);
+        if (typeof ev === "object" && ev !== null) return JSON.stringify(ev) === JSON.stringify(v);
+        return ev === v;
+      });
+      if (!isEmpty) {
+        setSavedDraft(d);
+      } else {
+        // Brouillon vide (aucune donnée de formulaire saisie) : nettoyer localStorage
+        // pour éviter l'affichage d'une modal de reprise avec un formulaire vierge.
+        try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignoré */ }
+      }
     } catch {
       /* ignoré */
     }
-  }, []);
+  }, [DRAFT_KEY]);
 
   useEffect(() => {
-    // Ne pas sauvegarder l'état initial vierge avant toute interaction utilisateur
-    if (!hasUserEdited.current) return;
-    // Ne pas écraser un brouillon déjà présent et non résolu (modal de reprise affichée)
-    const existing = localStorage.getItem(DRAFT_KEY);
-    if (existing) {
-      try {
-        const d = JSON.parse(existing);
-        const hasContent =
-          d.step > 1 ||
-          (Array.isArray(d.options) && d.options.length > 0) ||
-          Object.values(d).some(
-            (v: any) => typeof v === "string" && v.trim() !== ""
-          );
-        if (hasContent) return;
-      } catch {
-        /* fichier corrompu : on écrase */
-      }
-    }
+    // Ne pas sauvegarder l'état initial vierge
+    const empty = emptyState(spec);
+    const isEmpty = Object.entries(form).every(([k, v]) => {
+      if (["options", "files"].includes(k)) return true;
+      const ev = empty[k];
+      if (ev === undefined) return true;
+      if (Array.isArray(ev)) return JSON.stringify(ev) === JSON.stringify(v);
+      if (typeof ev === "object" && ev !== null) return JSON.stringify(ev) === JSON.stringify(v);
+      return ev === v;
+    });
+    if (isEmpty) return;
     try {
       const draft: any = { ...form, step, savedAt: new Date().toISOString() };
       delete draft.files;
@@ -459,6 +464,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
     try { localStorage.removeItem(DRAFT_KEY); } catch { /* ignoré */ }
     setSavedDraft(null);
     setDraftResolved(true);
+    hasUserEdited.current = false;
     setForm({ ...emptyState(spec), options: [], files: {} });
     setStep(1);
     if (meRef.current) {
@@ -797,43 +803,6 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                         </h2>
                         {stepDef.description && <p className="section-intro">{stepDef.description}</p>}
 
-                        {/* #1 Radios statut_structure (domiciliation uniquement — une seule fois, étape 1) */}
-                        {spec.statutStructure && stepDef.id === 1 && (
-                          <div className="form-group">
-                            <label>Statut de la structure <em className="req">*</em></label>
-                            <div className="radio-row">
-                              <label className="radio-pill">
-                                <input
-                                  type="radio"
-                                  name="statut_structure"
-                                  id={"step-" + stepDef.id + "-statut-existante"}
-                                  value="existante"
-                                  checked={form.statutStructure === "existante"}
-                                  onChange={() => {
-                                    set("statutStructure", "existante");
-                                    setIsCreationStructure(false);
-                                  }}
-                                />{" "}
-                                Entreprise existante
-                              </label>
-                              <label className="radio-pill">
-                                <input
-                                  type="radio"
-                                  name="statut_structure"
-                                  id={"step-" + stepDef.id + "-statut-creation"}
-                                  value="creation"
-                                  checked={form.statutStructure === "creation"}
-                                  onChange={() => {
-                                    set("statutStructure", "creation");
-                                    setIsCreationStructure(true);
-                                  }}
-                                />{" "}
-                                Création d'entreprise
-                              </label>
-                            </div>
-                          </div>
-                        )}
-
                         {/* Champs texte / select / textarea / date / checkbox */}
                         {stepDef.fields?.filter((f) => f.name !== "gamme" && f.name !== "pack" && isFieldVisible(f, form)).map((field) => {
                           const fieldId = "step-" + stepDef.id + "-" + field.name;
@@ -967,6 +936,35 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           </div>
                         ))}
 
+                        {/* Checkboxes de l'étape (CGV, cadre, exactitude, etc.) */}
+                        {stepDef.checkboxes && stepDef.checkboxes.length > 0 && (
+                          <div className="checkbox-group" style={{ marginTop: 20, paddingTop: 16, borderTop: "1px solid var(--color-border)" }}>
+                            {stepDef.checkboxes.map((cb) => (
+                              <label key={cb.name} className="checkbox-line validation-line" style={{ display: "flex", alignItems: "flex-start", gap: 8, marginBottom: 10, cursor: "pointer" }}>
+                                <input
+                                  type="checkbox"
+                                  id={"step-" + stepDef.id + "-" + cb.name}
+                                  name={cb.name}
+                                  required={cb.required}
+                                  checked={form[cb.name] === true}
+                                  onChange={(e) => set(cb.name, e.target.checked)}
+                                />
+                                <span style={{ fontSize: "0.95rem", lineHeight: 1.4 }}>{cb.label}</span>
+                              </label>
+                            ))}
+                            {fieldErrors && Object.keys(fieldErrors).length > 0 && (
+                              <div id="form-errors" className="form-errors" style={{ display: "block", marginTop: 12 }}>
+                                <strong>Erreurs :</strong>
+                                <ul style={{ marginTop: 6, paddingLeft: 20 }}>
+                                  {Object.entries(fieldErrors).map(([k, msgs]) => (
+                                    <li key={k}>{msgs[0]}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )}
+
                         {/* #7 Sélecteur gamme (cartes cliquables) — uniquement sur l'étape qui a des champs gamme/pack */}
                         {spec.gammes && spec.gammes.length > 0 && stepDef.fields?.some((f) => f.name === "gamme" || f.name === "pack") && (
                           <>
@@ -1001,11 +999,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                                 onChange={(e) => set("pack", e.target.value)}
                               >
                                 <option value="" disabled>Sélectionner le pack</option>
-                                {(spec.packs || [])
-                                  .filter((p) => {
-                                    const gamme = spec.gammes?.find((g) => g.id === form.gamme);
-                                    return gamme?.packs?.some((gp) => gp.id === p.id);
-                                  })
+                                {(spec.gammes?.find((g) => g.id === form.gamme)?.packs || [])
                                   .map((p) => (
                                     <option key={p.id} value={p.id}>
                                       {p.label} ({fmtFCFA(p.priceFCFA)} / mois)
@@ -1137,6 +1131,138 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
                           </button>
                         ) : null}
                       </div>
+
+                      {/* #Facture proforma + bouton payer — affichée à la dernière étape */}
+                      {step === TOTAL_STEPS && spec.invoiceDetail && (
+                        <div
+                          id="invoiceBox"
+                          className="invoice-box"
+                          style={{
+                            background: "var(--color-bg-main)",
+                            border: "1px solid var(--color-border)",
+                            borderRadius: 12,
+                            padding: 28,
+                            marginBottom: 24,
+                            color: "var(--color-heading, #15294D)",
+                          }}
+                        >
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              flexWrap: "wrap",
+                              gap: 16,
+                              borderBottom: "2px solid var(--color-primary)",
+                              paddingBottom: 16,
+                              marginBottom: 20,
+                            }}
+                          >
+                            <div>
+                              <strong style={{ fontSize: "1.15rem", color: "var(--color-heading)" }}>
+                                {spec.invoiceDetail.companyName || "FEDPAWA CORPORATE SOLUTIONS SARL"}
+                              </strong>
+                              <div style={{ fontSize: "0.8rem", color: "var(--color-text-muted)" }}>
+                                {spec.invoiceDetail.companyNiu && <>{`NIU : ${spec.invoiceDetail.companyNiu}<br />`}</>}
+                                {spec.invoiceDetail.companyRccm && <>{`RCCM : ${spec.invoiceDetail.companyRccm}<br />`}</>}
+                                {spec.invoiceDetail.companyAddress && <>{`Siège Social : ${spec.invoiceDetail.companyAddress}<br />`}</>}
+                                {spec.invoiceDetail.companyPhone && spec.invoiceDetail.companyEmail && <>{
+                                  `${spec.invoiceDetail.companyPhone} · ${spec.invoiceDetail.companyEmail}`
+                                }</>}
+                              </div>
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <div style={{ fontWeight: 700, fontSize: "1rem" }}>
+                                {spec.invoiceDetail.invoiceLabel || "Facture proforma"}
+                              </div>
+                              {invoice && (
+                                <>
+                                  <div style={{ fontSize: "0.85rem" }}>
+                                    {spec.invoiceDetail.invoiceNumLabel || "N°"} {invoice.num}
+                                  </div>
+                                  <div style={{ fontSize: "0.85rem" }}>
+                                    {spec.invoiceDetail.invoiceDateLabel || "Date"} {invoice.dateStr}
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <div
+                            style={{
+                              display: "flex",
+                              justifyContent: "space-between",
+                              flexWrap: "wrap",
+                              gap: 12,
+                              marginBottom: 20,
+                              fontSize: "0.9rem",
+                            }}
+                          >
+                            <div>
+                              <strong>{spec.invoiceDetail.billedToLabel || "Facturé à"}</strong>
+                              <br />
+                              {form.nomComplet || "Client"}
+                              <br />
+                              {form.email}
+                              <br />
+                              {form.telephone}
+                            </div>
+                            <div style={{ textAlign: "right" }}>
+                              <strong>{spec.invoiceDetail.serviceLabel || "Prestation"}</strong>
+                              <br />
+                              {spec.invoiceDetail.serviceLine}
+                              <br />
+                              {spec.invoiceDetail.periodLabel && form.periodicite && (
+                                <>
+                                  <br />
+                                  {spec.invoiceDetail.periodLabel} {form.periodicite}
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "0.9rem", marginBottom: 8 }}>
+                            <thead>
+                              <tr style={{ background: "var(--color-bg-alt)" }}>
+                                <th style={{ textAlign: "left", padding: 10, borderBottom: "1px solid var(--color-border)" }}>
+                                  {spec.invoiceDetail.designationLabel || "Désignation"}
+                                </th>
+                                <th style={{ textAlign: "right", padding: 10, borderBottom: "1px solid var(--color-border)" }}>
+                                  {spec.invoiceDetail.amountLabel || "Montant"}
+                                </th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr>
+                                <td style={{ padding: 10, borderBottom: "1px solid var(--color-border)" }}>
+                                  {currentPack ? currentPack.label + " — " + spec.invoiceDetail.serviceLine : spec.invoiceDetail.serviceLine} ({form.periodicite || "mensuel"})
+                                </td>
+                                <td style={{ textAlign: "right", padding: 10, borderBottom: "1px solid var(--color-border)" }}>
+                                  {fmtFCFA(totalPrice)}
+                                </td>
+                              </tr>
+                              <tr style={{ background: "var(--color-bg-alt)", fontWeight: 700 }}>
+                                <td style={{ padding: "12px 10px" }}>{spec.invoiceDetail.totalLabel || "Total"}</td>
+                                <td style={{ textAlign: "right", padding: "12px 10px" }}>
+                                  {fmtFCFA(totalPrice)}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                          <p style={{ fontSize: "0.78rem", color: "var(--color-text-muted)", marginTop: 10 }}>
+                            {spec.invoiceDetail.footer || ""} {totalPrice.toLocaleString("fr-FR")} {spec.invoiceDetail.footerEnd || ""}
+                          </p>
+                        </div>
+                      )}
+                      {step === TOTAL_STEPS && spec.payButton && (
+                        <div style={{ marginTop: 16 }}>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-block"
+                            onClick={handleSubmit}
+                          >
+                            {spec.payButton?.label?.replace("{amount}", totalPrice.toLocaleString("fr-FR")) ||
+                             (spec.invoiceDetail || spec.invoice ? `Payer ${totalPrice.toLocaleString("fr-FR")} FCFA (Mobile Money)` : "Valider et souscrire")}
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
 

@@ -24,10 +24,6 @@
       "id": 1,
       "title": "Situation de l'entreprise",
       "description": "Définissez l'identité et l'activité de votre entreprise.",
-      "radios": [
-        { "id": "existante", "label": "Entreprise existante", "desc": "Votre structure est déjà immatriculée (RCCM / NIU)" },
-        { "id": "creation", "label": "Création d'entreprise", "desc": "FEDPAWA prend en charge la création complète — statuts, RCCM, NIU et Kit Corporate" }
-      ],
       "fields": [
         { "name": "denomination", "label": "Dénomination sociale / Nom commercial", "type": "text", "placeholder": "Exemple : FEDPAWA CORPORATE SOLUTIONS SARL", "required": true, "errorRequired": "La dénomination est requise", "hint": "Nom officiel de votre société" },
         { "name": "formeJuridique", "label": "Forme juridique", "type": "select", "placeholder": "Sélectionner la forme juridique", "required": true, "errorRequired": "La forme juridique est requise", "options": [ "SARL", "SARLU", "SAS", "SASU", "SA", "Établissement (Nom propre)", "GIE (Groupement d'Intérêt Économique)", "Succursale / Filiale", "Autre" ], "hint": "Forme légale de votre entreprise" },
