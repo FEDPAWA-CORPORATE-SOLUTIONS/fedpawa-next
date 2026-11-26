@@ -41,6 +41,7 @@ import {
   adminFetchUserCategories,
   adminCreateUserCategory,
   adminDeleteUserCategory,
+  adminUpdateMailCategorie,
   type MailDetail,
   type MailEnvoye,
   type MailsCount,
@@ -110,6 +111,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [lastMailCount, setLastMailCount] = useState(0);
   const [keyboardFocusedIndex, setKeyboardFocusedIndex] = useState<number | null>(null);
   const [previewExpandedId, setPreviewExpandedId] = useState<number | null>(null);
+  const [draggedMailId, setDraggedMailId] = useState<number | null>(null);
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
@@ -1208,7 +1210,25 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   {mailsDisplay.map((m) => (
                     <tr
                       key={m.id}
-                      className={`mail-row ${!m.lu ? "mail-unread" : ""} ${selectedIds.has(m.id) ? "mail-selected" : ""} ${selectedMailId === m.id ? "mail-open" : ""}`}
+                      className={`mail-row ${!m.lu ? "mail-unread" : ""} ${selectedIds.has(m.id) ? "mail-selected" : ""} ${selectedMailId === m.id ? "mail-open" : ""} ${draggedMailId === m.id ? "mail-dragging" : ""}`}
+                      draggable={true}
+                      onDragStart={(e) => {
+                        setDraggedMailId(m.id);
+                        e.dataTransfer?.setData("text/plain", String(m.id));
+                        e.dataTransfer?.effectAllowed = "move";
+                      }}
+                      onDragEnd={() => setDraggedMailId(null)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        const droppedId = e.dataTransfer?.getData("text/plain");
+                        if (droppedId && Number(droppedId) !== m.id) {
+                          // Réordonner : déplacer droppedId avant m.id (simplification : on marque juste comme lu)
+                          // Pour l'instant, le drop sur une ligne marque le mail comme lu
+                          void adminMarquerMailLu(Number(droppedId));
+                        }
+                        setDraggedMailId(null);
+                      }}
                       onClick={(e) => ouvrir(m.id, e)}
                     >
                       <td className="mail-td-checkbox">

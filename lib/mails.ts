@@ -228,6 +228,14 @@ export function adminDeleteMail(id: number): Promise<{ message: string }> {
   return apiAuthDelete(`/api/v1/admin/mails/${id}`);
 }
 
+/** PATCH /admin/mails/{id}/categorie — affecter une catégorie à un mail reçu (drag & drop). */
+export function adminUpdateMailCategorie(
+  id: number,
+  categorieId: number | null,
+): Promise<{ id: number; categorie_id: number | null; categorie: string | null; categorie_couleur: string | null }> {
+  return apiAuthPut(`/api/v1/admin/mails/${id}/categorie`, { categorie_id: categorieId });
+}
+
 // ---------- Envoi de nouveaux mails (admin sortant) ----------
 
 /** POST /admin/mails — envoyer un nouveau mail (admin). Repli démo si 404. */
