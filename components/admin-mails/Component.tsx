@@ -138,7 +138,21 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
   useEffect(() => {
     adminFetchUserCategories()
-      .then(setCategories)
+      .then((cats) => {
+        setCategories(cats);
+        // Restaurer la catégorie par défaut depuis localStorage
+        try {
+          const raw = localStorage.getItem("fedpawa_mail_default_category");
+          if (raw) {
+            const id = parseInt(raw, 10);
+            if (!isNaN(id) && cats.some((c) => c.id === id)) {
+              setDefaultCategoryId(id);
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      })
       .catch(() => setCategories([]));
   }, []);
 
@@ -558,6 +572,15 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setCategoryToDelete(null);
   };
 
+  const definirParDefaut = (id: number) => {
+    setDefaultCategoryId(id);
+    try {
+      localStorage.setItem("fedpawa_mail_default_category", String(id));
+    } catch (e) {
+      // ignore
+    }
+  };
+
   // ---------- Actions catégories ----------
   const ouvrirCreerCategorie = () => {
     setNouvelleCategorie({ nom: "", couleur: "#1a73e8" });
@@ -752,16 +775,30 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 )}
                 {isDefault && <span className="mail-badge-default">⭐</span>}
                 {!categorie.est_systeme && (
-                  <button
-                    type="button"
-                    className="mail-tab-delete"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setCategoryToDelete(categorie);
-                    }}
-                  >
-                    ✕
-                  </button>
+                  <>
+                    <button
+                      type="button"
+                      className="mail-tab-delete"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCategoryToDelete(categorie);
+                      }}
+                    >
+                      ✕
+                    </button>
+                    {!isDefault && (
+                      <button
+                        type="button"
+                        className="mail-tab-default"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          definirParDefaut(categorie.id);
+                        }}
+                      >
+                        ★ Par défaut
+                      </button>
+                    )}
+                  </>
                 )}
               </button>
             )
