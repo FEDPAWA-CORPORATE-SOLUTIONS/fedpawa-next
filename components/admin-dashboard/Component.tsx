@@ -58,14 +58,17 @@ type TabId =
   | "kyc"
   | "tickets"
   | "messages"
-  | "stats";
+  | "stats"
+  | "mails";
 
-interface AdminDashboardProps {
-  /** Route de la visionneuse document admin (admin_document). */
-  documentViewerPath?: string;
+interface NavItem {
+  tab: TabId;
+  label: string;
+  svg: React.ReactNode;
+  href?: string; // si présent, redirige vers cette URL au lieu de changer l'onglet
 }
 
-const NAV_ITEMS: { tab: TabId; label: string; svg: React.ReactNode }[] = [
+const NAV_ITEMS: NavItem[] = [
   { tab: "dashboard", label: "Vue d'ensemble", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg> },
   { tab: "clients", label: "Gestion Clients", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg> },
   { tab: "abonnements", label: "Abonnements", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" /></svg> },
@@ -76,6 +79,7 @@ const NAV_ITEMS: { tab: TabId; label: string; svg: React.ReactNode }[] = [
   { tab: "tickets", label: "Support Client", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg> },
   { tab: "messages", label: "Messagerie", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg> },
   { tab: "stats", label: "Stats & Paramètres", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg> },
+  { tab: "mails", label: "Boîte Mail", href: "/admin/mails", svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" style={{ color: "var(--color-gold)", width: 36, height: 36 }}><rect x="2" y="3" width="20" height="14" rx="2" ry="2" /><polyline points="22,6 12,13 2,6" /></svg> },
 ];
 
 function StatutBadge({ statut }: { statut: string | null | undefined }) {
@@ -140,12 +144,24 @@ export default function AdminDashboard({
             {NAV_ITEMS.map((item) => (
               <div
                 key={item.tab}
-                className={`db-nav-item${activeTab === item.tab ? " active" : ""}`}
+                className={`db-nav-item${item.href ? " db-nav-item-external" : ""}${activeTab === item.tab && !item.href ? " active" : ""}`}
                 role="button"
                 tabIndex={0}
-                onClick={() => setActiveTab(item.tab)}
+                onClick={() => {
+                  if (item.href) {
+                    window.location.href = item.href;
+                  } else {
+                    setActiveTab(item.tab);
+                  }
+                }}
                 onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") setActiveTab(item.tab);
+                  if (e.key === "Enter" || e.key === " ") {
+                    if (item.href) {
+                      window.location.href = item.href;
+                    } else {
+                      setActiveTab(item.tab);
+                    }
+                  }
                 }}
               >
                 {item.svg} {item.label}
