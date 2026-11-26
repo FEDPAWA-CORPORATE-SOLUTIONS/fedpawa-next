@@ -185,6 +185,58 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     load();
   }, [load]);
 
+  // ---------- Brouillons auto-save (localStorage) ----------
+  const DRAFT_KEY = "fedpawa_mail_draft";
+
+  const saveDraft = useCallback(() => {
+    const draft = {
+      dest: formDest,
+      copie: formCopie,
+      sujet: formSujet,
+      texte: formTexte,
+      pieces: formPiecesJointes.map((f) => ({ name: f.name, size: f.size })),
+    };
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    } catch (e) {
+      // localStorage indisponible en mode privé — ignorer silencieusement
+    }
+  }, [formDest, formCopie, formSujet, formTexte, formPiecesJointes]);
+
+  useEffect(() => {
+    saveDraft();
+  }, [saveDraft]);
+
+  useEffect(() => {
+    if (view === "nouveau") {
+      try {
+        const raw = localStorage.getItem(DRAFT_KEY);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          setFormDest(draft.dest || "");
+          setFormCopie(draft.copie || []);
+          setFormSujet(draft.sujet || "");
+          setFormTexte(draft.texte || "");
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+  }, [view]);
+
+  const clearDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch (e) {
+      // ignore
+    }
+    setFormDest("");
+    setFormCopie([]);
+    setFormSujet("");
+    setFormTexte("");
+    setFormPiecesJointes([]);
+  };
+
   // ---------- Données affichées ----------
   const mailsDisplay = useMemo(() => {
     const apiMails = resp?.data ?? [];
@@ -256,6 +308,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     try {
       const r = await adminSendMail(payload);
       setSendSuccess(r.message);
+      clearDraft();
       setView("liste");
       loadEnvoyes();
     } catch (e) {
@@ -1234,6 +1287,9 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               <div className="mail-compose-actions">
                 <button type="button" className="btn btn-outline" onClick={annulerNouveau}>
                   Annuler
+                </button>
+                <button type="button" className="btn btn-outline mail-btn-delete" onClick={clearDraft}>
+                  Supprimer le brouillon
                 </button>
                 <button
                   type="submit"
