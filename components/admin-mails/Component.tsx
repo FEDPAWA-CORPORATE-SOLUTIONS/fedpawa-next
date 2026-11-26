@@ -1216,7 +1216,27 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                       </td>
                       <td className="mail-td-star">☆</td>
                       <td className="mail-td-from">{m.expediteur}</td>
-                      <td className="mail-td-subject">{m.sujet}</td>
+                      <td className="mail-td-subject">
+                        {m.sujet}
+                        {m.categorie ? (
+                          <span
+                            className="mail-badge-category"
+                            style={{
+                              backgroundColor: m.categorie_couleur || '#6b7280',
+                              color: '#fff',
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              padding: '1px 6px',
+                              borderRadius: 10,
+                              marginLeft: 6,
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.5px',
+                            }}
+                          >
+                            {m.categorie}
+                          </span>
+                        ) : null}
+                      </td>
                       {m.statut && (
                         <td className="mail-td-status">
                           <span
