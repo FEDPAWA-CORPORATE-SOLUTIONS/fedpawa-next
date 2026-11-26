@@ -329,7 +329,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
-  }, [folder, lastMailCount]);
+  }, [folder]);
 
   // ---------- Brouillons auto-save (localStorage) ----------
   const DRAFT_KEY = "fedpawa_mail_draft";
