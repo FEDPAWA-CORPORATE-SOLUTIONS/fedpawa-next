@@ -15,6 +15,16 @@ import { routesFor } from "@/lib/routes";
 import { sanitizeMailHtml } from "@/lib/sanitize-mail-html";
 import { apiAuthGetBlob, getToken } from "@/lib/auth";
 import {
+  FiMenu,
+  FiInbox,
+  FiStar,
+  FiSend,
+  FiMail,
+  FiTrash2,
+  FiSearch,
+  FiMoreVertical,
+} from "react-icons/fi";
+import {
   MAILS_PAR_PAGE,
   adminFetchMail,
   adminFetchMails,
@@ -636,27 +646,14 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     <div className="mail-container">
       {/* ============== BARRE LATÉRALE GAUCHE ============== */}
       <aside className="mail-sidebar">
-        {/* Logo FEDPAWA en haut */}
-        <div className="mail-sidebar-logo">
-          <div className="mail-logo-mark">FP</div>
-          <span className="mail-sidebar-brand">FEDPAWA</span>
-        </div>
         <div className="mail-sidebar-top">
-          <button
-            type="button"
-            className="mail-menu-toggle"
-            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-            aria-label="Menu"
-          >
-            ☰
-          </button>
           <button
             type="button"
             className="mail-compose-btn"
             onClick={ouvrirNouveau}
             disabled={busy}
           >
-            Nouveau message +{" "}
+            Nouveau message <FiSend size={18} />
           </button>
         </div>
         <nav className="mail-nav">
@@ -664,7 +661,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             className={`mail-nav-item ${folder === "inbox" ? "active" : ""}`}
             onClick={() => setFolder("inbox")}
           >
-            📥 Boîte de réception
+            <FiInbox size={18} /> Boîte de réception
             {count && count.non_lus > 0 && folder === "inbox" && (
               <span className="mail-badge">{count.non_lus}</span>
             )}
@@ -673,7 +670,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             className={`mail-nav-item ${folder === "favoris" ? "active" : ""}`}
             onClick={() => setFolder("favoris")}
           >
-            ⭐ Favoris
+            <FiStar size={18} /> Favoris
             {count && count.non_lus > 0 && folder === "favoris" && (
               <span className="mail-badge">{count.non_lus}</span>
             )}
@@ -682,7 +679,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             className={`mail-nav-item ${folder === "envoyes" ? "active" : ""}`}
             onClick={() => setFolder("envoyes")}
           >
-            📤 Envoyés
+            <FiSend size={18} /> Envoyés
             {count && count.non_lus > 0 && folder === "envoyes" && (
               <span className="mail-badge">{count.non_lus}</span>
             )}
@@ -691,7 +688,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             className={`mail-nav-item ${folder === "brouillons" ? "active" : ""}`}
             onClick={() => setFolder("brouillons")}
           >
-            📝 Brouillons
+            <FiMail size={18} /> Brouillons
             {count && count.non_lus > 0 && folder === "brouillons" && (
               <span className="mail-badge">{count.non_lus}</span>
             )}
@@ -700,7 +697,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             className={`mail-nav-item ${folder === "corbeille" ? "active" : ""}`}
             onClick={() => setFolder("corbeille")}
           >
-            🗑️ Corbeille
+            <FiTrash2 size={18} /> Corbeille
             {count && count.non_lus > 0 && folder === "corbeille" && (
               <span className="mail-badge">{count.non_lus}</span>
             )}
@@ -717,9 +714,8 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       <main className="mail-main">
         {/* Barre de recherche centrale */}
         <div className="mail-search-bar">
-          <div className="mail-search-logo">FEDPAWA</div>
           <div className="mail-search-wrapper">
-            <span className="mail-search-icon">🔍</span>
+            <span className="mail-search-icon"><FiSearch size={18} /></span>
             <input
               type="search"
               className={`mail-search-input ${searchFocused ? 'mail-search-focused' : ''}`}
@@ -731,7 +727,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             />
           </div>
           <button className="mail-search-filters" title="Filtres avancés" onClick={() => setFiltersOpen(!filtersOpen)}>
-            ⋮
+            <FiMoreVertical size={18} />
           </button>
         </div>
 
@@ -773,7 +769,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 {categorie.non_lus_count > 0 && (
                   <span className="mail-badge">{categorie.non_lus_count}</span>
                 )}
-                {isDefault && <span className="mail-badge-default">⭐</span>}
+                {isDefault && <span className="mail-badge-default"><FiStar size={14} fill="#f59e0b" /></span>}
                 {!categorie.est_systeme && (
                   <>
                     <button
@@ -1039,7 +1035,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 className="btn btn-outline"
                 onClick={() => basculerFavori(detail.id)}
               >
-                {detail.lu ? "⭐" : "☆"} Favoris
+                {detail.lu ? <FiStar size={18} fill="#f59e0b" /> : <FiStar size={18} />} Favoris
               </button>
               <button
                 type="button"
@@ -1062,7 +1058,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 className="btn btn-outline mail-btn-delete"
                 onClick={() => supprimerMail(detail.id)}
               >
-                🗑️ Supprimer
+                <FiTrash2 size={18} /> Supprimer
               </button>
             </div>
 

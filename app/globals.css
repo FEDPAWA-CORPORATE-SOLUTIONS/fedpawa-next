@@ -3488,27 +3488,25 @@ html[data-mode="dark"] .global-loader-message {
 .mail-search-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 20px 24px;
+  gap: 12px;
+  padding: 16px 24px;
   background: var(--color-bg-main);
   border-bottom: 1px solid var(--color-border);
-}
-
-.mail-search-logo {
-  font-family: var(--font-serif);
-  font-size: 1.5rem;
-  font-weight: 800;
-  color: var(--color-primary);
-  letter-spacing: 0.02em;
+  width: 95%;
+  max-width: 1200px;
+  margin: 0 auto;
+  border-radius: 9999px;
+  justify-content: center;
 }
 
 .mail-search-input {
   flex: 1;
-  max-width: 600px;
-  padding: 12px 20px;
+  max-width: none;
+  width: 100%;
+  padding: 12px 20px 12px 44px;
   font-size: 1rem;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 9999px;
   background: var(--color-bg-main);
   color: var(--color-text-main);
   outline: none;
@@ -4323,7 +4321,7 @@ html[data-mode="dark"] .global-loader-message {
 
 .mail-search-wrapper {
   flex: 1;
-  max-width: 600px;
+  max-width: none;
   position: relative;
   display: flex;
   align-items: center;
