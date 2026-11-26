@@ -175,6 +175,11 @@ export function adminFetchImapMails(account = 1): Promise<ImapMessage[]> {
   return apiAuthGet<ImapMessage[]>(`/api/v1/admin/imap/messages/${account}`);
 }
 
+/** GET /admin/imap/search/{account}/{query} — recherche IMAP par sujet ou expéditeur */
+export function adminSearchImapMails(account: number, query: string): Promise<ImapMessage[]> {
+  return apiAuthGet<ImapMessage[]>(`/api/v1/admin/imap/search/${account}/${encodeURIComponent(query)}`);
+}
+
 /** POST /admin/imap/sync/{account} — synchronise les mails IMAP reçus en base. */
 export interface ImapSyncResult {
   synced: number;

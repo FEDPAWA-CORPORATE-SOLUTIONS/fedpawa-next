@@ -32,6 +32,7 @@ import {
   adminFetchEnvoyes,
   adminFetchImapMails,
   adminFetchImapSync,
+  adminSearchImapMails,
   adminMarquerMailLu,
   adminMarquerToutLu,
   adminSendMail,
@@ -251,7 +252,9 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setImapError("");
     try {
       await adminFetchImapSync(imapAccount);
-      const messages = await adminFetchImapMails(imapAccount);
+      const messages = rechercheAppliquee
+        ? await adminSearchImapMails(imapAccount, rechercheAppliquee)
+        : await adminFetchImapMails(imapAccount);
       setImapMails(messages);
     } catch (e) {
       setImapError(e instanceof Error ? e.message : "Échec du chargement des mails IMAP.");
@@ -260,7 +263,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       setImapLoading(false);
       setImapSyncing(false);
     }
-  }, [imapAccount]);
+  }, [imapAccount, rechercheAppliquee]);
 
   const rafraîchirImap = useCallback(() => {
     loadImapMails();
