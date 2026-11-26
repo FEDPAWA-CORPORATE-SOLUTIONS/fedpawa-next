@@ -205,6 +205,7 @@ export default function Auth({ locale = "fr" }: AuthProps) {
         }
       } finally {
         setLoading(false);
+        globalStopLoading();
       }
     }
 
