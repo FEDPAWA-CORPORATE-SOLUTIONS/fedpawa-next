@@ -215,6 +215,11 @@ export function adminMarquerToutLu(): Promise<{ lu: boolean; demo?: boolean }> {
   });
 }
 
+/** DELETE /admin/mails/{id} — supprimer un mail reçu. */
+export function adminDeleteMail(id: number): Promise<{ message: string }> {
+  return apiAuthDelete(`/api/v1/admin/mails/${id}`);
+}
+
 // ---------- Envoi de nouveaux mails (admin sortant) ----------
 
 /** POST /admin/mails — envoyer un nouveau mail (admin). Repli démo si 404. */

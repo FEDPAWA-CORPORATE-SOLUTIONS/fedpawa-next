@@ -141,6 +141,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [defaultCategoryId, setDefaultCategoryId] = useState<number | null>(null);
   const [draggingCategoryId, setDraggingCategoryId] = useState<number | null>(null);
   const [categoryToDelete, setCategoryToDelete] = useState<UserCategory | null>(null);
+  const [mailToDelete, setMailToDelete] = useState<{ id: number; sujet: string } | null>(null);
 
   // ---------- Chargement des mails ----------
   const [resp, setResp] = useState<MailsPage<MailSummary> | null>(null);
@@ -540,18 +541,36 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       .finally(() => setBusy(false));
   };
 
-  const supprimerMail = (id: number) => {
-    setResp((r) =>
-      r ? { ...r, data: r.data.filter((m) => m.id !== id) } : r,
-    );
-    if (selectedMailId === id) {
-      fermerDetail();
+  const supprimerMail = (id: number, sujet: string) => {
+    setMailToDelete({ id, sujet });
+  };
+
+  const confirmerSuppressionMail = async () => {
+    if (!mailToDelete) return;
+    setBusy(true);
+    try {
+      await adminDeleteMail(mailToDelete.id);
+      setResp((r) =>
+        r ? { ...r, data: r.data.filter((m) => m.id !== mailToDelete!.id) } : r,
+      );
+      if (selectedMailId === mailToDelete!.id) {
+        fermerDetail();
+      }
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(mailToDelete!.id);
+        return next;
+      });
+      setMailToDelete(null);
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Échec de la suppression.");
+    } finally {
+      setBusy(false);
     }
-    setSelectedIds((prev) => {
-      const next = new Set(prev);
-      next.delete(id);
-      return next;
-    });
+  };
+
+  const annulerSuppressionMail = () => {
+    setMailToDelete(null);
   };
 
   const basculerFavori = (id: number) => {
@@ -945,6 +964,32 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
           </div>
         )}
 
+        {/* Modal confirmation suppression mail */}
+        {mailToDelete && (
+          <div className="mail-modal-overlay" onClick={annulerSuppressionMail}>
+            <div className="mail-modal" onClick={(e) => e.stopPropagation()}>
+              <h3>Supprimer le mail</h3>
+              <p className="mail-modal-field">
+                Êtes-vous sûr de vouloir supprimer le mail
+                <strong>{mailToDelete.sujet}</strong> ?
+              </p>
+              <div className="mail-modal-actions">
+                <button type="button" className="btn btn-outline" onClick={annulerSuppressionMail}>
+                  Annuler
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline mail-btn-delete"
+                  onClick={confirmerSuppressionMail}
+                  disabled={busy}
+                >
+                  {busy ? "Suppression…" : "Supprimer"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Filtres rapides */}
         {view === "liste" && (
           <div className="mail-filters">
@@ -1145,7 +1190,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               <button
                 type="button"
                 className="btn btn-outline mail-btn-delete"
-                onClick={() => supprimerMail(detail.id)}
+                onClick={() => supprimerMail(detail.id, detail.sujet || "")}
               >
                 <FiTrash2 size={18} /> Supprimer
               </button>
