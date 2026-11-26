@@ -11,7 +11,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { type Locale, getPageDictionary } from "@/lib/i18n";
-import { apiAuthPost, fetchMe } from "@/lib/auth";
+import { apiAuthPost, apiAuthPostForm, fetchMe } from "@/lib/auth";
 import { isEmailNonVerifieError } from "@/lib/verification";
 import { useEmailVerification } from "@/components/verification/EmailVerificationProvider";
 import { routesFor } from "@/lib/routes";
@@ -625,9 +625,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       const formData = new FormData();
       formData.append("file", file);
       try {
-        const res = await apiAuthPost<any>("/api/v1/souscription/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
+        const res = await apiAuthPostForm<any>("/api/v1/souscription/upload", formData);
         if (res.ok && res.path) {
           uploaded[fieldId] = res.path;
         } else {
