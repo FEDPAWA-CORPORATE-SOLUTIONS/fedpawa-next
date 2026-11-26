@@ -17,7 +17,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { apiAuthGet, apiAuthPost, fetchMe } from "@/lib/auth";
+import { apiAuthGet, apiAuthPost, authHeaders, fetchMe } from "@/lib/auth";
 import { ApiError, apiPost } from "@/lib/api";
 import { resolveFormError, ErrorContext } from "@/lib/form-errors";
 import { emailNonVerifieMessage, isEmailNonVerifieError } from "@/lib/verification";
@@ -42,7 +42,7 @@ export interface SouscriptionNouveauFluxProps {
 // TYPES & ÉTATS INITIAUX
 // ============================================================================
 
-type Step = "sign" | "pay" | "success";
+type Step = "preview" | "sign" | "pay" | "success";
 
 interface SouscriptionState {
   statutStructure: "existante" | "creation";
@@ -94,7 +94,7 @@ interface Draft {
 const DRAFT_KEY = "souscription_domiciliation_draft_v1";
 const REDIRECT_DRAFT_ID_KEY = "fedpawa_redirect_draft_id";
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 
 const INITIAL: SouscriptionState = {
   statutStructure: "existante",
@@ -140,7 +140,7 @@ export default function SouscriptionNouveauFlux({
   // ------------------------------------------------------------------
   // États de flux (signature → paiement)
   // ------------------------------------------------------------------
-  const [step, setStep] = useState<Step>("sign");
+  const [step, setStep] = useState<Step>("preview");
   const [form, setForm] = useState<SouscriptionState>(INITIAL);
   const [errors, setErrors] = useState<string[]>([]);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -371,6 +371,37 @@ export default function SouscriptionNouveauFlux({
     } finally {
       setLoading(false);
     }
+  };
+
+  // Téléchargement du contrat brouillon (non signé) — étape preview
+  const handleDownloadPreview = async () => {
+    if (!draftId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/v1/souscription/${draftId}/preview`, {
+        headers: { ...authHeaders() },
+        credentials: "include",
+      });
+      if (!res.ok) throw new Error("Échec du téléchargement du contrat");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "contrat_domiciliation_brouillon.pdf";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      setError("Impossible de télécharger le contrat.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Confirmer et passer à la signature
+  const handleConfirmPreview = () => {
+    setStep("sign");
   };
 
   // Collecte de l'email dédié (avant signature)
@@ -648,8 +679,13 @@ export default function SouscriptionNouveauFlux({
   // Rendu JSX
   // ============================================================================
 
-  const stepOrder: Step[] = ["sign", "pay", "success"];
-  const stepLabels = [t.step4, t.step5, t.step6];
+  const stepOrder: Step[] = ["preview", "sign", "pay", "success"];
+  const stepLabels = [
+    "Aperçu du contrat",
+    "Signature électronique",
+    "Paiement",
+    "Succès",
+  ];
   const currentStepIndex = stepOrder.indexOf(step);
   const gateModalOpen =
     verif.status === "unverified" ||
@@ -756,6 +792,120 @@ export default function SouscriptionNouveauFlux({
               </>
             ) : (
               <>
+                {/* ÉTAPE PRÉVISUALISATION DU CONTRAT (non signé) */}
+                {step === "preview" && (
+                  <div className="tunnel-step-content active" data-step="preview">
+                    <section className="form-section">
+                      <h2 className="form-section-title">
+                        <span className="form-section-num">1</span> Aperçu du contrat
+                      </h2>
+                      <p className="section-intro">
+                        Vérifiez votre contrat de domiciliation avant de le
+                        signer. Vous pouvez le télécharger.
+                      </p>
+
+                      <div
+                        style={{
+                          background: "#f8fafc",
+                          borderRadius: 8,
+                          border: "1px solid #e2e8f0",
+                          padding: 24,
+                          marginBottom: 24,
+                        }}
+                      >
+                        <h3
+                          style={{
+                            fontSize: "1rem",
+                            marginBottom: 12,
+                            color: "#15294D",
+                          }}
+                        >
+                          Détails du contrat
+                        </h3>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <strong>Forfait :</strong> {packLabel}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <strong>Montant :</strong> {fmtFCFA(total)} FCFA
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <strong>Client :</strong>{" "}
+                          {form.nomComplet || "—"}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <strong>Entreprise :</strong>{" "}
+                          {form.denomination || "—"}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginBottom: 6,
+                          }}
+                        >
+                          <strong>RCCM :</strong> {form.rccm || "—"} &nbsp;
+                          |&nbsp; <strong>NIU :</strong> {form.niu || "—"}
+                        </p>
+                        <p
+                          style={{
+                            fontSize: "0.85rem",
+                            color: "#64748b",
+                            marginBottom: 0,
+                          }}
+                        >
+                          <strong>Adresse :</strong>{form.adresse}, {form.ville},{" "}
+                          {form.pays}
+                        </p>
+                      </div>
+
+                      <div className="flex gap-3 justify-center">
+                        <button
+                          type="button"
+                          onClick={handleDownloadPreview}
+                          disabled={loading}
+                          className="btn btn-outline"
+                        >
+                          {loading
+                            ? "Téléchargement…"
+                            : "Télécharger le contrat (non signé)"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleConfirmPreview}
+                          disabled={loading}
+                          className="btn btn-primary"
+                        >
+                          Poursuivre vers la signature
+                        </button>
+                      </div>
+                    </section>
+                  </div>
+                )}
+
                 {/* ÉTAPE SIGNATURE (modal) */}
                 {step === "sign" && (
                   <div
