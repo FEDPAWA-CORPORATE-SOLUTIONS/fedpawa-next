@@ -661,6 +661,18 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
       delete payload.options;
       Object.assign(payload, uploadedFiles);
 
+      // ALERTE DEBUG : afficher les données sensibles avant envoi
+      const debugPayload = { ...payload };
+      delete debugPayload.files;
+      delete debugPayload.options;
+      alert("DEBUG ENVOI SOUSCRIPTION :\n" +
+        "prix: " + payload.prix + "\n" +
+        "totalPrice: " + totalPrice + "\n" +
+        "currentPack: " + (currentPack ? currentPack.label + " (" + currentPack.priceFCFA + ")" : "null") + "\n" +
+        "form.pack: " + form.pack + "\n" +
+        "form.periodicite: " + form.periodicite + "\n" +
+        "payload complet: " + JSON.stringify(debugPayload));
+
       if (verif.unverified) {
         verif.requestGate();
         return;
@@ -676,9 +688,20 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
         // Redirection vers le nouveau flux unifié (SouscriptionNouveauFlux)
         window.location.href = '/souscription/signature-paiement';
       } else {
+        // ALERTE DEBUG : réponse d'erreur de l'API
+        alert("DEBUG REPONSE API ERREUR :\n" +
+          "status: " + (res.status || 'inconnu') + "\n" +
+          "message: " + (res.message || 'aucun') + "\n" +
+          "error: " + (res.error || 'aucun') + "\n" +
+          "reponse brute: " + JSON.stringify(res));
         setErrors([res.message || "Erreur lors de la soumission"]);
       }
     } catch (err: any) {
+      // ALERTE DEBUG : exception réseau/API
+      alert("DEBUG EXCEPTION SOUSCRIPTION :\n" +
+        "message: " + (err?.message || 'aucun') + "\n" +
+        "status: " + (err?.status || 'aucun') + "\n" +
+        "detail: " + JSON.stringify(err));
       if (isEmailNonVerifieError(err)) {
         verif.requestGate();
         return;
