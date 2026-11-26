@@ -105,6 +105,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [imapError, setImapError] = useState("");
   const [imapSyncing, setImapSyncing] = useState(false);
   const [imapUnreadCount, setImapUnreadCount] = useState(0);
+  const [lastMailCount, setLastMailCount] = useState(0);
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
@@ -253,6 +254,24 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   useEffect(() => {
     setImapUnreadCount(imapMails.filter((m) => !m.lu).length);
   }, [imapMails]);
+
+  // ---------- Polling léger pour nouveaux mails (60s) ----------
+  useEffect(() => {
+    if (folder !== "inbox") return;
+    const timer = setInterval(async () => {
+      try {
+        const c = await adminFetchMailsCount();
+        const n = c.non_lus ?? 0;
+        if (n > lastMailCount && lastMailCount > 0) {
+          setSendSuccess(`${n - lastMailCount} nouveau(x) mail(x) reçu(x)`);
+        }
+        setLastMailCount(n);
+      } catch {
+        // ignorer silencieusement
+      }
+    }, 60000);
+    return () => clearInterval(timer);
+  }, [folder, lastMailCount]);
 
   // ---------- Brouillons auto-save (localStorage) ----------
   const DRAFT_KEY = "fedpawa_mail_draft";
@@ -1093,6 +1112,19 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
             )}
 
             {(loading && !resp) || (error && <p className="mail-error">{error}</p>)}
+            {imapError && folder === "inbox" && (
+              <div className="mail-error" style={{ padding: 16, textAlign: "center" }}>
+                {imapError}
+                <button
+                  type="button"
+                  className="btn btn-outline mail-btn-sm"
+                  onClick={rafraîchirImap}
+                  style={{ marginLeft: 8 }}
+                >
+                  Réessayer
+                </button>
+              </div>
+            )}
 
             {!loading && resp && mailsDisplay.length === 0 && (
               <p className="mail-empty">Aucun courriel dans ce dossier.</p>
