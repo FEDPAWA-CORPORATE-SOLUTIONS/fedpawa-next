@@ -175,6 +175,16 @@ export function adminFetchImapMails(account = 1): Promise<ImapMessage[]> {
   return apiAuthGet<ImapMessage[]>(`/api/v1/admin/imap/messages/${account}`);
 }
 
+/** POST /admin/imap/sync/{account} — synchronise les mails IMAP reçus en base. */
+export interface ImapSyncResult {
+  synced: number;
+  total: number;
+}
+
+export function adminFetchImapSync(account = 1): Promise<ImapSyncResult> {
+  return apiAuthPost<ImapSyncResult>(`/api/v1/admin/imap/sync/${account}`);
+}
+
 /** GET /admin/mails/{id} — détail (corps texte + HTML, pièces jointes). */
 export function adminFetchMail(id: number): Promise<MailDetail> {
   return apiAuthGet<MailDetail | { mail: MailDetail }>(

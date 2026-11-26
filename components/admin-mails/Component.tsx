@@ -31,6 +31,7 @@ import {
   adminFetchMailsCount,
   adminFetchEnvoyes,
   adminFetchImapMails,
+  adminFetchImapSync,
   adminMarquerMailLu,
   adminMarquerToutLu,
   adminSendMail,
@@ -102,6 +103,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [imapMails, setImapMails] = useState<ImapMessage[]>([]);
   const [imapLoading, setImapLoading] = useState(false);
   const [imapError, setImapError] = useState("");
+  const [imapSyncing, setImapSyncing] = useState(false);
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
@@ -221,8 +223,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
   const loadImapMails = useCallback(async () => {
     setImapLoading(true);
+    setImapSyncing(true);
     setImapError("");
     try {
+      await adminFetchImapSync(imapAccount);
       const messages = await adminFetchImapMails(imapAccount);
       setImapMails(messages);
     } catch (e) {
@@ -230,6 +234,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       setImapMails([]);
     } finally {
       setImapLoading(false);
+      setImapSyncing(false);
     }
   }, [imapAccount]);
 
@@ -982,6 +987,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </span>
               {sendSuccess && <span className="mail-success">{sendSuccess}</span>}
               {sendError && <span className="mail-error">{sendError}</span>}
+              {imapSyncing && <span className="mail-success" style={{ fontSize: "0.85rem", marginRight: 8 }}>🔄 Synchro…</span>}
               <button
                 type="button"
                 className="btn btn-outline mail-btn-sm"
