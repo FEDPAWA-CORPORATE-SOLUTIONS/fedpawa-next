@@ -30,6 +30,7 @@ import {
   adminFetchMails,
   adminFetchMailsCount,
   adminFetchEnvoyes,
+  adminFetchImapMails,
   adminMarquerMailLu,
   adminMarquerToutLu,
   adminSendMail,
@@ -45,6 +46,7 @@ import {
   type MailSummary,
   type AdminSendMailPayload,
   type UserCategory,
+  type ImapMessage,
   DEMO_MAILS,
 } from "@/lib/mails";
 
@@ -95,6 +97,11 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // ---------- États IMAP (vrais mails reçus) ----------
+  const [imapMails, setImapMails] = useState<ImapMessage[]>([]);
+  const [imapLoading, setImapLoading] = useState(false);
+  const [imapError, setImapError] = useState("");
 
   // ---------- Sélection multiple ----------
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -209,6 +216,30 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     load();
   }, [load]);
 
+  const loadImapMails = useCallback(async () => {
+    setImapLoading(true);
+    setImapError("");
+    try {
+      const messages = await adminFetchImapMails(1);
+      setImapMails(messages);
+    } catch (e) {
+      setImapError(e instanceof Error ? e.message : "Échec du chargement des mails IMAP.");
+      setImapMails([]);
+    } finally {
+      setImapLoading(false);
+    }
+  }, []);
+
+  const rafraîchirImap = useCallback(() => {
+    loadImapMails();
+  }, [loadImapMails]);
+
+  useEffect(() => {
+    if (folder === "inbox") {
+      loadImapMails();
+    }
+  }, [folder, loadImapMails]);
+
   // ---------- Brouillons auto-save (localStorage) ----------
   const DRAFT_KEY = "fedpawa_mail_draft";
 
@@ -261,11 +292,41 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setFormPiecesJointes([]);
   };
 
+  // ---------- Conversion IMAP → format d'affichage ----------
+  const imapToMailSummary = useCallback((m: ImapMessage): MailSummary => ({
+    id: m.uid,
+    expediteur: m.expediteur,
+    destinataires: [],
+    sujet: m.sujet,
+    recu_le: m.date_recue,
+    lu: m.lu,
+    nb_pieces_jointes: 0,
+    corps_texte: "",
+  }), []);
+
   // ---------- Données affichées ----------
   const mailsDisplay = useMemo(() => {
     const apiMails = resp?.data ?? [];
     if (apiMails.length > 0 && !(resp?.demo)) {
       return apiMails;
+    }
+    // Utiliser les vrais mails IMAP pour l'onglet inbox
+    if (folder === "inbox" && imapMails.length > 0) {
+      let list = imapMails.map(imapToMailSummary);
+      const r = (rechercheAppliquee ?? "").trim().toLowerCase();
+      if (r) {
+        list = list.filter((m) => m.expediteur.toLowerCase().includes(r) || m.sujet.toLowerCase().includes(r));
+      }
+      list.sort((a, b) => {
+        let va: any, vb: any;
+        if (sortBy === "date") va = new Date(a.recu_le).getTime(), vb = new Date(b.recu_le).getTime();
+        else if (sortBy === "sujet") va = (a.sujet || "").toLowerCase(), vb = (b.sujet || "").toLowerCase();
+        else va = (a.expediteur || "").toLowerCase(), vb = (b.expediteur || "").toLowerCase();
+        if (va < vb) return sortDir === "asc" ? -1 : 1;
+        if (va > vb) return sortDir === "asc" ? 1 : -1;
+        return 0;
+      });
+      return list.map((m) => ({ ...m }));
     }
     let list = [...DEMO_MAILS];
     switch (folder) {
@@ -918,6 +979,15 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </span>
               {sendSuccess && <span className="mail-success">{sendSuccess}</span>}
               {sendError && <span className="mail-error">{sendError}</span>}
+              <button
+                type="button"
+                className="btn btn-outline mail-btn-sm"
+                onClick={rafraîchirImap}
+                disabled={imapLoading}
+                title="Recharger les mails depuis le serveur IMAP"
+              >
+                {imapLoading ? "Actualisation…" : "⟳ Actualiser"}
+              </button>
             </div>
 
             {selectedIds.size > 0 && (

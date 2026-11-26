@@ -161,6 +161,20 @@ export function adminFetchMailsCount(): Promise<MailsCount> {
   });
 }
 
+/** GET /admin/imap/messages/{account} — vrais mails reçus depuis IMAP. */
+export interface ImapMessage {
+  uid: number;
+  sujet: string;
+  expediteur: string;
+  date_recue: string;
+  taille: number;
+  lu: boolean;
+}
+
+export function adminFetchImapMails(account = 1): Promise<ImapMessage[]> {
+  return apiAuthGet<ImapMessage[]>(`/api/v1/admin/imap/messages/${account}`);
+}
+
 /** GET /admin/mails/{id} — détail (corps texte + HTML, pièces jointes). */
 export function adminFetchMail(id: number): Promise<MailDetail> {
   return apiAuthGet<MailDetail | { mail: MailDetail }>(
