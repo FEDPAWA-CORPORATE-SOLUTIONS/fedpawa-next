@@ -20,7 +20,6 @@ import {
   FiStar,
   FiSend,
   FiMail,
-  FiSwitch,
   FiTrash2,
   FiSearch,
   FiMoreVertical,
@@ -999,7 +998,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                 disabled={imapLoading}
                 title={`Basculer vers le compte ${imapAccount === 1 ? 2 : 1}`}
               >
-                <FiSwitch size={18} />
+                <FiMail size={18} />
                 Compte {imapAccount}
               </button>
             </div>
