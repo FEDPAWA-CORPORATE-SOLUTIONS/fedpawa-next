@@ -24,6 +24,7 @@ import {
   FiSearch,
   FiMoreVertical,
 } from "react-icons/fi";
+import { RichTextEditor } from "./RichTextEditor";
 import {
   MAILS_PAR_PAGE,
   adminFetchMail,
@@ -1401,13 +1402,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </div>
               <div className="mail-compose-field">
                 <label>Corps</label>
-                <textarea
-                  className="mail-compose-textarea"
+                <RichTextEditor
                   value={replyDraft.corps}
-                  onChange={(e) => setReplyDraft({ ...replyDraft, corps: e.target.value })}
-                  rows={10}
-                  required
-                ></textarea>
+                  onChange={(html) => setReplyDraft({ ...replyDraft, corps: html })}
+                />
               </div>
               <div className="mail-compose-actions">
                 <button type="button" className="btn btn-outline" onClick={annulerReponse}>
@@ -1460,12 +1458,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </div>
               <div className="mail-compose-field mail-compose-body-field">
                 <label>Message (optionnel)</label>
-                <textarea
-                  className="mail-compose-textarea"
+                <RichTextEditor
                   value={transfertCorps}
-                  onChange={(e) => setTransfertCorps(e.target.value)}
-                  rows={10}
-                ></textarea>
+                  onChange={(html) => setTransfertCorps(html)}
+                />
               </div>
               <div className="mail-compose-actions">
                 <button type="button" className="btn btn-outline" onClick={annulerTransfert}>
@@ -1535,13 +1531,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </div>
               <div className="mail-compose-field mail-compose-body-field">
                 <label>Corps du message</label>
-                <textarea
-                  className="mail-compose-textarea"
+                <RichTextEditor
                   value={formTexte}
-                  onChange={(e) => setFormTexte(e.target.value)}
-                  rows={10}
-                  required
-                ></textarea>
+                  onChange={(html) => setFormTexte(html)}
+                />
                 <div className="mail-attach-area">
                   <button
                     type="button"
