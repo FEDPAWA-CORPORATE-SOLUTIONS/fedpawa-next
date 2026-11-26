@@ -374,6 +374,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     sujet: e.sujet,
     recu_le: e.envoye_le ?? new Date().toISOString(),
     lu: true,
+    statut: e.statut,
     nb_pieces_jointes: e.pieces_jointes?.length ?? 0,
     corps_texte: e.corps_texte ?? "",
   }), []);
@@ -1214,6 +1215,16 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                       <td className="mail-td-star">☆</td>
                       <td className="mail-td-from">{m.expediteur}</td>
                       <td className="mail-td-subject">{m.sujet}</td>
+                      {m.statut && (
+                        <td className="mail-td-status">
+                          <span
+                            className={`mail-badge mail-badge-${m.statut}`}
+                          title={m.statut === 'envoye' ? 'Envoyé' : m.statut === 'echec' ? 'Échec' : 'En attente'}
+                          >
+                            {m.statut === 'envoye' ? '✓' : m.statut === 'echec' ? '✗' : '⏳'}
+                          </span>
+                        </td>
+                      )}
                       <td className="mail-td-preview">
                         {m.corps_texte ? m.corps_texte.slice(0, 60) : "—"}
                       </td>

@@ -4236,6 +4236,52 @@ html[data-mode="dark"] .global-loader-message {
   margin-left: 6px;
 }
 
+/* Badges de statut pour les mails envoyés */
+.mail-badge-envoye {
+  display: inline-block;
+  background: var(--color-success);
+  color: var(--color-on-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  margin-left: 6px;
+}
+
+.mail-badge-echec {
+  display: inline-block;
+  background: var(--color-danger);
+  color: var(--color-on-primary);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  margin-left: 6px;
+}
+
+.mail-badge-en_attente {
+  display: inline-block;
+  background: var(--color-warning);
+  color: var(--color-heading);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+  margin-left: 6px;
+}
+
+/* Colonne de statut dans le tableau des mails */
+.mail-td-status {
+  width: 40px;
+  text-align: center;
+}
+
 .mail-btn-delete {
   background: rgba(192, 57, 43, 0.1);
   color: var(--color-danger);

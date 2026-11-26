@@ -36,6 +36,7 @@ export interface MailSummary {
   sujet: string;
   recu_le: string;
   lu: boolean;
+  statut?: 'en_attente' | 'envoye' | 'echec';
 }
 
 export interface MailDetail extends MailSummary {
