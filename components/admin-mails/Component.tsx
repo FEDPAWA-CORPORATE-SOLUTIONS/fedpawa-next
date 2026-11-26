@@ -111,6 +111,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
+  const [imapCurrentPage, setImapCurrentPage] = useState(1);
 
   // ---------- Sélection multiple ----------
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
@@ -254,7 +255,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       await adminFetchImapSync(imapAccount);
       const messages = rechercheAppliquee
         ? await adminSearchImapMails(imapAccount, rechercheAppliquee)
-        : await adminFetchImapMails(imapAccount);
+        : await adminFetchImapMails(imapAccount, imapCurrentPage, 'INBOX');
       setImapMails(messages);
     } catch (e) {
       setImapError(e instanceof Error ? e.message : "Échec du chargement des mails IMAP.");
@@ -278,6 +279,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   useEffect(() => {
     setImapUnreadCount(imapMails.filter((m) => !m.lu).length);
   }, [imapMails]);
+
+  useEffect(() => {
+    setImapCurrentPage(1);
+  }, [folder]);
 
   // ---------- Polling léger pour nouveaux mails (60s) ----------
   useEffect(() => {
@@ -1111,6 +1116,28 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               >
                 <FiMail size={18} />
                 Compte {imapAccount}
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline mail-btn-sm"
+                onClick={() => setImapCurrentPage((p) => Math.max(1, p - 1))}
+                disabled={imapLoading || imapCurrentPage <= 1}
+              >
+                ← Précédent
+              </button>
+              <span className="mail-count" style={{ margin: "0 8px" }}>
+                Page {imapCurrentPage}
+              </span>
+              <button
+                type="button"
+                className="btn btn-outline mail-btn-sm"
+                onClick={() => setImapCurrentPage((p) => p + 1)}
+                disabled={
+                  imapLoading ||
+                  (imapMails.length > 0 && imapMails.length < MAILS_PAR_PAGE)
+                }
+              >
+                Suivant →
               </button>
             </div>
 

@@ -171,8 +171,8 @@ export interface ImapMessage {
   lu: boolean;
 }
 
-export function adminFetchImapMails(account = 1): Promise<ImapMessage[]> {
-  return apiAuthGet<ImapMessage[]>(`/api/v1/admin/imap/messages/${account}`);
+export function adminFetchImapMails(account = 1, page = 1, mailbox = 'INBOX'): Promise<ImapMessage[]> {
+  return apiAuthGet<ImapMessage[]>(`/api/v1/admin/imap/messages/${account}/${mailbox}/${page}`);
 }
 
 /** GET /admin/imap/search/{account}/{query} — recherche IMAP par sujet ou expéditeur */
