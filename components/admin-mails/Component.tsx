@@ -101,6 +101,9 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [sendSuccess, setSendSuccess] = useState("");
   const [replyingTo, setReplyingTo] = useState<number | null>(null);
   const [replyDraft, setReplyDraft] = useState<{ sujet: string; corps: string }>({ sujet: "", corps: "" });
+  const [transfertDest, setTransfertDest] = useState("");
+  const [transfertSujet, setTransfertSujet] = useState("");
+  const [transfertCorps, setTransfertCorps] = useState("");
 
   // Formulaire nouveau mail
   const [formDest, setFormDest] = useState("");
@@ -146,6 +149,20 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     }, 400);
     return () => clearTimeout(h);
   }, [recherche]);
+
+  // Fermeture des vues avec la touche Échap
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        if (view === "detail") fermerDetail();
+        else if (view === "nouveau") annulerNouveau();
+        else if (view === "repondre") annulerReponse();
+        else if (view === "transfert") annulerTransfert();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [view]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -276,6 +293,42 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       loadEnvoyes();
     } catch (e) {
       setSendError(e instanceof Error ? e.message : "Échec de l'envoi de la réponse.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const ouvrirTransfert = (id: number, sujetOriginal: string, corpsOriginal: string) => {
+    setTransfertDest("");
+    setTransfertSujet("Fwd: " + sujetOriginal);
+    setTransfertCorps("\n\n---------- Message transféré ----------\n" + corpsOriginal);
+    setView("transfert");
+  };
+
+  const annulerTransfert = () => {
+    setTransfertDest("");
+    setTransfertSujet("");
+    setTransfertCorps("");
+    setView("detail");
+  };
+
+  const transférer = async () => {
+    if (!transfertDest) return;
+    setBusy(true);
+    setSendError("");
+    setSendSuccess("");
+    try {
+      const r = await adminSendMail({
+        destinataire: transfertDest,
+        sujet: transfertSujet,
+        corps_html: transfertCorps,
+        corps_texte: transfertCorps,
+      });
+      setSendSuccess(r.message);
+      setView("detail");
+      loadEnvoyes();
+    } catch (e) {
+      setSendError(e instanceof Error ? e.message : "Échec du transfert.");
     } finally {
       setBusy(false);
     }
@@ -908,6 +961,14 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
               </button>
               <button
                 type="button"
+                className="btn btn-outline"
+                onClick={() => ouvrirTransfert(detail.id, detail.sujet, detail.corps_texte || "")}
+                disabled={busy}
+              >
+                ↪ Transférer
+              </button>
+              <button
+                type="button"
                 className="btn btn-outline mail-btn-delete"
                 onClick={() => supprimerMail(detail.id)}
               >
@@ -1008,6 +1069,64 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                   disabled={busy || !replyDraft.sujet || !replyDraft.corps}
                 >
                   {busy ? "Envoi en cours..." : "Envoyer la réponse"}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
+        {/* ============== VUE : TRANSFÉRER ============== */}
+        {view === "transfert" && detail && (
+          <section className="mail-compose-section">
+            <div className="mail-compose-header">
+              <button type="button" className="btn btn-outline" onClick={annulerTransfert}>
+                ← Retour
+              </button>
+              <h1 className="mail-compose-title">Transférer</h1>
+            </div>
+            {sendError && <p className="mail-error">{sendError}</p>}
+            {sendSuccess && <p className="mail-success">{sendSuccess}</p>}
+            <form onSubmit={(e) => { e.preventDefault(); transférer(); }}>
+              <div className="mail-compose-field">
+                <label>Destinataire</label>
+                <input
+                  type="email"
+                  className="mail-compose-input"
+                  value={transfertDest}
+                  onChange={(e) => setTransfertDest(e.target.value)}
+                  placeholder="exemple@domaine.com"
+                  required
+                />
+              </div>
+              <div className="mail-compose-field">
+                <label>Sujet</label>
+                <input
+                  type="text"
+                  className="mail-compose-input"
+                  value={transfertSujet}
+                  onChange={(e) => setTransfertSujet(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="mail-compose-field mail-compose-body-field">
+                <label>Message (optionnel)</label>
+                <textarea
+                  className="mail-compose-textarea"
+                  value={transfertCorps}
+                  onChange={(e) => setTransfertCorps(e.target.value)}
+                  rows={10}
+                ></textarea>
+              </div>
+              <div className="mail-compose-actions">
+                <button type="button" className="btn btn-outline" onClick={annulerTransfert}>
+                  Annuler
+                </button>
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={busy || !transfertDest || !transfertSujet}
+                >
+                  {busy ? "Transfert en cours…" : "Transférer"}
                 </button>
               </div>
             </form>

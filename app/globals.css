@@ -4583,4 +4583,74 @@ html[data-mode="dark"] .global-loader-message {
   }
 }
 
+/* Focus visible pour l'accessibilité clavier */
+.mail-container button:focus-visible,
+.mail-container input:focus-visible,
+.mail-container select:focus-visible,
+.mail-container textarea:focus-visible,
+.mail-container a:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Table de mails scrollable sur mobile */
+@media (max-width: 768px) {
+  .mail-list-section {
+    overflow-x: auto;
+  }
+  .mail-table {
+    min-width: 700px;
+    font-size: 0.75rem;
+  }
+  .mail-toolbar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .mail-bulk-actions {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .mail-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .mail-search-wrapper {
+    max-width: none;
+  }
+  .mail-search-input {
+    max-width: none;
+  }
+  .mail-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 12px;
+    scrollbar-width: none;
+  }
+  .mail-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .mail-sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 260px;
+    transform: var(--sidebar-transform, translateX(0));
+    transition: transform 0.3s ease;
+    z-index: 50;
+  }
+  .mail-sidebar.collapsed {
+    --sidebar-transform: translateX(-100%);
+  }
+}
+
+/* Overlay sidebar sur mobile quand ouvert */
+@media (max-width: 768px) {
+  .mail-main {
+    margin-left: 0;
+  }
+}
+
 
