@@ -108,6 +108,7 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
   const [imapUnreadCount, setImapUnreadCount] = useState(0);
   const [lastMailCount, setLastMailCount] = useState(0);
   const [keyboardFocusedIndex, setKeyboardFocusedIndex] = useState<number | null>(null);
+  const [previewExpandedId, setPreviewExpandedId] = useState<number | null>(null);
 
   // ---------- Sélection de compte IMAP ----------
   const [imapAccount, setImapAccount] = useState<1 | 2>(1);
@@ -1226,7 +1227,25 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                         </td>
                       )}
                       <td className="mail-td-preview">
-                        {m.corps_texte ? m.corps_texte.slice(0, 60) : "—"}
+                        {previewExpandedId === m.id ? (
+                          <>{m.corps_texte || ""}</>
+                        ) : m.corps_texte ? (
+                          <>
+                            {m.corps_texte.slice(0, 60)}
+                            <button
+                              type="button"
+                              className="btn btn-outline mail-btn-sm"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setPreviewExpandedId(m.id);
+                              }}
+                            >
+                              …
+                            </button>
+                          </>
+                        ) : (
+                          "—"
+                        )}
                       </td>
                       <td className="mail-td-date">{fmtDate(m.recu_le, locale)}</td>
                     </tr>
