@@ -151,8 +151,10 @@ export default function Auth({ locale = "fr" }: AuthProps) {
         setServerError(t.toastServerKo);
       }
     } finally {
+      console.log("[AUTH][loader] handleLogin finally — loading:", loading, "→ calling globalStopLoading()");
       setLoading(false);
       globalStopLoading();
+      console.log("[AUTH][loader] handleLogin finally — globalStopLoading() called");
     }
   }
 
@@ -204,8 +206,10 @@ export default function Auth({ locale = "fr" }: AuthProps) {
           setServerError(t.toastServerKo);
         }
       } finally {
+        console.log("[AUTH][loader] handleSignup finally — loading:", loading, "→ calling globalStopLoading()");
         setLoading(false);
         globalStopLoading();
+        console.log("[AUTH][loader] handleSignup finally — globalStopLoading() called");
       }
     }
 
