@@ -656,6 +656,7 @@ export default function GeneriqueFormulaire({ locale = "fr", spec }: GeneriqueFo
 
       const payload: any = { ...form };
       if (currentPack) payload.planLabel = currentPack.label;
+      payload.prix = totalPrice;
       delete payload.files;
       delete payload.options;
       Object.assign(payload, uploadedFiles);
