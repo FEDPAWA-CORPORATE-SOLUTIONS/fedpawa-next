@@ -288,10 +288,29 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
     setImapCurrentPage(1);
   }, [folder]);
 
-  // ---------- Polling léger pour nouveaux mails (60s) ----------
+  // ---------- Polling adaptatif pour nouveaux mails (temps réel) ----------
+
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const visibleRef = useRef(true);
+
   useEffect(() => {
-    if (folder !== "inbox") return;
-    const timer = setInterval(async () => {
+    const onVisibilityChange = () => {
+      visibleRef.current = !document.hidden;
+      restartPolling();
+    };
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, []);
+
+  const restartPolling = () => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+    if (folder !== "inbox" || !visibleRef.current) return;
+    const intervalMs = visibleRef.current ? 30000 : 120000;
+    intervalRef.current = setInterval(async () => {
       try {
         const c = await adminFetchMailsCount();
         const n = c.non_lus ?? 0;
@@ -302,8 +321,14 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
       } catch {
         // ignorer silencieusement
       }
-    }, 60000);
-    return () => clearInterval(timer);
+    }, intervalMs);
+  };
+
+  useEffect(() => {
+    restartPolling();
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
   }, [folder, lastMailCount]);
 
   // ---------- Brouillons auto-save (localStorage) ----------
@@ -1214,8 +1239,10 @@ export default function AdminMails({ locale = "fr" }: AdminMailsProps) {
                       draggable={true}
                       onDragStart={(e) => {
                         setDraggedMailId(m.id);
-                        e.dataTransfer?.setData("text/plain", String(m.id));
-                        e.dataTransfer?.effectAllowed = "move";
+                        if (e.dataTransfer) {
+                          e.dataTransfer.setData("text/plain", String(m.id));
+                          e.dataTransfer.effectAllowed = "move";
+                        }
                       }}
                       onDragEnd={() => setDraggedMailId(null)}
                       onDragOver={(e) => e.preventDefault()}
